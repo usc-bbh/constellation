@@ -1,0 +1,308 @@
+PREPARED: 09/29/26 - 09:00
+PROGRAM: 9000                                                    CATALOG YEAR: 20233
+STARS - DEGREE PROGRESS REPORT
+BACHELOR OF ARTS
+DATA AND SOCIETY
+_________________________________________________________________
+PERTINENT DATA SECTION:
+
+Term of USC Entrance 20233               Current Class Level Junior
+
+USC Expected Graduation Date - 14 MAY 2027
+
+=================================================================
+                     USC Diploma Information
+
+Name as it will appear on your USC Diploma:
+
+              Sample Student
+
+Diploma will be mailed to: 100 Example Way
+                           Los Angeles, CA 90007
+
+=================================================================
+CURRENT POST:        DEGREE     MAJOR      UNIT   EFFECTIVE TERM
+
+    9000         BA       DSOC     COLL       20233
+
+MINOR:   No minor declared
+
+Advisor not yet designated by your Department.
+
+*** PLEASE BRING THIS REPORT WITH YOU WHEN YOU SEE
+YOUR ACADEMIC ADVISOR ***
+_________________________________________________________________
+         AT LEAST ONE REQUIREMENT HAS NOT BEEN SATISFIED
+_________________________________________________________________
+
+*****************************************************************
+NOTE: The Legend to STARS can be found at the end of this report
+*****************************************************************
+
+_________________________________________________________________
+**************** TIME TO DEGREE COMPLETION STATUS ***************
+
+         BASED ON COMPLETED COURSE WORK, YOU HAVE TWO REMAINING
+         SEMESTERS TO DEGREE COMPLETION. COMPLETION OF MORE
+         THAN 16 UNITS IN FUTURE SEMESTERS, OR COMPLETION OF
+        COURSE WORK IN SUMMER TERMS, MAY ACCELERATE YOUR TIME
+        TO DEGREE COMPLETION.
+_________________________________________________________________
+NO     A MINIMUM OF 128 UNITS IS REQUIRED FOR DEGREE COMPLETION:
+    EARNED: 95.00 UNITS
+IN-PROCESS: 16.00 UNITS
+--> NEEDS: 17.00 UNITS
+
+      20233 WRIT150        4.0 B+     Writing and Critical Reasonin
+      20233 GESM130   G    4.0 A-     Seminar in Social Analysis
+      20233 MATH118   G    4.0 B      Fundamental Principles of Cal
+      20233 SOCI200        4.0 A      Introduction to Sociology
+      20241 ECON203        4.0 B+     Principles of Microeconomics
+      20241 PSYC100   G    4.0 A      Introduction to Psychology
+      20241 DSCI250        4.0 A-     Introduction to Data Science
+      20241 PHED140        1.0 P >PBeginning Tennis
+      20243 DSCI351        4.0 B      Foundations of Data Managemen
+      20243 SOCI314        4.0 A      Social Inequality
+      20243 BISC102   G L  4.0 B-     Humans and Their Environment
+      20243 COMM206   W    4.0 A      Communication and Culture
+      20251 DSCI352        4.0 IN     Machine Learning for Social D
+      20251 SOCI350   M    4.0 A-     Race and Ethnicity
+      20251 PHIL141   G    4.0 B+     Ethics and Public Life
+      20251 MATH208   X    4.0 C+     Elementary Probability and St
+      20253 DSCI353        4.0 A      Data Visualization
+      20253 SOCI380        4.0 B+     Social Networks and Society
+      20253 ECON317        4.0 B      Introduction to Econometrics
+      20261 DSCI400        4.0 A-     Data Ethics and Governance
+      20261 SOCI420        4.0 A      Computational Social Science
+      20261 WRIT340        4.0 B+     Advanced Writing
+      20261 ITP 115        2.0 A      Programming in Python
+      20263 DSCI450        4.0 RG >IPCapstone in Data and Society
+      20263 SOCI475        4.0 RG >IPUrban Data Analysis
+      20263 HIST266   G    4.0 RG >IPHistories of the Pacific Worl
+      20263 PSYC274        4.0 RG >IPSocial Psychology
+
+      99993 TRNSFR WORK       12.0 TR     Total Transfer Units
+_________________________________________________________________
+OK     64-UNIT RESIDENCY REQUIREMENT HAS BEEN SATISFIED.
+    EARNED: 83.00 UNITS
+_________________________________________________________________
+OK     32-UNIT UPPER DIVISION REQUIREMENT HAS BEEN SATISFIED.
+    EARNED: 36.00 UNITS
+IN-PROCESS: 8.00 UNITS
+_________________________________________________________________
+OK     2.0 CUMULATIVE GPA REQUIRED OF ALL USC BACCALAUREATE UNITS
+       ** NOTE: University honors are based on either the GPA
+       for the combined transferred and resident course work or
+       the GPA for resident course work, whichever is lower.
+       Note that only your USC GPA is calculated on STARS.
+    EARNED:                                           3.412 GPA
+_________________________________________________________________
+OK     2.0 CUMULATIVE GPA REQUIRED IN ALL UPPER DIVISION COURSE
+       WORK APPLIED TO YOUR MAJOR:
+    EARNED:                                           3.500 GPA
+       20243 DSCI351        4.0 B      Foundations of Data Managemen
+       20243 SOCI314        4.0 A      Social Inequality
+       20253 DSCI353        4.0 A      Data Visualization
+       20253 SOCI380        4.0 B+     Social Networks and Society
+       20253 ECON317        4.0 B      Introduction to Econometrics
+       20261 DSCI400        4.0 A-     Data Ethics and Governance
+       20261 SOCI420        4.0 A      Computational Social Science
+_________________________________________________________________
+OK     COMPOSITION/WRITING REQUIREMENT -- COURSE WORK MUST BE
+       TAKEN FOR A LETTER GRADE:
+    EARNED:                           2 SUB-GROUPS
+
+  +   1) FIRST YEAR WRITING REQUIREMENT:
+                                1 COURSE TAKEN
+       20233 WRIT150        4.0 B+     Writing and Critical Reasonin
+
+  +   2) UPPER DIVISION WRITING REQUIREMENT (must be taken at
+        USC):
+                                1 COURSE TAKEN
+       20261 WRIT340        4.0 B+     Advanced Writing
+_________________________________________________________________
+OK     FOREIGN LANGUAGE REQUIREMENT HAS BEEN SATISFIED.
+
+  +   1) COMPLETE THE THIRD SEMESTER OF ONE LANGUAGE:
+           NOTE: RW - SPANISH PLACEMENT EXAM
+_________________________________________________________________
+PLEASE NOTE THE FOLLOWING GENERAL EDUCATION LIMITATIONS:
+
+  1. A SINGLE COURSE MAY COUNT IN ONLY ONE G.E. CATEGORY.
+  2. NO MORE THAN 4 UNITS OF CREDIT (OR ONE COURSE)
+     COUNTING TOWARD GE REQUIREMENTS MAY BE TAKEN P/NP.
+     (NOTE: ONLY GRADES OF "P" AFFECT THIS LIMIT)
+  3. ONLY ONE GESM COURSE MAY BE TAKEN FOR GE CREDIT.
+
+_________________________________________________________________
+NO     GENERAL EDUCATION CORE LITERACIES REQUIREMENTS - COMPLETE
+       EIGHT COURSES FROM SIX CATEGORIES AS FOLLOWS:
+
+        NOTE:   1.   FIRST YEAR FRESHMAN AT USC MUST TAKE ONE GE
+                     SEMINAR (GESM) AS ONE OF THE EIGHT COURSES.
+
+  -   1) CATEGORY A:   THE ARTS
+          NEEDS:                 1 COURSE
+         SELECT FROM: CATEGORY GE-A
+
+  -   2) COMPLETE TWO COURSES FROM CATEGORY B - HUMANISTIC
+         INQUIRY:
+                                  1 COURSE TAKEN
+       20251 PHIL141   G    4.0 B+     Ethics and Public Life
+          NEEDS:                 1 COURSE
+         SELECT FROM: CATEGORY GE-B
+
+  +   3) COMPLETE TWO COURSES FROM CATEGORY C - SOCIAL ANALYSIS:
+                                  2 COURSES TAKEN
+       20233 GESM130   G    4.0 A-     Seminar in Social Analysis
+       20241 PSYC100   G    4.0 A      Introduction to Psychology
+
+  +   4) COMPLETE ONE COURSE FROM CATEGORY D - LIFE SCIENCES:
+                                  1 COURSE TAKEN
+       20243 BISC102   G L  4.0 B-     Humans and Their Environment
+
+  +   5) CATEGORY E:   PHYSICAL SCIENCES
+                                 1 COURSE TAKEN
+       20222 AP20:COMP      4.0 TR     AP ENVIRONMENTAL SCIENCE
+
+  +   6) CATEGORY F:   QUANTITATIVE REASONING
+                                 1 COURSE TAKEN
+       20233 MATH118   G    4.0 B      Fundamental Principles of Cal
+
+  +   7) FIRST YEAR GE SEMINAR REQUIREMENT HAS BEEN MET.
+                               1 COURSE TAKEN
+       20233 GESM130   G    4.0 A-     Seminar in Social Analysis
+_________________________________________________________________
+IP     GENERAL EDUCATION GLOBAL PERSPECTIVES REQUIREMENT -
+
+        COMPLETE ONE COURSE FROM EACH OF THE FOLLOWING TWO
+        CATEGORIES (NOTE: A COURSE MAY APPLY TO BOTH A CORE
+        LITERACY REQUIREMENT AND A GLOBAL PERSPECTIVES
+        REQUIREMENT):
+
+IP+   1) CATEGORY G - GLOBAL PERSPECTIVES I:
+IN-P --->                           1 COURSE TAKEN
+       20263 HIST266   G    4.0 RG >IPHistories of the Pacific Worl
+
+  +   2) CATEGORY H - GLOBAL PERSPECTIVES II:
+                                1 COURSE TAKEN
+       20243 COMM206   W    4.0 A      Communication and Culture
+_________________________________________________________________
+NO     MAJOR REQUIREMENTS FOR DATA AND SOCIETY:
+
++R    1) LOWER DIVISION CORE:
+                                4 COURSES TAKEN
+       20233 SOCI200        4.0 A      Introduction to Sociology
+       20241 ECON203        4.0 B+     Principles of Microeconomics
+       20241 DSCI250        4.0 A-     Introduction to Data Science
+       20251 MATH208   X    4.0 C+     Elementary Probability and St
+
+IP-   2) UPPER DIVISION CORE:
+           NOTE: RE - SUB ECON317 FOR DSCI356
+                                4 COURSES TAKEN
+IN-P --->                           1 COURSE TAKEN
+       20243 DSCI351        4.0 B      Foundations of Data Managemen
+       20253 DSCI353        4.0 A      Data Visualization
+       20253 ECON317        4.0 B      Introduction to Econometrics
+       20261 DSCI400        4.0 A-     Data Ethics and Governance
+       20263 DSCI450        4.0 RG >IPCapstone in Data and Society
+          NEEDS:                       1 COURSE
+         SELECT FROM: DSCI352
+
+IP+   3) COMPLETE THREE UPPER DIVISION SOCIOLOGY ELECTIVES:
+                                2 COURSES TAKEN
+IN-P --->                           1 COURSE TAKEN
+       20243 SOCI314        4.0 A      Social Inequality
+       20253 SOCI380        4.0 B+     Social Networks and Society
+       20263 SOCI475        4.0 RG >IPUrban Data Analysis
+
+  -   4) COMPLETE TWO ELECTIVES FROM THE FOLLOWING:
+                                1 COURSE TAKEN
+       20261 SOCI420        4.0 A      Computational Social Science
+          NEEDS:                     1 COURSE
+         SELECT FROM: SOCI300 TO SOCI499
+         DSCI420     DSCI430     COMM340
+
+  -   5) COMPLETE DSCI480 (DATA STUDIO):
+          NEEDS:                     1 COURSE
+         SELECT FROM: DSCI480
+
+  -  OR) COMPLETE SOCI494 AND SOCI495 (HONORS SEQUENCE):
+          NEEDS:                     2 COURSES
+         SELECT FROM: SOCI494      SOCI495
+_________________________________________________________________
+       CURRENT REGISTRATION:
+
+IP
+       20263 DSCI450        4.0 RG >IPCapstone in Data and Society
+       20263 HIST266   G    4.0 RG >IPHistories of the Pacific Worl
+       20263 PSYC274        4.0 RG >IPSocial Psychology
+       20263 SOCI475        4.0 RG >IPUrban Data Analysis
+_________________________________________________________________
+OTHER COURSES IN YOUR ACADEMIC ACCOUNT:
+
+       20222 AP41:COMP      4.0 TR     AP STATISTICS
+       20232 AP61:COMP      4.0 TR     AP SPANISH LANGUAGE
+       20241 PHED140        1.0 P >PBeginning Tennis
+       20251 SOCI350   M    4.0 A-     Race and Ethnicity
+       20261 ITP 115        2.0 A      Programming in Python
+       20263 PSYC274        4.0 RG >IPSocial Psychology
+
+_________________________________________________________________
+        NO MORE THAN 4 UNITS OF PHYSICAL EDUCATION ACTIVITY
+        COURSES MAY BE APPLIED TO YOUR OVERALL UNIT REQUIREMENT.
+        NO MORE THAN 16 UNITS OF INDIVIDUAL INSTRUCTION IN MUSIC
+        AT THE 101/201/300/301/401 LEVELS MAY BE APPLIED TO YOUR
+        OVERALL UNIT REQUIREMENT.
+
+  +      NO MORE THAN 4 UNITS OF PHYSICAL EDUCATION COURSEWORK.
+      20241 PHED140        1.0 P >PBeginning Tennis
+_________________________________________________________________
+
+                        ****    LEGEND    ****
+
+REQUIREMENT STATUS CODES:          COURSE SUFFIXES:
+  NO = REQUIREMENT INCOMPLETE        G = GENERAL EDUCATION COURSE
+  OK = REQUIREMENT COMPLETE          L = COURSE WITH A LAB
+  - = SUB-REQUIREMENT NOT MET        X = COURSE CREDIT RESTRICTION
+  + = SUB-REQUIREMENT MET            M = COURSE MEETS DIVERSITY
+                                     P = COURSE MEETS TRADITIONS AND
+                                         HISTORICAL FOUNDATIONS
+                                     W = COURSE MEETS CITIZENSHIP IN
+                                         A GLOBAL ERA
+
+REGISTRATION TERMS:                COURSE FLAGS:
+20263 = FALL SEMESTER 2026          >D = CREDIT DELETED, BUT
+20271 = SPRING SEMESTER 2027             INCLUDED IN GPA
+20272 = SUMMER SEMESTER 2027        >Z = CREDIT DELETED AND NOT
+                                         INCLUDED IN GPA
+GRADE DEFINITIONS:                  >FF= TRANSFER AND FRESHMAN
+  TR = TRANSFER COURSE                   FORGIVENESS -- NOT INCLUDED
+  RG = CURRENT REGISTRATION              IN GPA.
+  IN = INCOMPLETE                   >R = REPEATABLE COURSE
+  IX = EXPIRED INCOMPLETE           >IP= IN-PROGRESS COURSE
+  MG = MISSING GRADE                >EX= EXCESS CREDIT -- CREDIT
+  NS = GRADE NOT SUBMITTED               DELETED BUT INCLUDED IN GPA
+                                    R = REQUIRED SUB-REQUIREMENT
+                                   (R)= REQUIRED COURSE
+                                    >OS= REPETITIOUS -- TAKEN OUT
+                                         OF SEQUENCE. NO UNIT OR
+                                         GPA CREDIT ALLOWED.
+                                    >P = COURSE TAKEN ON P/NP OPTION
+                  ***** EXCEPTION CODES *****
+
+RE = REQUIREMENT EXCHANGE               RA = REQUIREMENT ALTERNATIVE
+CW = COURSE WAIVER                      UW = UNIT WAIVER
+RW = REQUIREMENT WAIVER
+
+_________________________________________________________________
+ The Degree Progress Advisement report has been prepared to
+ assist you in determining your academic progress at the
+ University of Southern California. Although efforts have been
+ made to ensure its accuracy, the student is responsible for the
+ completion of all graduation requirements.
+
+ This sample report is fictional. The student, major, program
+ code, courses, and grades were invented for demonstration.
+_________________________________________________________________
+ ************************ END OF ANALYSIS
