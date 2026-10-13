@@ -110,6 +110,26 @@ td.num{white-space:nowrap}
 .pill.progress::before{background:linear-gradient(90deg,currentColor 50%,transparent 50%);border:1.5px solid currentColor;width:9px;height:9px}
 .pill.needs{background:var(--needs-bg);color:var(--needs)}
 .pill.needs::before{background:transparent;border:1.5px solid currentColor}
+.pill.none{background:var(--cream);color:var(--muted)}
+.pill.none::before{background:transparent;border:1.5px dashed currentColor}
+.mk.none{border:1.5px dashed var(--muted)}
+.counts .none b{color:var(--muted)}
+
+/* couldn't read confidently */
+.unread{margin-top:22px;background:var(--prog-bg);border:1px solid var(--line);border-left:3px solid var(--prog);border-radius:4px;padding:14px 16px}
+.unread h2{border:0;padding:0;font-size:20px;color:var(--prog)}
+.unread ul{margin:8px 0 0;padding-left:20px;font-size:14.5px}
+.unread li{margin:6px 0}
+.unread code{display:block;font-size:12.5px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* views */
+.views{display:flex;flex-wrap:wrap;gap:6px;margin-top:22px;border-bottom:1px solid var(--line)}
+.views button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 12px;color:var(--muted)}
+.views button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.view-actions{display:flex;justify-content:flex-end;margin-top:18px}
+#result[data-view="dashboard"] [data-in]:not([data-in~="dashboard"]),
+#result[data-view="table"] [data-in]:not([data-in~="table"]),
+#result[data-view="print"] [data-in]:not([data-in~="print"]){display:none}
 .detail{color:var(--muted);font-size:13.5px;margin-top:3px}
 .group-h{font:600 13.5px/1 var(--body);color:var(--muted);background:var(--cream);padding:10px 14px}
 tr.sub td:first-child{padding-left:30px}
@@ -154,7 +174,9 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
 @media print{
   :root{--paper:#fff;--surface:#fff}
   body{background:#fff}
-  .bar,footer button,.more{display:none !important}
+  .bar,footer button,.more,.views,.view-actions,.no-print{display:none !important}
+  /* Whatever view is on screen, the printout is the full printable version. */
+  #result [data-in]:not(.no-print){display:block !important}
   .tile,.area-card,.scroll{break-inside:avoid}
   main section{padding-top:22px}
 }
@@ -200,7 +222,7 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
 const SAMPLE = /*SAMPLE*/;
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Still needed' };
+const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Still needed', none: 'Not marked' };
 const pill = s => `<span class="pill ${s}">${STATUS_TXT[s]}</span>`;
 const num = n => { const f = parseFloat(n); return Number.isInteger(f) ? String(f) : String(f); };
 
@@ -250,16 +272,34 @@ function areaCards(r){
   let h = '';
   AREAS.forEach(g => {
     const items = areaItems(r, g); if (!items.length) return;
-    const n = { done: 0, progress: 0, needs: 0 }; items.forEach(i => n[i.s]++);
+    const n = { done: 0, progress: 0, needs: 0, none: 0 }; items.forEach(i => n[i.s]++);
     const pct = k => (n[k] / items.length * 100).toFixed(1);
     h += `<article class="area-card"><h3>${esc(g)}<span>${n.done} of ${items.length} complete</span></h3>
-      <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-      <div class="counts"><span class="done"><b>${n.done}</b> complete</span><span class="progress"><b>${n.progress}</b> in progress</span><span class="needs"><b>${n.needs}</b> still needed</span></div>
+      <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
+      <div class="counts"><span class="done"><b>${n.done}</b> complete</span><span class="progress"><b>${n.progress}</b> in progress</span><span class="needs"><b>${n.needs}</b> still needed</span>${n.none ? `<span class="none"><b>${n.none}</b> not marked</span>` : ''}</div>
       <ul class="reqs">${items.map(i => `<li class="${i.s}"><i class="mk ${i.s}" aria-hidden="true"></i><span>${esc(i.t)}<span class="sr"> (${STATUS_TXT[i.s]})</span></span></li>`).join('')}</ul></article>`;
   });
   return h;
 }
 const MARKS = `<div class="legend" aria-hidden="true">${['done','progress','needs'].map(k => `<span><i class="mk ${k}"></i>${STATUS_TXT[k]}</span>`).join('')}</div>`;
+
+/* ---------- couldn't read confidently ---------- */
+// Anything the parser couldn't place is listed here rather than guessed at.
+function unreadNotice(r){
+  if (!r.unread.length) return '';
+  return `<section class="unread" data-in="dashboard table print" role="note"><h2>Couldn't read confidently</h2>
+    <p class="section-note">Constellation couldn't read ${r.unread.length === 1 ? 'one part' : `${r.unread.length} parts`} of this report with confidence, so it flags ${r.unread.length === 1 ? 'it' : 'them'} here instead of guessing. Check ${r.unread.length === 1 ? 'it' : 'them'} against your STARS report.</p>
+    <ul>${r.unread.map(u => `<li><b>${esc(u.where)}</b>${u.lines.map(l => `<code>${esc(l)}</code>`).join('')}</li>`).join('')}</ul></section>`;
+}
+
+/* ---------- views ---------- */
+const VIEWS = [['dashboard', 'Dashboard'], ['table', 'Table'], ['print', 'Printable']];
+function setView(v){
+  $('#result').dataset.view = v;
+  document.querySelectorAll('.views button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === v)));
+  // The table and printable views show the long lists open; the dashboard keeps them folded.
+  document.querySelectorAll('#result details.list').forEach(d => { d.open = v !== 'dashboard'; });
+}
 
 /* ---------- render ---------- */
 function blockSummary(b){
@@ -324,13 +364,17 @@ function render(r, redactedText){
       <div class="tile"><div class="l">USC GPA</div><div class="v">${esc(r.gpa || 'n/a')}</div><div class="s">${r.gpa ? 'Overall, USC courses only' : 'Not on this report'}</div></div>
       <div class="tile"><div class="l">Major GPA</div><div class="v">${esc(r.majorGpa || 'n/a')}</div><div class="s">${r.majorGpa ? 'Upper-division major courses' : 'Not on this report'}</div></div>
     </div>
-  </div></header><main class="wrap">`;
+  </div></header><main class="wrap">
+  <div class="views" role="tablist" aria-label="Views">${VIEWS.map(([k, t]) => `<button role="tab" data-view="${k}" aria-selected="false">${t}</button>`).join('')}</div>
+  <div class="view-actions no-print" data-in="print"><button class="primary" id="print">Print or save as PDF</button></div>`;
+
+  h += unreadNotice(r);
 
   // progress by area
-  h += `<section><h2>Progress by area</h2><p class="section-note">Each requirement on your report, grouped by area.</p>${MARKS}<div class="areas">${areaCards(r)}</div></section>`;
+  h += `<section data-in="dashboard print"><h2>Progress by area</h2><p class="section-note">Each requirement on your report, grouped by area.</p>${MARKS}<div class="areas">${areaCards(r)}</div></section>`;
 
   // what's left
-  h += `<section><h2>What's left</h2><p class="section-note">Everything STARS still marks as open, assuming your current courses pass.</p><div class="scroll"><table class="stack">
+  h += `<section data-in="dashboard table print"><h2>What's left</h2><p class="section-note">Everything STARS still marks as open, assuming your current courses pass.</p><div class="scroll"><table class="stack">
     <thead><tr><th>Area</th><th>Requirement</th><th>Needed</th><th>Choose from</th><th>Status</th></tr></thead><tbody>`;
   if (!r.left.length) h += `<tr><td colspan="5">Nothing left. Every requirement is complete or in progress.</td></tr>`;
   r.left.forEach(l => {
@@ -342,7 +386,7 @@ function render(r, redactedText){
   h += `</tbody></table></div></section>`;
 
   // checklist
-  h += `<section><h2>Requirement checklist</h2><p class="section-note">Every requirement on your report, in plain language.</p><div class="scroll"><table class="stack check">
+  h += `<section data-in="table print"><h2>Requirement checklist</h2><p class="section-note">Every requirement on your report, in plain language.</p><div class="scroll"><table class="stack check">
     <thead><tr><th style="width:34%">Requirement</th><th>Where you stand</th><th>Status</th></tr></thead><tbody>`;
   ['University','Writing and language','General education','School and major','Other'].forEach(g => {
     const bs = r.blocks.filter(b => b.group === g); if (!bs.length) return;
@@ -359,7 +403,7 @@ function render(r, redactedText){
   // course history
   const terms = {}; r.courseList.forEach(c => { const k = c.isAP ? 'AP' : c.term; (terms[k] = terms[k] || []).push(c); });
   const keys = Object.keys(terms).filter(k => k !== 'AP').sort(); if (terms.AP) keys.unshift('AP');
-  h += `<section><details><summary>Course history <span class="count">${r.courseList.length} courses</span></summary>
+  h += `<section data-in="table print"><details class="list"><summary>Course history <span class="count">${r.courseList.length} courses</span></summary>
     <p class="section-note">Each course appears once, with every requirement it counts toward. STARS cuts titles at 29 characters, marked with "…".</p>
     <div class="scroll"><table class="stack hist"><thead><tr><th>Course</th><th>Title</th><th>Units</th><th>Grade</th><th>Counts toward</th></tr></thead><tbody>`;
   keys.forEach(k => {
@@ -374,20 +418,19 @@ function render(r, redactedText){
         <td data-label="Counts toward">${toward.length ? toward.map(esc).join('<br>') : '<span class="muted">Units only</span>'}</td></tr>`;
     });
   });
-  h += `</tbody></table></div></details>`;
+  h += `</tbody></table></div></details></section>`;
 
   // fine print
-  const geRules = r.notes.find(n => n.kind === 'ge-rules');
-  h += `<details><summary>Rules and fine print</summary><ul class="fine">
+  h += `<section data-in="table print"><details class="list"><summary>Rules and fine print</summary><ul class="fine">
     <li>A single course counts in only one GE Core Literacy category, but can also count toward Global Perspectives.</li>
     <li>At most one GE course (4 units) can be taken pass/no pass.</li>
     <li>Only one GE seminar (GESM) counts for GE credit.</li>
     <li>At most 4 units of physical education count toward your unit total.</li>
     <li>STARS computes your USC GPA only. Honors use the lower of your USC or combined GPA.</li>
-  </ul></details>`;
+  </ul></details></section>`;
 
-  // raw toggle
-  h += `<details><summary>Original report text <span class="count">personal details removed</span></summary>
+  // raw toggle (on screen only; the printout leaves it out)
+  h += `<section class="no-print" data-in="dashboard table"><details><summary>Original report text <span class="count">personal details removed</span></summary>
     <p class="section-note">Cross-check anything above against what STARS says.</p><pre class="raw">${esc(redactedText.slice(redactedText.indexOf('PREPARED')))}</pre></details></section>`;
 
   h += `</main><footer class="wrap">
@@ -397,10 +440,15 @@ function render(r, redactedText){
 
   $('#intake').classList.add('hidden');
   const res = $('#result'); res.innerHTML = h; res.classList.remove('hidden');
-  $('#again').onclick = reset; window.scrollTo(0, 0);
+  $('#again').onclick = reset; $('#print').onclick = () => window.print();
+  document.querySelectorAll('.views button').forEach(b => { b.onclick = () => setView(b.dataset.view); });
+  setView('dashboard'); window.scrollTo(0, 0);
 }
 function reset(e){ e && e.preventDefault(); $('#result').classList.add('hidden'); $('#result').innerHTML=''; $('#intake').classList.remove('hidden'); }
 
+// Printing from any view gives the full printable version, with the long lists open.
+window.addEventListener('beforeprint', () => document.querySelectorAll('#result details.list').forEach(d => { d.open = true; }));
+window.addEventListener('afterprint', () => { const v = $('#result').dataset.view; if (v) setView(v); });
 $('#sample').onclick = () => run(SAMPLE);
 $('#file').onchange = e => handleFile(e.target.files[0]);
 $('#home').onclick = reset;
