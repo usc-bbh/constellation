@@ -1,5 +1,5 @@
 // Builds index.html from src/page.html. Everything the page needs is inlined: the parser, the
-// PDF text extraction, pdf.js and its worker (bundled from node_modules), and the sample
+// page formatting (src/format.js), the PDF text extraction, pdf.js and its worker (bundled from node_modules), and the sample
 // report. Text is set in Times New Roman, which is already on the device. The result makes no
 // network requests, and its Content-Security-Policy says so.
 // Usage: npm install && npm run build
@@ -26,6 +26,7 @@ const str = s => safe(JSON.stringify(s));
 
 const parts = {
   '/*PARSER*/': safe(read('src/parser.js')),
+  '/*FORMAT*/': safe(read('src/format.js')),
   '/*PDFTEXT*/': safe(read('src/pdftext.js')),
   '/*PDFJS*/': safe(pdfjs),
   '/*PDFWORKER*/': str(worker),

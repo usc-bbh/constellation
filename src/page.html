@@ -21,13 +21,13 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 var(--body);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
 a{color:var(--accent)}
-button,.btn{font:600 15px/1 var(--body);border-radius:4px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:12px 16px;cursor:pointer}
+button,.btn{touch-action:manipulation;font:600 15px/1 var(--body);border-radius:4px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:12px 16px;cursor:pointer}
 button:focus-visible,.btn:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .primary{background:var(--night);color:#fff;border-color:var(--night)}
 
 /* top bar */
 .bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:18px;padding-bottom:18px}
-.mark{display:flex;align-items:center;gap:10px;font:700 21px/1 var(--display);letter-spacing:0;color:var(--accent);text-decoration:none}
+.mark{display:flex;align-items:center;gap:10px;font:700 21px/1 var(--display);letter-spacing:0;color:var(--accent);text-decoration:none;background:none;border:0;padding:0}
 .bar small{color:var(--muted);font-size:13.5px;text-align:right}
 
 /* intake */
@@ -51,16 +51,19 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible{outline:3px solid 
 /* report header */
 .hero{padding:28px 0 4px}
 .hero .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:flex-end;padding-bottom:18px;border-bottom:2px solid var(--accent)}
-.eyebrow{font:600 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
-.hero h1{font:700 clamp(26px,3.6vw,38px)/1.1 var(--display);letter-spacing:0;margin:0}
+.hero h1{font:700 clamp(21px,2.6vw,26px)/1.15 var(--display);letter-spacing:0;margin:0}
 .hero .sub{color:var(--muted);margin-top:6px;font-size:15px}
 .hero .prepared{color:var(--muted);font-size:13.5px;text-align:right}
 
 /* stat tiles */
-.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.tiles{display:grid;grid-template-columns:minmax(0,1.35fr) repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}
 .tile{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:4px;padding:14px 16px}
-.tile .l{font:600 12px/1.2 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tile .l{font:600 14px/1.2 var(--body);color:var(--muted)}
 .tile .v{font:700 28px/1.1 var(--display);margin-top:8px}
+/* The GPA is the number students come for most, so it is the one large thing on the page. */
+.tile.gpa .v{font-size:clamp(44px,6vw,60px);line-height:1;color:var(--accent)}
+.tile .v.missing,.tile.gpa .v.missing{font:500 17px/1.3 var(--body);color:var(--muted)}
+.tile .s .copy{font-weight:700;color:var(--ink)}
 .tile .v small{font:500 15px var(--body);color:var(--muted)}
 .tile .s{color:var(--muted);font-size:13.5px;margin-top:6px}
 .tile.alert .v{color:var(--needs)}
@@ -68,6 +71,28 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible{outline:3px solid 
 .meter i{display:block;height:100%}
 .meter .d{background:var(--done)}
 .meter .p{background:var(--prog)}
+
+/* click to copy */
+.copy{font:inherit;color:inherit;background:none;border:0;border-radius:3px;padding:0;margin:0;text-align:inherit;cursor:copy;
+  text-decoration:underline dotted transparent;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.copy:hover,.copy:focus-visible{text-decoration-color:var(--accent)}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ci{display:inline-block;width:.72em;height:.72em;margin-left:.25em;vertical-align:baseline;opacity:0;color:var(--accent)}
+.copy:hover .ci,.copy:focus-visible .ci{opacity:1}
+.copied-msg{font:600 13px/1 var(--body);color:var(--done);margin-left:8px;white-space:nowrap;vertical-align:middle}
+.tile.gpa .v .copied-msg{font-size:14px}
+@media (hover:none){.ci{opacity:.7}}
+button.chip.copy{font:600 13.5px/1.5 var(--body);border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--paper);color:var(--ink);text-decoration:none}
+button.chip.copy:hover,button.chip.copy:focus-visible{border-color:var(--accent);background:var(--accent-bg)}
+.copy-all{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.copy-all .copied-msg{margin-left:0}
+.copyfail{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.copyfail textarea{width:100%;min-height:120px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;margin-top:8px}
+tr.crs{cursor:copy}
+tr.crs:hover td{background:var(--paper)}
+tr.crs.gone td{color:var(--muted)}
+.tag{display:inline-block;font:600 12.5px/1.4 var(--body);border-radius:3px;padding:0 7px;margin:2px 6px 0 0;background:var(--cream);color:var(--muted);white-space:nowrap}
+.term-h .tu{float:right;font-weight:500;color:var(--muted)}
 
 /* progress by area */
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--muted);margin:0 0 12px}
@@ -168,10 +193,13 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
 .term-h td{margin:-12px -14px;padding:10px 14px}
   .stack .pill{margin-top:4px}
   .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile.gpa{grid-column:1 / -1}
   .tile .v{font-size:24px}
   .hero .prepared{text-align:left}
 }
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important;animation:none !important}}
 @media print{
+  .ci,.copied-msg,.copy-all,.copyfail{display:none !important}
   :root{--paper:#fff;--surface:#fff}
   body{background:#fff}
   .bar,footer button,.more,.views,.view-actions,.no-print{display:none !important}
@@ -184,10 +212,10 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
 </head>
 <body>
 <div class="wrap bar">
-  <a class="mark" href="#" id="home" aria-label="Constellation home">
+  <button type="button" class="mark" id="home" aria-label="Constellation: start over">
     <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 19 L11 8 L17 14 L22 5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45"/><circle cx="4" cy="19" r="2.4" fill="currentColor"/><circle cx="11" cy="8" r="2.4" fill="currentColor"/><circle cx="17" cy="14" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="22" cy="5" r="2.4" fill="currentColor"/></svg>
     Constellation
-  </a>
+  </button>
   <small>Your PDF is read in your browser and never leaves your device.</small>
 </div>
 
@@ -213,8 +241,10 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
 </div>
 
 <div id="result" class="hidden"></div>
+<div id="live" class="sr" aria-live="polite"></div>
 
 <script>/*PARSER*/</script>
+<script>/*FORMAT*/</script>
 <script>/*PDFTEXT*/</script>
 <script>/*PDFJS*/</script>
 <script>const PDF_WORKER_SRC = /*PDFWORKER*/;</script>
@@ -225,6 +255,46 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Still needed', none: 'Not marked' };
 const pill = s => `<span class="pill ${s}">${STATUS_TXT[s]}</span>`;
 const num = n => { const f = parseFloat(n); return Number.isInteger(f) ? String(f) : String(f); };
+
+const CI = '<svg class="ci" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 3.5V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+const COURSE_CODE = /^[A-Z]{2,4} \d{3}[A-Z]?$/;
+// A value that copies itself when clicked. `what` is how the "Copied" announcement names it.
+const copyBtn = (value, what, html, cls = '') => `<button type="button" class="copy ${cls}" data-copy="${esc(value)}" data-what="${esc(what)}" aria-label="Copy ${esc(what)}">${html ?? esc(value)}${CI}</button>`;
+const codeBtn = (code, title) => `<button type="button" class="copy chip code" translate="no" data-copy="${esc(code)}" data-what="${esc(code)}" aria-label="Copy ${esc(code)}${title ? ` (${esc(title)})` : ''}"${title ? ` title="${esc(title)}"` : ''}>${esc(code)}</button>`;
+
+/* ---------- click to copy ---------- */
+async function copyText(text){
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return true; } } catch (e) {}
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy'); ta.remove();
+    if (ok) return true;
+  } catch (e) {}
+  return false;
+}
+// Both ways of copying failed: show the text selected, ready for the keyboard shortcut.
+function showCopyFallback(btn, text){
+  document.querySelectorAll('.copyfail').forEach(n => n.remove());
+  const box = document.createElement('div');
+  box.className = 'copyfail'; box.setAttribute('role', 'group'); box.setAttribute('aria-label', 'Text to copy');
+  box.innerHTML = '<b>Press Ctrl+C (Cmd+C on a Mac) to copy.</b> <button type="button">Close</button><textarea readonly></textarea>';
+  box.querySelector('textarea').value = text;
+  box.querySelector('button').onclick = () => { box.remove(); btn.focus(); };
+  (btn.closest('section, .tile') || btn.parentNode).appendChild(box);
+  const ta = box.querySelector('textarea'); ta.focus(); ta.select();
+}
+const copyTimers = new WeakMap();
+async function doCopy(btn, text, what){
+  if (!(await copyText(text))) { showCopyFallback(btn, text); return; }
+  let msg = btn.nextElementSibling;
+  if (!msg || !msg.classList.contains('copied-msg')) { msg = document.createElement('span'); msg.className = 'copied-msg'; msg.setAttribute('aria-hidden', 'true'); btn.after(msg); }
+  msg.textContent = 'Copied';
+  $('#live').textContent = `Copied ${what}`;
+  clearTimeout(copyTimers.get(btn));
+  copyTimers.set(btn, setTimeout(() => { msg.remove(); }, 1500));
+}
 
 function showErr(msg){ const e=$('#err'); e.textContent=msg; e.classList.remove('hidden'); }
 function run(text){
@@ -254,7 +324,7 @@ async function handleFile(f){
   if (!f) return;
   if (!(/\.pdf$/i.test(f.name) || f.type === 'application/pdf')) { showErr('That file isn\'t a PDF. On your STARS page, click Print Report and choose Save as PDF.'); return; }
   const drop = $('#drop'), title = $('#dropTitle'), sub = $('#dropSub');
-  drop.classList.add('busy'); title.textContent = 'Reading your report'; sub.textContent = f.name;
+  drop.classList.add('busy'); title.textContent = 'Reading your report…'; sub.textContent = f.name;
   try { run(await pdfToText(f)); }
   catch (e) { showErr(e.message || 'Could not read that PDF. Try saving the STARS page as a PDF again.'); }
   finally { drop.classList.remove('busy'); title.textContent = 'Upload your STARS report PDF'; sub.textContent = 'Drag it here or click to choose a file'; $('#file').value = ''; }
@@ -296,7 +366,8 @@ function unreadNotice(r){
 const VIEWS = [['dashboard', 'Dashboard'], ['table', 'Table'], ['print', 'Printable']];
 function setView(v){
   $('#result').dataset.view = v;
-  document.querySelectorAll('.views button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === v)));
+  document.querySelectorAll('.views button').forEach(b => { const on = b.dataset.view === v; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+  const p = $('#panel'); if (p) p.setAttribute('aria-labelledby', `tab-${v}`);
   // The table and printable views show the long lists open; the dashboard keeps them folded.
   document.querySelectorAll('#result details.list').forEach(d => { d.open = v !== 'dashboard'; });
 }
@@ -329,43 +400,51 @@ function blockSummary(b){
 }
 function subDetail(s){
   const bits = [];
-  if (s.courses.length) bits.push(s.courses.map(c => `<span class="chip code" title="${esc(c.title)}">${esc(c.display || c.code)}${c.flag==='IP' ? ' (now)' : ''}</span>`).join(' '));
-  if (s.status !== 'done' && (s.needs || s.selectFrom)) bits.push(`<span>${s.needs ? `Needs <b>${num(s.needs)} ${esc(s.needsUnit)}</b>` : 'Needs'}${s.selectFrom && s.selectFrom.length ? ' from ' + s.selectFrom.map(o => `<span class="chip">${esc(o)}</span>`).join(' ') : ''}${s.orAlt && s.orAlt.selectFrom ? ', or ' + s.orAlt.selectFrom.map(o => `<span class="chip">${esc(o)}</span>`).join(' ') : ''}</span>`);
+  if (s.courses.length) bits.push(s.courses.map(c => (c.isAP ? `<span class="chip code">${esc(c.display)}</span>` : codeBtn(c.code, c.title)) + (c.flag === 'IP' ? ' <span class="muted">(now)</span>' : '')).join(' '));
+  if (s.status !== 'done' && (s.needs || s.selectFrom)) bits.push(`<span>${s.needs ? `Needs <b>${num(s.needs)} ${esc(s.needsUnit)}</b>` : 'Needs'}${s.selectFrom && s.selectFrom.length ? ' from ' + s.selectFrom.map(o => COURSE_CODE.test(o) ? codeBtn(o) : `<span class="chip">${esc(o)}</span>`).join(' ') : ''}${s.orAlt && s.orAlt.selectFrom ? ', or ' + s.orAlt.selectFrom.map(o => COURSE_CODE.test(o) ? codeBtn(o) : `<span class="chip">${esc(o)}</span>`).join(' ') : ''}</span>`);
   if (s.notes.length) bits.push(`<span class="detail">${s.notes.map(esc).join('. ')}</span>`);
   return `<div class="opts" style="align-items:center">${bits.join(' ')}</div>`;
 }
 function chips(opts){
   if (!opts.length) return '<span class="muted">Any course</span>';
-  const c = o => `<span class="chip ${/^(or )?[A-Z]{2,4} \d/.test(o) ? 'code' : ''}">${esc(o)}</span>`;
+  const c = o => {
+    const m = o.match(/^(or )?([A-Z]{2,4} \d{3}[A-Z]?)$/);
+    if (m) return m[1] ? `<span class="opts-or">or ${codeBtn(m[2])}</span>` : codeBtn(m[2]);
+    return `<span class="chip ${/^(or )?[A-Z]{2,4} \d/.test(o) ? 'code' : ''}">${esc(o)}</span>`;
+  };
   if (opts.length <= 8) return `<div class="opts">${opts.map(c).join('')}</div>`;
   return `<div class="opts">${opts.slice(0,6).map(c).join('')}</div><details class="more"><summary>${opts.length - 6} more options</summary><div class="opts">${opts.slice(6).map(c).join('')}</div></details>`;
 }
-const GRADE_TXT = { RG: 'In progress', TR: 'AP / transfer', CR: 'Credit', hidden: 'Hidden', '': 'None listed' };
 function render(r, redactedText){
-  const m = r.meta, u = r.units || {};
-  const total = parseFloat((u.raw || '').match(/MINIMUM OF (\d+)/)?.[1] || 128);
-  const earned = parseFloat(u.earned || 0), ip = parseFloat(u.inProcess || 0), need = parseFloat(u.needs || 0);
-  const leftCount = r.left.length;
+  const m = r.meta, S = StarsFormat.deriveSummary(r);
+  const NF = 'Not found in report';
+  const known = v => v !== null && v !== undefined;
   const gradTerm = m.gradDate ? m.gradDate.replace(/^\d+\s+/, '').toLowerCase().replace(/^\w/, c => c.toUpperCase()).replace(/ (\d{4})$/, ' $1') : '';
-  const pctU = n => Math.min(100, n / total * 100).toFixed(1);
+  const pctU = n => Math.min(100, n / S.unitsRequired * 100).toFixed(1);
+  const left = S.requirementsLeft;
   let h = `<header class="hero"><div class="wrap">
     <div class="top"><div>
-      <p class="eyebrow">Degree progress summary</p>
       <h1>${esc(m.major || 'Your degree')}</h1>
       <div class="sub">${esc(m.degree || '')}${m.catalogYear ? `, catalog ${esc(StarsParser.termName(m.catalogYear))}` : ''}${m.classLevel ? `. ${esc(m.classLevel)}` : ''}${gradTerm ? `, expected to graduate ${esc(gradTerm)}` : ''}.</div>
     </div>
     ${m.prepared ? `<div class="prepared">STARS report prepared<br>${esc(m.prepared)}</div>` : ''}</div>
     <div class="tiles">
-      <div class="tile"><div class="l">Units</div><div class="v">${num(earned)} <small>of ${total}</small></div>
-        <div class="meter" role="img" aria-label="${num(earned)} earned, ${num(ip)} in progress, of ${total}"><i class="d" style="width:${pctU(earned)}%"></i><i class="p" style="width:${pctU(ip)}%"></i></div>
-        <div class="s">${num(ip)} in progress, ${num(need)} still needed</div></div>
-      <div class="tile${r.overallIncomplete ? ' alert' : ''}"><div class="l">Left to plan</div><div class="v">${r.overallIncomplete ? leftCount : 0} <small>${(r.overallIncomplete ? leftCount : 0) === 1 ? 'item' : 'items'}</small></div>
-        <div class="s">${r.overallIncomplete ? (m.semestersLeft ? `About ${esc(m.semestersLeft)} semesters out` : 'See the list below') : 'All requirements satisfied'}</div></div>
-      <div class="tile"><div class="l">USC GPA</div><div class="v">${esc(r.gpa || 'n/a')}</div><div class="s">${r.gpa ? 'Overall, USC courses only' : 'Not on this report'}</div></div>
-      <div class="tile"><div class="l">Major GPA</div><div class="v">${esc(r.majorGpa || 'n/a')}</div><div class="s">${r.majorGpa ? 'Upper-division major courses' : 'Not on this report'}</div></div>
+      <div class="tile gpa"><div class="l">USC GPA</div>
+        <div class="v${S.gpa ? '' : ' missing'}">${S.gpa ? copyBtn(S.gpa, 'GPA') : NF}</div>
+        <div class="s">${S.gpa ? 'Overall, USC courses only. ' : ''}Major GPA: ${S.majorGpa ? copyBtn(S.majorGpa, 'major GPA') : NF.toLowerCase()}</div></div>
+      <div class="tile"><div class="l">Units completed</div>
+        <div class="v${known(S.unitsCompleted) ? '' : ' missing'}">${known(S.unitsCompleted) ? `${num(S.unitsCompleted)}${known(S.unitsRequired) ? ` <small>of ${num(S.unitsRequired)}</small>` : ''}` : NF}</div>
+        ${known(S.unitsCompleted) && known(S.unitsRequired) ? `<div class="meter" role="img" aria-label="${num(S.unitsCompleted)} completed, ${num(S.unitsInProgress)} in progress, of ${num(S.unitsRequired)}"><i class="d" style="width:${pctU(S.unitsCompleted)}%"></i><i class="p" style="width:${pctU(S.unitsInProgress)}%"></i></div>` : ''}
+        <div class="s">${known(S.unitsInProgress) ? `${num(S.unitsInProgress)} in progress` : ''}${known(S.unitsRequired) ? '' : `${known(S.unitsInProgress) ? '. ' : ''}Units required: ${NF.toLowerCase()}`}</div></div>
+      <div class="tile"><div class="l">Units remaining</div>
+        <div class="v${known(S.unitsRemaining) ? '' : ' missing'}">${known(S.unitsRemaining) ? num(S.unitsRemaining) : NF}</div>
+        <div class="s">${known(S.unitsRemaining) && S.unitsInProgress ? 'Assumes your current courses pass' : known(S.unitsRemaining) ? 'To graduate' : ''}</div></div>
+      <div class="tile${left ? ' alert' : ''}"><div class="l">Requirements left</div><div class="v">${left} <small>${left === 1 ? 'item' : 'items'}</small></div>
+        <div class="s">${left ? (m.semestersLeft ? `About ${esc(m.semestersLeft)} semesters out` : 'See the list below') : 'All requirements satisfied'}</div></div>
     </div>
   </div></header><main class="wrap">
-  <div class="views" role="tablist" aria-label="Views">${VIEWS.map(([k, t]) => `<button role="tab" data-view="${k}" aria-selected="false">${t}</button>`).join('')}</div>
+  <div class="views" role="tablist" aria-label="Views">${VIEWS.map(([k, t]) => `<button type="button" role="tab" id="tab-${k}" data-view="${k}" aria-controls="panel" aria-selected="false" tabindex="-1">${t}</button>`).join('')}</div>
+  <div id="panel" role="tabpanel">
   <div class="view-actions no-print" data-in="print"><button class="primary" id="print">Print or save as PDF</button></div>`;
 
   h += unreadNotice(r);
@@ -400,21 +479,28 @@ function render(r, redactedText){
   });
   h += `</tbody></table></div></section>`;
 
-  // course history
-  const terms = {}; r.courseList.forEach(c => { const k = c.isAP ? 'AP' : c.term; (terms[k] = terms[k] || []).push(c); });
-  const keys = Object.keys(terms).filter(k => k !== 'AP').sort(); if (terms.AP) keys.unshift('AP');
+  // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
+  const key = r.key || {};
+  const groups = StarsFormat.groupCourses(r.courseList);
   h += `<section data-in="table print"><details class="list"><summary>Course history <span class="count">${r.courseList.length} courses</span></summary>
-    <p class="section-note">Each course appears once, with every requirement it counts toward. STARS cuts titles at 29 characters, marked with "…".</p>
+    <p class="section-note">Click a course code to copy it, or anywhere else on its row to copy the whole line. STARS cuts titles at 29 characters, marked with "…".</p>
+    <div class="copy-all no-print"><button type="button" data-copy-all="text">Copy as text</button><button type="button" data-copy-all="tsv">Copy for spreadsheet</button></div>
     <div class="scroll"><table class="stack hist"><thead><tr><th>Course</th><th>Title</th><th>Units</th><th>Grade</th><th>Counts toward</th></tr></thead><tbody>`;
-  keys.forEach(k => {
-    h += `<tr class="term-h"><td colspan="5">${k === 'AP' ? 'AP credit' : esc(StarsParser.termName(k))}</td></tr>`;
-    terms[k].forEach(c => {
-      const notes = [];
-      if (c.flag && StarsParser.FLAGS[c.flag] && c.flag !== 'IP') notes.push(StarsParser.FLAGS[c.flag]);
-      c.suffix.split('').forEach(s => StarsParser.SUFFIX[s] && s !== 'G' && notes.push(StarsParser.SUFFIX[s]));
+  if (!groups.length) h += `<tr><td colspan="5">No courses on this report yet.</td></tr>`;
+  groups.forEach(g => {
+    h += `<tr class="term-h"><td colspan="5">${esc(g.label)}${g.current ? ', in progress' : ''}<span class="tu">${num(g.units)} ${g.units === 1 ? 'unit' : 'units'}</span></td></tr>`;
+    g.courses.forEach(c => {
+      const tags = [];
+      if (StarsFormat.isTransfer(c) && !c.isAP) tags.push('<span class="tag">Transfer</span>');
+      if (c.flag && c.flag !== 'IP') tags.push(`<span class="tag">${esc((key.flags || {})[c.flag] || `Flag >${c.flag}`)}</span>`);
+      const suf = c.suffix.split('').filter(x => x !== 'G').map(x => (key.suffixes || {})[x]).filter(Boolean);
+      const gone = /^(D|Z|OS)$/.test(c.flag); // STARS deleted the credit: shown, but muted
       const toward = c.countsToward.filter(t => t !== 'Current registration');
-      h += `<tr><td class="num"><b>${esc(c.isAP ? 'AP' : c.code)}</b></td><td>${esc(c.isAP ? c.display.replace(/^AP /,'') : c.title)}${notes.length ? `<div class="detail">${esc(notes.join('. '))}</div>` : ''}</td>
-        <td class="num" data-label="Units">${num(c.units)}</td><td class="num" data-label="Grade">${esc(GRADE_TXT[c.grade] || c.grade)}</td>
+      const code = c.isAP ? 'AP' : c.code;
+      h += `<tr class="crs${gone ? ' gone' : ''}">
+        <td class="num">${c.isAP ? '<b>AP</b>' : copyBtn(c.code, c.code, `<b>${esc(c.code)}</b>`, 'code')}</td>
+        <td>${copyBtn(StarsFormat.formatCourseLine(c, key), `${code === 'AP' ? c.display : code} as one line`, esc(c.isAP ? c.display : c.title), 'line')}${tags.length ? `<div>${tags.join('')}</div>` : ''}${suf.length ? `<div class="detail">${esc(suf.join('. '))}</div>` : ''}</td>
+        <td class="num" data-label="Units">${num(c.units)}</td><td class="num" data-label="Grade">${esc(StarsFormat.gradeText(c, key) || 'None listed')}</td>
         <td data-label="Counts toward">${toward.length ? toward.map(esc).join('<br>') : '<span class="muted">Units only</span>'}</td></tr>`;
     });
   });
@@ -433,7 +519,7 @@ function render(r, redactedText){
   h += `<section class="no-print" data-in="dashboard table"><details><summary>Original report text <span class="count">personal details removed</span></summary>
     <p class="section-note">Cross-check anything above against what STARS says.</p><pre class="raw">${esc(redactedText.slice(redactedText.indexOf('PREPARED')))}</pre></details></section>`;
 
-  h += `</main><footer class="wrap">
+  h += `</div></main><footer class="wrap">
     <p>Removed before reading: ${esc(r.redacted.join(', ') || 'nothing found')}. Report prepared ${esc(r.meta.prepared)}.</p>
     <p>Constellation is an unofficial reading aid built by BUAI Builder Hub. STARS and your academic advisor are the source of truth for graduation.</p>
     <p><button id="again">Summarize another report</button></p></footer>`;
@@ -441,7 +527,25 @@ function render(r, redactedText){
   $('#intake').classList.add('hidden');
   const res = $('#result'); res.innerHTML = h; res.classList.remove('hidden');
   $('#again').onclick = reset; $('#print').onclick = () => window.print();
-  document.querySelectorAll('.views button').forEach(b => { b.onclick = () => setView(b.dataset.view); });
+  const tabs = [...document.querySelectorAll('.views button')];
+  tabs.forEach((b, i) => {
+    b.onclick = () => setView(b.dataset.view);
+    b.onkeydown = e => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+      const t = tabs[(i + d + tabs.length) % tabs.length]; setView(t.dataset.view); t.focus(); e.preventDefault();
+    };
+  });
+  res.onclick = e => {
+    const btn = e.target.closest('button[data-copy], button[data-copy-all]');
+    if (btn) {
+      if (btn.dataset.copyAll) doCopy(btn, btn.dataset.copyAll === 'tsv' ? StarsFormat.formatCourseworkTsv(r.courseList, key) : StarsFormat.formatCourseworkText(r.courseList, key), btn.dataset.copyAll === 'tsv' ? 'all courses for a spreadsheet' : 'all courses as text');
+      else doCopy(btn, btn.dataset.copy, btn.dataset.what);
+      return;
+    }
+    // Anywhere else on a course row copies the whole line, unless the student is selecting text.
+    const row = e.target.closest('tr.crs');
+    if (row && !String(window.getSelection())) row.querySelector('button.line').click();
+  };
   setView('dashboard'); window.scrollTo(0, 0);
 }
 function reset(e){ e && e.preventDefault(); $('#result').classList.add('hidden'); $('#result').innerHTML=''; $('#intake').classList.remove('hidden'); }

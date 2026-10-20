@@ -136,7 +136,59 @@
     R.units = R.blocks.find(b => b.kind === 'units') || null;
     R.gpa = (R.blocks.find(b => b.kind === 'gpa-overall') || {}).earned || '';
     R.majorGpa = (R.blocks.find(b => b.kind === 'gpa-major') || {}).earned || '';
+    // Units required to graduate: only what the report states. If it isn't there, say so.
+    const req = R.units && R.units.raw.match(/MINIMUM OF (\d+)/);
+    R.unitsRequired = req ? +req[1] : null;
+    if (R.unitsRequired === null) R.unread.push({ where: 'Total units', lines: ['Couldn\'t find how many units the degree requires.'] });
+    R.key = parseKey(text);
+    if (!R.key) R.unread.push({ where: 'Abbreviation key', lines: ['Couldn\'t find the LEGEND that explains the codes, so codes are shown as written.'] });
     return R;
+  }
+
+  // ---------- abbreviation key ----------
+  // Reads the LEGEND at the end of the report, so the page explains each code in the report's own
+  // words. The legend is laid out in two columns, and a definition can wrap onto the next line in its
+  // column, so each piece of text is placed by where it starts on the line.
+  const KEY_SECTIONS = { 'GRADE DEFINITIONS': 'grades', 'COURSE FLAGS': 'flags', 'COURSE SUFFIXES': 'suffixes', 'EXCEPTION CODES': 'exceptions' };
+  function parseKey(text) {
+    const lines = text.split('\n');
+    const from = lines.findIndex(l => /\*+\s*LEGEND\s*\*+/.test(l));
+    if (from < 0) return null;
+    const key = { grades: {}, flags: {}, suffixes: {}, exceptions: {} };
+    let cols = [], section = '';
+    const near = (i, tol) => cols.reduce((best, c) => (Math.abs(c.start - i) <= (best ? Math.abs(best.start - i) : tol) ? c : best), null);
+    for (let n = from + 1; n < lines.length; n++) {
+      const line = lines[n];
+      if (/^\s*_{10,}\s*$/.test(line) || /END OF ANALYSIS/.test(line)) break;
+      const banner = line.match(/^\s*\*+\s*([A-Z ]+?)\s*\*+\s*$/);
+      if (banner) { section = banner[1]; cols = []; continue; }
+      for (const m of line.matchAll(/\S(?:.*?\S)?(?=\s{3,}|\s*$)/g)) {
+        const seg = m[0], i = m.index;
+        const head = seg.match(/^([A-Z][A-Z ]+):$/);
+        if (head) { const c = near(i, 6); if (c) { c.section = head[1]; c.last = null; } else cols.push({ start: i, section: head[1], last: null }); continue; }
+        const e = seg.match(/^(>?\(?[A-Z0-9+-]{1,5}\)?)\s*=\s*(.*)$/);
+        if (e) {
+          let c = near(i, 10);
+          if (!c) { c = { start: i, section, last: null }; cols.push(c); }
+          const kind = KEY_SECTIONS[c.section];
+          // Course flags are written ">D". In the same column, "R =" and "(R)=" explain requirement
+          // markers, not course flags, so they don't go in the flags list.
+          const keep = kind && (kind !== 'flags' || e[1].startsWith('>'));
+          c.last = keep ? { kind, code: e[1].replace(/^>/, ''), text: e[2] } : null;
+          if (c.last) key[kind][c.last.code] = c.last.text;
+          continue;
+        }
+        const c = near(i, Infinity);
+        if (c && c.last) { c.last.text += ' ' + seg; key[c.last.kind][c.last.code] = c.last.text; }
+      }
+    }
+    for (const kind of Object.values(KEY_SECTIONS)) for (const code in key[kind]) key[kind][code] = keyText(key[kind][code]);
+    return Object.values(key).some(k => Object.keys(k).length) ? key : null;
+  }
+  function keyText(raw) {
+    const t = raw.replace(/\s+/g, ' ').trim().replace(/\s*--\s*/g, ', ').replace(/\.$/, '').toLowerCase()
+      .replace(/\bgpa\b/g, 'GPA').replace(/\bp\/np\b/g, 'P/NP').replace(/\busc\b/g, 'USC');
+    return t.replace(/(^|\. )([a-z])/g, (_, p, c) => p + c.toUpperCase());
   }
 
   function addCourse(R, c, countsToward) {
@@ -307,6 +359,6 @@
   }
   function fmt(n) { return String(parseFloat(n)); }
 
-  const api = { parse, redact, parseCourse, termName, FLAGS, SUFFIX, GRADE };
+  const api = { parse, redact, parseCourse, parseKey, termName, FLAGS, SUFFIX, GRADE };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StarsParser = api;
 })(typeof window !== 'undefined' ? window : globalThis);

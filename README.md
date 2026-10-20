@@ -24,11 +24,13 @@ Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/cons
 | --- | --- |
 | `index.html` | The built page (about 1.8 MB, self-contained). Open it in a browser. |
 | `src/parser.js` | The STARS parser: report text in, requirement tree, deduplicated course list, and "what's left" list out. |
+| `src/format.js` | Pure functions from parsed report to what the page shows and copies: the summary numbers, course lines, the copy-as-text and copy-for-spreadsheet formats, and course history order. |
 | `src/pdftext.js` | PDF to text: runs pdf.js and rebuilds lines. Shared by the page and the test so both run the same code. |
 | `src/page.html` | The page template: layout, styles, rendering. |
 | `src/sample-report.txt` | A synthetic report behind the "Try a sample report" button. The student, major, program code, courses, and grades are all invented; it is not based on any real or anonymized report. It uses real STARS formatting and covers most formats the parser handles, so it doubles as a quick check that the page still renders. |
 | `build.js` | Builds `index.html`: inlines everything, bundles pdf.js from `node_modules`, writes the CSP. |
 | `scripts/check-privacy.mjs` | The privacy check described above. |
+| `test/unit.mjs` | Unit tests on the synthetic sample: the abbreviation key, the summary numbers, and the exact text each copy action produces. |
 | `test/run.mjs` | Runs every PDF in `test/samples/` through the same pipeline as the page. |
 
 ## Working on it
@@ -36,7 +38,7 @@ Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/cons
 ```
 npm install
 npm run build          # after editing anything in src/
-npm test               # builds, runs the privacy check, then tests every report in test/samples/
+npm test               # builds, runs the privacy check and unit tests, then tests every report in test/samples/
 ```
 
 pdf.js is pinned to one exact version (`pdfjs-dist` 4.10.38) in `package.json`. The page and the test both use it. Upgrade it on purpose and re-run every report.
@@ -92,8 +94,9 @@ The current test proves the parser handles a few reports. Before recommending Co
 
 1. **Read the PDF.** pdf.js (bundled, running in an in-memory worker) pulls text fragments, which are regrouped into lines by vertical position (`src/pdftext.js`).
 2. **Redact.** Name, student ID, and diploma address are removed first. Browser print headers and footers and anonymizer artifacts ("X.XXX", "Lp") are dropped.
-3. **Parse.** Sections are split on the `____` rules. Every status comes from STARS's own codes (OK, NO, IP on blocks; +, -, IP+, IP- on sub-requirements), never from guessing. A sub-requirement with no mark shows as "Not marked", and anything shaped like report data that the parser can't place (a course row it can't read, a section it doesn't recognise) is listed under "Couldn't read confidently" at the top of the summary.
-4. **Render.** Summary tiles (units, items left, GPA) and three views: **Dashboard** (progress by area and what's left), **Table** (what's left, the full checklist, course history), and **Printable** (everything, without the original text). Printing from any view prints the printable version. The original text is one click away on the other two views for cross-checking.
+3. **Parse.** Sections are split on the `____` rules. The LEGEND at the end of the report is read too, so codes like TR, IN and >P are explained in the report's own words; a code it doesn't define is shown as written. Every status comes from STARS's own codes (OK, NO, IP on blocks; +, -, IP+, IP- on sub-requirements), never from guessing. A sub-requirement with no mark shows as "Not marked", and anything shaped like report data that the parser can't place (a course row it can't read, a section it doesn't recognise) is listed under "Couldn't read confidently" at the top of the summary.
+4. **Render.** Summary tiles in the order students ask (GPA, units completed, units remaining, requirements left; anything the report doesn't state reads "Not found in report") and three views: **Dashboard** (progress by area and what's left), **Table** (what's left, the full checklist, course history), and **Printable** (everything, without the original text). Printing from any view prints the printable version. The original text is one click away on the other two views for cross-checking.
+5. **Copy.** Click the GPA or major GPA to copy it. In course history, click a course code to copy the code, or anywhere else on the row to copy one line (`DSCI 353, Data Visualization, 4 units, A, Fall 2025`); course codes in the checklist and "What's left" copy too. "Copy as text" and "Copy for spreadsheet" copy the whole course list, the second as tab-separated columns with a header row. Titles STARS cut short are copied with their "…" rather than completed by guessing.
 
 ## Tested on
 
