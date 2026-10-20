@@ -1,6 +1,6 @@
 # Constellation: status and next steps
 
-_Last updated 19 Oct 2026 by Natalie (with Claude). Start here when picking the project back up._
+_Last updated 20 Oct 2026 by Natalie (with Claude). Start here when picking the project back up._
 
 This is the working to-do list for Constellation V1. [README.md](README.md) explains what the project is and how it works. This file tracks what's done, what's left, and what's waiting on whom.
 
@@ -26,6 +26,20 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 | 3 | V2: STARS web page text vs PDF text | **Not started.** Do this locally with your own report. Don't commit the output. |
 | — | README pointed at the old parser location and submodule | **Done on this branch (13 Oct), not on `main` yet.** Tanzil flagged it again in bbh-course-reg-project#7 (18 Oct). Merging this branch closes it. |
 | — | Pathwise decisions before Tanzil's M4 | **Open, time-sensitive.** See "Waiting on Natalie (Pathwise)" below. M4 (next-sem-validator#9) is already open. |
+
+## What changed on 20 Oct (interview redesign, branch `interview-redesign`)
+
+Based on the five undergrad interviews (summary in `constellation-redesign-spec.md`, section 1.1): students open STARS for one quick answer, and several retype their GPA and courses into applications. Decisions made with Natalie on 20 Oct: undergrads only, no search box, no AI, built without waiting on Tanzil.
+
+- **Tiles reordered:** GPA (large, copies on click; major GPA under it), units completed of required, units remaining, requirements left. The all-caps labels and eyebrow are gone.
+- **Click to copy:** GPA and major GPA; course codes everywhere (course history, checklist, "What's left" options); a course row copies one line; "Copy as text" and "Copy for spreadsheet" copy the whole list. "Copied" shows in place and is announced to screen readers.
+- **Course history:** current term first, then newest to oldest, AP credit last; units per term; Transfer and flag tags; deleted-credit rows muted.
+- **Abbreviations:** read from the report's LEGEND (`R.key` in `src/parser.js`). No legend → flagged under "Couldn't read confidently".
+- **No more invented 128:** if the report doesn't state its unit total, the page says "Not found in report" and flags it.
+- **Accessibility fixes:** reduced motion respected, real buttons, tabs work with arrow keys, `translate="no"` on codes.
+- **Tests:** `src/format.js` holds the formatting; `test/unit.mjs` checks it on the synthetic sample and runs in `npm test`. `test/run.mjs` drafts now include `unitsRequired`.
+
+Still to do by hand: paste "Copy for spreadsheet" into Google Sheets and check the columns, and paste a course line into an application text box.
 
 ## What changed on 13 Oct
 

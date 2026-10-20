@@ -5,6 +5,7 @@
 //      in the parsed result or in the "original report text" the page shows;
 //   2. compares a summary against test/expected/<name>.json, or writes a draft to check by hand.
 //      The summary includes "unread": everything the parser flagged instead of guessing.
+//      "unitsRequired" was added on 20 Oct; older expected files need it added.
 // Usage: npm install && npm test
 import fs from 'fs';
 import path from 'path';
@@ -58,6 +59,7 @@ for (const f of files) {
     catalogYear: r.meta.catalogYear,
     gpa: r.gpa,
     majorGpa: r.majorGpa,
+    unitsRequired: r.unitsRequired,
     units: r.units ? { earned: r.units.earned || '', inProcess: r.units.inProcess || '', needs: r.units.needs || '' } : null,
     redacted: [...r.redacted].sort(),
     courses: r.courseList.length,
