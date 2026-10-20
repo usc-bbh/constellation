@@ -18,6 +18,9 @@
   const SUB_RE = /^(IP[+-]|[+-]R?)?\s*(\d+|OR)\)\s+(.*)$/;
   const LOOSE_SUB_RE = /^(IP[+-]|[+-]R?)\s+([A-Z].{8,})$/;
   const BLOCK_RE = /^(NO|OK|IP)\s+(.+)$/;
+  // A line shaped like report data (a course row, a status marker, a tally) rather than prose.
+  // If one of these isn't understood, it goes on R.unread and the page says so instead of guessing.
+  const DATA_RE = /^(\d{5}\s|(IP[+-]?|[+-]R?|OK|NO)\s|(-->\s*)?NEEDS:|EARNED:|IN-PROCESS:)/;
 
   function termName(code) {
     if (!/^\d{5}$/.test(code) || code.startsWith('9999')) return '';
@@ -86,7 +89,7 @@
     const endIdx = lines.findIndex(l => /END OF ANALYSIS/.test(l));
     lines = lines.slice(start, endIdx > 0 ? endIdx : undefined).map(l => l.trim()).filter(Boolean);
 
-    const R = { meta: {}, blocks: [], notes: [], redacted: removed, courses: new Map(), overallIncomplete: false };
+    const R = { meta: {}, blocks: [], notes: [], unread: [], redacted: removed, courses: new Map(), overallIncomplete: false };
     const full = lines.join('\n');
     const g = (re) => { const m = full.match(re); return m ? m[1].trim() : ''; };
     R.meta.prepared = g(/PREPARED:\s*(.+)/);
@@ -113,13 +116,17 @@
       const head = chunk[0];
       if (/^CURRENT REGISTRATION:/.test(head)) { chunk.forEach(l => addCourse(R, parseCourse(l), 'Current registration')); continue; }
       if (/^OTHER COURSES IN YOUR/.test(head)) { chunk.forEach(l => addCourse(R, parseCourse(l), null)); continue; }
-      if (/^NO MORE THAN|^PLEASE NOTE|LEGEND|INTERNAL|^\*{3}|The Degree Progress|PERTINENT DATA|PREPARED/.test(head)) {
+      if (/^NO MORE THAN|^PLEASE NOTE|LEGEND|INTERNAL|^\*{3}|The Degree Progress|PERTINENT DATA|PREPARED|^AT LEAST ONE REQUIREMENT/.test(head)) {
         if (/^PLEASE NOTE THE FOLLOWING GENERAL EDUCATION/.test(head)) R.notes.push({ kind: 'ge-rules', lines: chunk.slice(1) });
         if (/^NO MORE THAN/.test(head)) { R.notes.push({ kind: 'unit-limits', lines: chunk.filter(l => !parseCourse(l)) }); chunk.forEach(l => addCourse(R, parseCourse(l), null)); }
         continue;
       }
       const bm = head.match(BLOCK_RE);
-      if (!bm) continue;
+      if (!bm) {
+        const data = chunk.filter(l => DATA_RE.test(l));
+        if (data.length) R.unread.push({ where: 'A section Constellation doesn\'t recognise', lines: [head, ...data.filter(l => l !== head)].slice(0, 6) });
+        continue;
+      }
       R.blocks.push(parseBlock(chunk, R));
     }
     R.courseList = [...R.courses.values()].filter(c => !c.isTransferTotal)
@@ -145,7 +152,7 @@
     let title = first, j = i + 1;
     while (j < chunk.length && !/[:.]$/.test(title) && j - i < 6) {
       const n = chunk[j];
-      if (STOP.test(n) || COURSE_RE.test(n) || SUB_RE.test(n)) break;
+      if (STOP.test(n) || COURSE_RE.test(n) || SUB_RE.test(n) || /^\d{5}\s/.test(n)) break;
       title += ' ' + n; j++;
     }
     return { title: title.replace(/\s+/g, ' '), next: j };
@@ -182,7 +189,7 @@
     const { title, next } = readTitle(chunk, 0, rest);
     const [kind, name, group] = classify(title);
     const b = { kind, name, group, status: STATUS[st], raw: title, subs: [], courses: [], notes: [] };
-    let sub = null;
+    let sub = null; const unread = [];
     for (let i = next; i < chunk.length; i++) {
       const l = chunk[i];
       const sm = l.match(SUB_RE) || (!/^\+\s+NO MORE THAN/.test(l) && l.match(LOOSE_SUB_RE) && [null, l.match(LOOSE_SUB_RE)[1], '', l.match(LOOSE_SUB_RE)[2]]);
@@ -220,8 +227,16 @@
         const n = `${EXC[m[1]]}: ${m[2].replace(/COURSE WAIVED\s*/i, '').replace(/SUB\s+/i, '').replace(/([A-Z]{2,4}) ?(\d{3})/g, '$1 $2').replace(/ FOR /, ' in place of ')}`;
         if (!tgt.notes.includes(n)) tgt.notes.push(n); continue;
       }
+      if (DATA_RE.test(l)) unread.push(l);
     }
-    for (const s of b.subs) if (!s.status) s.status = s.needs ? 'needs' : (s.courses.length ? 'done' : 'needs');
+    if (unread.length) R.unread.push({ where: b.name, lines: unread });
+    // No +/- marker: a NEEDS line still says it's open. Otherwise STARS doesn't say, so don't guess.
+    for (const s of b.subs) {
+      if (s.status) continue;
+      if (s.needs) { s.status = 'needs'; continue; }
+      s.status = 'none';
+      R.unread.push({ where: `${b.name}: ${shortSub(s.name)}`, lines: ['STARS shows no status mark for this part.'] });
+    }
     return b;
   }
 
@@ -272,7 +287,7 @@
       }
       for (const s of b.subs) {
         if (s.status === 'done') continue;
-        if (!s.needs && !(s.status === 'needs' && (s.selectFrom || []).length)) continue;
+        if (!s.needs && !(/needs|none/.test(s.status) && (s.selectFrom || []).length)) continue;
         out.push(leftRow(area, s));
       }
     }

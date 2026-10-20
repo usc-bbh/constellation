@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-RsjbSK/kCe0Cc4WP0/2G9it9YbkvKJa6BK9F4r9nhOU=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-i+/DXraxRs9WS5FpRAtlUJeLNS5S8STozP3xYgGhEbk=' 'sha256-TLOD6heL8huPcEtakXAvBimOJGSs8cFEcU+N6PWC19k='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-GvPOHIsw/26sAQDyHD/b12o3w7b9S/3LWRBHVv2GOLo=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-i+/DXraxRs9WS5FpRAtlUJeLNS5S8STozP3xYgGhEbk=' 'sha256-2AxBiSaWpI5tBISKMJvvXRcgRpGNbuwsfc91Q1vvO9k='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation: make sense of your STARS</title>
 <style>
@@ -110,6 +110,26 @@ td.num{white-space:nowrap}
 .pill.progress::before{background:linear-gradient(90deg,currentColor 50%,transparent 50%);border:1.5px solid currentColor;width:9px;height:9px}
 .pill.needs{background:var(--needs-bg);color:var(--needs)}
 .pill.needs::before{background:transparent;border:1.5px solid currentColor}
+.pill.none{background:var(--cream);color:var(--muted)}
+.pill.none::before{background:transparent;border:1.5px dashed currentColor}
+.mk.none{border:1.5px dashed var(--muted)}
+.counts .none b{color:var(--muted)}
+
+/* couldn't read confidently */
+.unread{margin-top:22px;background:var(--prog-bg);border:1px solid var(--line);border-left:3px solid var(--prog);border-radius:4px;padding:14px 16px}
+.unread h2{border:0;padding:0;font-size:20px;color:var(--prog)}
+.unread ul{margin:8px 0 0;padding-left:20px;font-size:14.5px}
+.unread li{margin:6px 0}
+.unread code{display:block;font-size:12.5px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* views */
+.views{display:flex;flex-wrap:wrap;gap:6px;margin-top:22px;border-bottom:1px solid var(--line)}
+.views button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 12px;color:var(--muted)}
+.views button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.view-actions{display:flex;justify-content:flex-end;margin-top:18px}
+#result[data-view="dashboard"] [data-in]:not([data-in~="dashboard"]),
+#result[data-view="table"] [data-in]:not([data-in~="table"]),
+#result[data-view="print"] [data-in]:not([data-in~="print"]){display:none}
 .detail{color:var(--muted);font-size:13.5px;margin-top:3px}
 .group-h{font:600 13.5px/1 var(--body);color:var(--muted);background:var(--cream);padding:10px 14px}
 tr.sub td:first-child{padding-left:30px}
@@ -154,7 +174,9 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
 @media print{
   :root{--paper:#fff;--surface:#fff}
   body{background:#fff}
-  .bar,footer button,.more{display:none !important}
+  .bar,footer button,.more,.views,.view-actions,.no-print{display:none !important}
+  /* Whatever view is on screen, the printout is the full printable version. */
+  #result [data-in]:not(.no-print){display:block !important}
   .tile,.area-card,.scroll{break-inside:avoid}
   main section{padding-top:22px}
 }
@@ -212,6 +234,9 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
   const SUB_RE = /^(IP[+-]|[+-]R?)?\s*(\d+|OR)\)\s+(.*)$/;
   const LOOSE_SUB_RE = /^(IP[+-]|[+-]R?)\s+([A-Z].{8,})$/;
   const BLOCK_RE = /^(NO|OK|IP)\s+(.+)$/;
+  // A line shaped like report data (a course row, a status marker, a tally) rather than prose.
+  // If one of these isn't understood, it goes on R.unread and the page says so instead of guessing.
+  const DATA_RE = /^(\d{5}\s|(IP[+-]?|[+-]R?|OK|NO)\s|(-->\s*)?NEEDS:|EARNED:|IN-PROCESS:)/;
 
   function termName(code) {
     if (!/^\d{5}$/.test(code) || code.startsWith('9999')) return '';
@@ -280,7 +305,7 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
     const endIdx = lines.findIndex(l => /END OF ANALYSIS/.test(l));
     lines = lines.slice(start, endIdx > 0 ? endIdx : undefined).map(l => l.trim()).filter(Boolean);
 
-    const R = { meta: {}, blocks: [], notes: [], redacted: removed, courses: new Map(), overallIncomplete: false };
+    const R = { meta: {}, blocks: [], notes: [], unread: [], redacted: removed, courses: new Map(), overallIncomplete: false };
     const full = lines.join('\n');
     const g = (re) => { const m = full.match(re); return m ? m[1].trim() : ''; };
     R.meta.prepared = g(/PREPARED:\s*(.+)/);
@@ -307,13 +332,17 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
       const head = chunk[0];
       if (/^CURRENT REGISTRATION:/.test(head)) { chunk.forEach(l => addCourse(R, parseCourse(l), 'Current registration')); continue; }
       if (/^OTHER COURSES IN YOUR/.test(head)) { chunk.forEach(l => addCourse(R, parseCourse(l), null)); continue; }
-      if (/^NO MORE THAN|^PLEASE NOTE|LEGEND|INTERNAL|^\*{3}|The Degree Progress|PERTINENT DATA|PREPARED/.test(head)) {
+      if (/^NO MORE THAN|^PLEASE NOTE|LEGEND|INTERNAL|^\*{3}|The Degree Progress|PERTINENT DATA|PREPARED|^AT LEAST ONE REQUIREMENT/.test(head)) {
         if (/^PLEASE NOTE THE FOLLOWING GENERAL EDUCATION/.test(head)) R.notes.push({ kind: 'ge-rules', lines: chunk.slice(1) });
         if (/^NO MORE THAN/.test(head)) { R.notes.push({ kind: 'unit-limits', lines: chunk.filter(l => !parseCourse(l)) }); chunk.forEach(l => addCourse(R, parseCourse(l), null)); }
         continue;
       }
       const bm = head.match(BLOCK_RE);
-      if (!bm) continue;
+      if (!bm) {
+        const data = chunk.filter(l => DATA_RE.test(l));
+        if (data.length) R.unread.push({ where: 'A section Constellation doesn\'t recognise', lines: [head, ...data.filter(l => l !== head)].slice(0, 6) });
+        continue;
+      }
       R.blocks.push(parseBlock(chunk, R));
     }
     R.courseList = [...R.courses.values()].filter(c => !c.isTransferTotal)
@@ -339,7 +368,7 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
     let title = first, j = i + 1;
     while (j < chunk.length && !/[:.]$/.test(title) && j - i < 6) {
       const n = chunk[j];
-      if (STOP.test(n) || COURSE_RE.test(n) || SUB_RE.test(n)) break;
+      if (STOP.test(n) || COURSE_RE.test(n) || SUB_RE.test(n) || /^\d{5}\s/.test(n)) break;
       title += ' ' + n; j++;
     }
     return { title: title.replace(/\s+/g, ' '), next: j };
@@ -376,7 +405,7 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
     const { title, next } = readTitle(chunk, 0, rest);
     const [kind, name, group] = classify(title);
     const b = { kind, name, group, status: STATUS[st], raw: title, subs: [], courses: [], notes: [] };
-    let sub = null;
+    let sub = null; const unread = [];
     for (let i = next; i < chunk.length; i++) {
       const l = chunk[i];
       const sm = l.match(SUB_RE) || (!/^\+\s+NO MORE THAN/.test(l) && l.match(LOOSE_SUB_RE) && [null, l.match(LOOSE_SUB_RE)[1], '', l.match(LOOSE_SUB_RE)[2]]);
@@ -414,8 +443,16 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
         const n = `${EXC[m[1]]}: ${m[2].replace(/COURSE WAIVED\s*/i, '').replace(/SUB\s+/i, '').replace(/([A-Z]{2,4}) ?(\d{3})/g, '$1 $2').replace(/ FOR /, ' in place of ')}`;
         if (!tgt.notes.includes(n)) tgt.notes.push(n); continue;
       }
+      if (DATA_RE.test(l)) unread.push(l);
     }
-    for (const s of b.subs) if (!s.status) s.status = s.needs ? 'needs' : (s.courses.length ? 'done' : 'needs');
+    if (unread.length) R.unread.push({ where: b.name, lines: unread });
+    // No +/- marker: a NEEDS line still says it's open. Otherwise STARS doesn't say, so don't guess.
+    for (const s of b.subs) {
+      if (s.status) continue;
+      if (s.needs) { s.status = 'needs'; continue; }
+      s.status = 'none';
+      R.unread.push({ where: `${b.name}: ${shortSub(s.name)}`, lines: ['STARS shows no status mark for this part.'] });
+    }
     return b;
   }
 
@@ -466,7 +503,7 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
       }
       for (const s of b.subs) {
         if (s.status === 'done') continue;
-        if (!s.needs && !(s.status === 'needs' && (s.selectFrom || []).length)) continue;
+        if (!s.needs && !(/needs|none/.test(s.status) && (s.selectFrom || []).length)) continue;
         out.push(leftRow(area, s));
       }
     }
@@ -557,7 +594,7 @@ footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
 const SAMPLE = "PREPARED: 09/29/26 - 09:00\nPROGRAM: 9000                                                    CATALOG YEAR: 20233\nSTARS - DEGREE PROGRESS REPORT\nBACHELOR OF ARTS\nDATA AND SOCIETY\n_________________________________________________________________\nPERTINENT DATA SECTION:\n\nTerm of USC Entrance 20233               Current Class Level Junior\n\nUSC Expected Graduation Date - 14 MAY 2027\n\n=================================================================\n                     USC Diploma Information\n\nName as it will appear on your USC Diploma:\n\n              Sample Student\n\nDiploma will be mailed to: 100 Example Way\n                           Los Angeles, CA 90007\n\n=================================================================\nCURRENT POST:        DEGREE     MAJOR      UNIT   EFFECTIVE TERM\n\n    9000         BA       DSOC     COLL       20233\n\nMINOR:   No minor declared\n\nAdvisor not yet designated by your Department.\n\n*** PLEASE BRING THIS REPORT WITH YOU WHEN YOU SEE\nYOUR ACADEMIC ADVISOR ***\n_________________________________________________________________\n         AT LEAST ONE REQUIREMENT HAS NOT BEEN SATISFIED\n_________________________________________________________________\n\n*****************************************************************\nNOTE: The Legend to STARS can be found at the end of this report\n*****************************************************************\n\n_________________________________________________________________\n**************** TIME TO DEGREE COMPLETION STATUS ***************\n\n         BASED ON COMPLETED COURSE WORK, YOU HAVE TWO REMAINING\n         SEMESTERS TO DEGREE COMPLETION. COMPLETION OF MORE\n         THAN 16 UNITS IN FUTURE SEMESTERS, OR COMPLETION OF\n        COURSE WORK IN SUMMER TERMS, MAY ACCELERATE YOUR TIME\n        TO DEGREE COMPLETION.\n_________________________________________________________________\nNO     A MINIMUM OF 128 UNITS IS REQUIRED FOR DEGREE COMPLETION:\n    EARNED: 95.00 UNITS\nIN-PROCESS: 16.00 UNITS\n--> NEEDS: 17.00 UNITS\n\n      20233 WRIT150        4.0 B+     Writing and Critical Reasonin\n      20233 GESM130   G    4.0 A-     Seminar in Social Analysis\n      20233 MATH118   G    4.0 B      Fundamental Principles of Cal\n      20233 SOCI200        4.0 A      Introduction to Sociology\n      20241 ECON203        4.0 B+     Principles of Microeconomics\n      20241 PSYC100   G    4.0 A      Introduction to Psychology\n      20241 DSCI250        4.0 A-     Introduction to Data Science\n      20241 PHED140        1.0 P >PBeginning Tennis\n      20243 DSCI351        4.0 B      Foundations of Data Managemen\n      20243 SOCI314        4.0 A      Social Inequality\n      20243 BISC102   G L  4.0 B-     Humans and Their Environment\n      20243 COMM206   W    4.0 A      Communication and Culture\n      20251 DSCI352        4.0 IN     Machine Learning for Social D\n      20251 SOCI350   M    4.0 A-     Race and Ethnicity\n      20251 PHIL141   G    4.0 B+     Ethics and Public Life\n      20251 MATH208   X    4.0 C+     Elementary Probability and St\n      20253 DSCI353        4.0 A      Data Visualization\n      20253 SOCI380        4.0 B+     Social Networks and Society\n      20253 ECON317        4.0 B      Introduction to Econometrics\n      20261 DSCI400        4.0 A-     Data Ethics and Governance\n      20261 SOCI420        4.0 A      Computational Social Science\n      20261 WRIT340        4.0 B+     Advanced Writing\n      20261 ITP 115        2.0 A      Programming in Python\n      20263 DSCI450        4.0 RG >IPCapstone in Data and Society\n      20263 SOCI475        4.0 RG >IPUrban Data Analysis\n      20263 HIST266   G    4.0 RG >IPHistories of the Pacific Worl\n      20263 PSYC274        4.0 RG >IPSocial Psychology\n\n      99993 TRNSFR WORK       12.0 TR     Total Transfer Units\n_________________________________________________________________\nOK     64-UNIT RESIDENCY REQUIREMENT HAS BEEN SATISFIED.\n    EARNED: 83.00 UNITS\n_________________________________________________________________\nOK     32-UNIT UPPER DIVISION REQUIREMENT HAS BEEN SATISFIED.\n    EARNED: 36.00 UNITS\nIN-PROCESS: 8.00 UNITS\n_________________________________________________________________\nOK     2.0 CUMULATIVE GPA REQUIRED OF ALL USC BACCALAUREATE UNITS\n       ** NOTE: University honors are based on either the GPA\n       for the combined transferred and resident course work or\n       the GPA for resident course work, whichever is lower.\n       Note that only your USC GPA is calculated on STARS.\n    EARNED:                                           3.412 GPA\n_________________________________________________________________\nOK     2.0 CUMULATIVE GPA REQUIRED IN ALL UPPER DIVISION COURSE\n       WORK APPLIED TO YOUR MAJOR:\n    EARNED:                                           3.500 GPA\n       20243 DSCI351        4.0 B      Foundations of Data Managemen\n       20243 SOCI314        4.0 A      Social Inequality\n       20253 DSCI353        4.0 A      Data Visualization\n       20253 SOCI380        4.0 B+     Social Networks and Society\n       20253 ECON317        4.0 B      Introduction to Econometrics\n       20261 DSCI400        4.0 A-     Data Ethics and Governance\n       20261 SOCI420        4.0 A      Computational Social Science\n_________________________________________________________________\nOK     COMPOSITION/WRITING REQUIREMENT -- COURSE WORK MUST BE\n       TAKEN FOR A LETTER GRADE:\n    EARNED:                           2 SUB-GROUPS\n\n  +   1) FIRST YEAR WRITING REQUIREMENT:\n                                1 COURSE TAKEN\n       20233 WRIT150        4.0 B+     Writing and Critical Reasonin\n\n  +   2) UPPER DIVISION WRITING REQUIREMENT (must be taken at\n        USC):\n                                1 COURSE TAKEN\n       20261 WRIT340        4.0 B+     Advanced Writing\n_________________________________________________________________\nOK     FOREIGN LANGUAGE REQUIREMENT HAS BEEN SATISFIED.\n\n  +   1) COMPLETE THE THIRD SEMESTER OF ONE LANGUAGE:\n           NOTE: RW - SPANISH PLACEMENT EXAM\n_________________________________________________________________\nPLEASE NOTE THE FOLLOWING GENERAL EDUCATION LIMITATIONS:\n\n  1. A SINGLE COURSE MAY COUNT IN ONLY ONE G.E. CATEGORY.\n  2. NO MORE THAN 4 UNITS OF CREDIT (OR ONE COURSE)\n     COUNTING TOWARD GE REQUIREMENTS MAY BE TAKEN P/NP.\n     (NOTE: ONLY GRADES OF \"P\" AFFECT THIS LIMIT)\n  3. ONLY ONE GESM COURSE MAY BE TAKEN FOR GE CREDIT.\n\n_________________________________________________________________\nNO     GENERAL EDUCATION CORE LITERACIES REQUIREMENTS - COMPLETE\n       EIGHT COURSES FROM SIX CATEGORIES AS FOLLOWS:\n\n        NOTE:   1.   FIRST YEAR FRESHMAN AT USC MUST TAKE ONE GE\n                     SEMINAR (GESM) AS ONE OF THE EIGHT COURSES.\n\n  -   1) CATEGORY A:   THE ARTS\n          NEEDS:                 1 COURSE\n         SELECT FROM: CATEGORY GE-A\n\n  -   2) COMPLETE TWO COURSES FROM CATEGORY B - HUMANISTIC\n         INQUIRY:\n                                  1 COURSE TAKEN\n       20251 PHIL141   G    4.0 B+     Ethics and Public Life\n          NEEDS:                 1 COURSE\n         SELECT FROM: CATEGORY GE-B\n\n  +   3) COMPLETE TWO COURSES FROM CATEGORY C - SOCIAL ANALYSIS:\n                                  2 COURSES TAKEN\n       20233 GESM130   G    4.0 A-     Seminar in Social Analysis\n       20241 PSYC100   G    4.0 A      Introduction to Psychology\n\n  +   4) COMPLETE ONE COURSE FROM CATEGORY D - LIFE SCIENCES:\n                                  1 COURSE TAKEN\n       20243 BISC102   G L  4.0 B-     Humans and Their Environment\n\n  +   5) CATEGORY E:   PHYSICAL SCIENCES\n                                 1 COURSE TAKEN\n       20222 AP20:COMP      4.0 TR     AP ENVIRONMENTAL SCIENCE\n\n  +   6) CATEGORY F:   QUANTITATIVE REASONING\n                                 1 COURSE TAKEN\n       20233 MATH118   G    4.0 B      Fundamental Principles of Cal\n\n  +   7) FIRST YEAR GE SEMINAR REQUIREMENT HAS BEEN MET.\n                               1 COURSE TAKEN\n       20233 GESM130   G    4.0 A-     Seminar in Social Analysis\n_________________________________________________________________\nIP     GENERAL EDUCATION GLOBAL PERSPECTIVES REQUIREMENT -\n\n        COMPLETE ONE COURSE FROM EACH OF THE FOLLOWING TWO\n        CATEGORIES (NOTE: A COURSE MAY APPLY TO BOTH A CORE\n        LITERACY REQUIREMENT AND A GLOBAL PERSPECTIVES\n        REQUIREMENT):\n\nIP+   1) CATEGORY G - GLOBAL PERSPECTIVES I:\nIN-P --->                           1 COURSE TAKEN\n       20263 HIST266   G    4.0 RG >IPHistories of the Pacific Worl\n\n  +   2) CATEGORY H - GLOBAL PERSPECTIVES II:\n                                1 COURSE TAKEN\n       20243 COMM206   W    4.0 A      Communication and Culture\n_________________________________________________________________\nNO     MAJOR REQUIREMENTS FOR DATA AND SOCIETY:\n\n+R    1) LOWER DIVISION CORE:\n                                4 COURSES TAKEN\n       20233 SOCI200        4.0 A      Introduction to Sociology\n       20241 ECON203        4.0 B+     Principles of Microeconomics\n       20241 DSCI250        4.0 A-     Introduction to Data Science\n       20251 MATH208   X    4.0 C+     Elementary Probability and St\n\nIP-   2) UPPER DIVISION CORE:\n           NOTE: RE - SUB ECON317 FOR DSCI356\n                                4 COURSES TAKEN\nIN-P --->                           1 COURSE TAKEN\n       20243 DSCI351        4.0 B      Foundations of Data Managemen\n       20253 DSCI353        4.0 A      Data Visualization\n       20253 ECON317        4.0 B      Introduction to Econometrics\n       20261 DSCI400        4.0 A-     Data Ethics and Governance\n       20263 DSCI450        4.0 RG >IPCapstone in Data and Society\n          NEEDS:                       1 COURSE\n         SELECT FROM: DSCI352\n\nIP+   3) COMPLETE THREE UPPER DIVISION SOCIOLOGY ELECTIVES:\n                                2 COURSES TAKEN\nIN-P --->                           1 COURSE TAKEN\n       20243 SOCI314        4.0 A      Social Inequality\n       20253 SOCI380        4.0 B+     Social Networks and Society\n       20263 SOCI475        4.0 RG >IPUrban Data Analysis\n\n  -   4) COMPLETE TWO ELECTIVES FROM THE FOLLOWING:\n                                1 COURSE TAKEN\n       20261 SOCI420        4.0 A      Computational Social Science\n          NEEDS:                     1 COURSE\n         SELECT FROM: SOCI300 TO SOCI499\n         DSCI420     DSCI430     COMM340\n\n  -   5) COMPLETE DSCI480 (DATA STUDIO):\n          NEEDS:                     1 COURSE\n         SELECT FROM: DSCI480\n\n  -  OR) COMPLETE SOCI494 AND SOCI495 (HONORS SEQUENCE):\n          NEEDS:                     2 COURSES\n         SELECT FROM: SOCI494      SOCI495\n_________________________________________________________________\n       CURRENT REGISTRATION:\n\nIP\n       20263 DSCI450        4.0 RG >IPCapstone in Data and Society\n       20263 HIST266   G    4.0 RG >IPHistories of the Pacific Worl\n       20263 PSYC274        4.0 RG >IPSocial Psychology\n       20263 SOCI475        4.0 RG >IPUrban Data Analysis\n_________________________________________________________________\nOTHER COURSES IN YOUR ACADEMIC ACCOUNT:\n\n       20222 AP41:COMP      4.0 TR     AP STATISTICS\n       20232 AP61:COMP      4.0 TR     AP SPANISH LANGUAGE\n       20241 PHED140        1.0 P >PBeginning Tennis\n       20251 SOCI350   M    4.0 A-     Race and Ethnicity\n       20261 ITP 115        2.0 A      Programming in Python\n       20263 PSYC274        4.0 RG >IPSocial Psychology\n\n_________________________________________________________________\n        NO MORE THAN 4 UNITS OF PHYSICAL EDUCATION ACTIVITY\n        COURSES MAY BE APPLIED TO YOUR OVERALL UNIT REQUIREMENT.\n        NO MORE THAN 16 UNITS OF INDIVIDUAL INSTRUCTION IN MUSIC\n        AT THE 101/201/300/301/401 LEVELS MAY BE APPLIED TO YOUR\n        OVERALL UNIT REQUIREMENT.\n\n  +      NO MORE THAN 4 UNITS OF PHYSICAL EDUCATION COURSEWORK.\n      20241 PHED140        1.0 P >PBeginning Tennis\n_________________________________________________________________\n\n                        ****    LEGEND    ****\n\nREQUIREMENT STATUS CODES:          COURSE SUFFIXES:\n  NO = REQUIREMENT INCOMPLETE        G = GENERAL EDUCATION COURSE\n  OK = REQUIREMENT COMPLETE          L = COURSE WITH A LAB\n  - = SUB-REQUIREMENT NOT MET        X = COURSE CREDIT RESTRICTION\n  + = SUB-REQUIREMENT MET            M = COURSE MEETS DIVERSITY\n                                     P = COURSE MEETS TRADITIONS AND\n                                         HISTORICAL FOUNDATIONS\n                                     W = COURSE MEETS CITIZENSHIP IN\n                                         A GLOBAL ERA\n\nREGISTRATION TERMS:                COURSE FLAGS:\n20263 = FALL SEMESTER 2026          >D = CREDIT DELETED, BUT\n20271 = SPRING SEMESTER 2027             INCLUDED IN GPA\n20272 = SUMMER SEMESTER 2027        >Z = CREDIT DELETED AND NOT\n                                         INCLUDED IN GPA\nGRADE DEFINITIONS:                  >FF= TRANSFER AND FRESHMAN\n  TR = TRANSFER COURSE                   FORGIVENESS -- NOT INCLUDED\n  RG = CURRENT REGISTRATION              IN GPA.\n  IN = INCOMPLETE                   >R = REPEATABLE COURSE\n  IX = EXPIRED INCOMPLETE           >IP= IN-PROGRESS COURSE\n  MG = MISSING GRADE                >EX= EXCESS CREDIT -- CREDIT\n  NS = GRADE NOT SUBMITTED               DELETED BUT INCLUDED IN GPA\n                                    R = REQUIRED SUB-REQUIREMENT\n                                   (R)= REQUIRED COURSE\n                                    >OS= REPETITIOUS -- TAKEN OUT\n                                         OF SEQUENCE. NO UNIT OR\n                                         GPA CREDIT ALLOWED.\n                                    >P = COURSE TAKEN ON P/NP OPTION\n                  ***** EXCEPTION CODES *****\n\nRE = REQUIREMENT EXCHANGE               RA = REQUIREMENT ALTERNATIVE\nCW = COURSE WAIVER                      UW = UNIT WAIVER\nRW = REQUIREMENT WAIVER\n\n_________________________________________________________________\n The Degree Progress Advisement report has been prepared to\n assist you in determining your academic progress at the\n University of Southern California. Although efforts have been\n made to ensure its accuracy, the student is responsible for the\n completion of all graduation requirements.\n\n This sample report is fictional. The student, major, program\n code, courses, and grades were invented for demonstration.\n_________________________________________________________________\n ************************ END OF ANALYSIS\n";
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Still needed' };
+const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Still needed', none: 'Not marked' };
 const pill = s => `<span class="pill ${s}">${STATUS_TXT[s]}</span>`;
 const num = n => { const f = parseFloat(n); return Number.isInteger(f) ? String(f) : String(f); };
 
@@ -607,16 +644,34 @@ function areaCards(r){
   let h = '';
   AREAS.forEach(g => {
     const items = areaItems(r, g); if (!items.length) return;
-    const n = { done: 0, progress: 0, needs: 0 }; items.forEach(i => n[i.s]++);
+    const n = { done: 0, progress: 0, needs: 0, none: 0 }; items.forEach(i => n[i.s]++);
     const pct = k => (n[k] / items.length * 100).toFixed(1);
     h += `<article class="area-card"><h3>${esc(g)}<span>${n.done} of ${items.length} complete</span></h3>
-      <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-      <div class="counts"><span class="done"><b>${n.done}</b> complete</span><span class="progress"><b>${n.progress}</b> in progress</span><span class="needs"><b>${n.needs}</b> still needed</span></div>
+      <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
+      <div class="counts"><span class="done"><b>${n.done}</b> complete</span><span class="progress"><b>${n.progress}</b> in progress</span><span class="needs"><b>${n.needs}</b> still needed</span>${n.none ? `<span class="none"><b>${n.none}</b> not marked</span>` : ''}</div>
       <ul class="reqs">${items.map(i => `<li class="${i.s}"><i class="mk ${i.s}" aria-hidden="true"></i><span>${esc(i.t)}<span class="sr"> (${STATUS_TXT[i.s]})</span></span></li>`).join('')}</ul></article>`;
   });
   return h;
 }
 const MARKS = `<div class="legend" aria-hidden="true">${['done','progress','needs'].map(k => `<span><i class="mk ${k}"></i>${STATUS_TXT[k]}</span>`).join('')}</div>`;
+
+/* ---------- couldn't read confidently ---------- */
+// Anything the parser couldn't place is listed here rather than guessed at.
+function unreadNotice(r){
+  if (!r.unread.length) return '';
+  return `<section class="unread" data-in="dashboard table print" role="note"><h2>Couldn't read confidently</h2>
+    <p class="section-note">Constellation couldn't read ${r.unread.length === 1 ? 'one part' : `${r.unread.length} parts`} of this report with confidence, so it flags ${r.unread.length === 1 ? 'it' : 'them'} here instead of guessing. Check ${r.unread.length === 1 ? 'it' : 'them'} against your STARS report.</p>
+    <ul>${r.unread.map(u => `<li><b>${esc(u.where)}</b>${u.lines.map(l => `<code>${esc(l)}</code>`).join('')}</li>`).join('')}</ul></section>`;
+}
+
+/* ---------- views ---------- */
+const VIEWS = [['dashboard', 'Dashboard'], ['table', 'Table'], ['print', 'Printable']];
+function setView(v){
+  $('#result').dataset.view = v;
+  document.querySelectorAll('.views button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === v)));
+  // The table and printable views show the long lists open; the dashboard keeps them folded.
+  document.querySelectorAll('#result details.list').forEach(d => { d.open = v !== 'dashboard'; });
+}
 
 /* ---------- render ---------- */
 function blockSummary(b){
@@ -681,13 +736,17 @@ function render(r, redactedText){
       <div class="tile"><div class="l">USC GPA</div><div class="v">${esc(r.gpa || 'n/a')}</div><div class="s">${r.gpa ? 'Overall, USC courses only' : 'Not on this report'}</div></div>
       <div class="tile"><div class="l">Major GPA</div><div class="v">${esc(r.majorGpa || 'n/a')}</div><div class="s">${r.majorGpa ? 'Upper-division major courses' : 'Not on this report'}</div></div>
     </div>
-  </div></header><main class="wrap">`;
+  </div></header><main class="wrap">
+  <div class="views" role="tablist" aria-label="Views">${VIEWS.map(([k, t]) => `<button role="tab" data-view="${k}" aria-selected="false">${t}</button>`).join('')}</div>
+  <div class="view-actions no-print" data-in="print"><button class="primary" id="print">Print or save as PDF</button></div>`;
+
+  h += unreadNotice(r);
 
   // progress by area
-  h += `<section><h2>Progress by area</h2><p class="section-note">Each requirement on your report, grouped by area.</p>${MARKS}<div class="areas">${areaCards(r)}</div></section>`;
+  h += `<section data-in="dashboard print"><h2>Progress by area</h2><p class="section-note">Each requirement on your report, grouped by area.</p>${MARKS}<div class="areas">${areaCards(r)}</div></section>`;
 
   // what's left
-  h += `<section><h2>What's left</h2><p class="section-note">Everything STARS still marks as open, assuming your current courses pass.</p><div class="scroll"><table class="stack">
+  h += `<section data-in="dashboard table print"><h2>What's left</h2><p class="section-note">Everything STARS still marks as open, assuming your current courses pass.</p><div class="scroll"><table class="stack">
     <thead><tr><th>Area</th><th>Requirement</th><th>Needed</th><th>Choose from</th><th>Status</th></tr></thead><tbody>`;
   if (!r.left.length) h += `<tr><td colspan="5">Nothing left. Every requirement is complete or in progress.</td></tr>`;
   r.left.forEach(l => {
@@ -699,7 +758,7 @@ function render(r, redactedText){
   h += `</tbody></table></div></section>`;
 
   // checklist
-  h += `<section><h2>Requirement checklist</h2><p class="section-note">Every requirement on your report, in plain language.</p><div class="scroll"><table class="stack check">
+  h += `<section data-in="table print"><h2>Requirement checklist</h2><p class="section-note">Every requirement on your report, in plain language.</p><div class="scroll"><table class="stack check">
     <thead><tr><th style="width:34%">Requirement</th><th>Where you stand</th><th>Status</th></tr></thead><tbody>`;
   ['University','Writing and language','General education','School and major','Other'].forEach(g => {
     const bs = r.blocks.filter(b => b.group === g); if (!bs.length) return;
@@ -716,7 +775,7 @@ function render(r, redactedText){
   // course history
   const terms = {}; r.courseList.forEach(c => { const k = c.isAP ? 'AP' : c.term; (terms[k] = terms[k] || []).push(c); });
   const keys = Object.keys(terms).filter(k => k !== 'AP').sort(); if (terms.AP) keys.unshift('AP');
-  h += `<section><details><summary>Course history <span class="count">${r.courseList.length} courses</span></summary>
+  h += `<section data-in="table print"><details class="list"><summary>Course history <span class="count">${r.courseList.length} courses</span></summary>
     <p class="section-note">Each course appears once, with every requirement it counts toward. STARS cuts titles at 29 characters, marked with "…".</p>
     <div class="scroll"><table class="stack hist"><thead><tr><th>Course</th><th>Title</th><th>Units</th><th>Grade</th><th>Counts toward</th></tr></thead><tbody>`;
   keys.forEach(k => {
@@ -731,20 +790,19 @@ function render(r, redactedText){
         <td data-label="Counts toward">${toward.length ? toward.map(esc).join('<br>') : '<span class="muted">Units only</span>'}</td></tr>`;
     });
   });
-  h += `</tbody></table></div></details>`;
+  h += `</tbody></table></div></details></section>`;
 
   // fine print
-  const geRules = r.notes.find(n => n.kind === 'ge-rules');
-  h += `<details><summary>Rules and fine print</summary><ul class="fine">
+  h += `<section data-in="table print"><details class="list"><summary>Rules and fine print</summary><ul class="fine">
     <li>A single course counts in only one GE Core Literacy category, but can also count toward Global Perspectives.</li>
     <li>At most one GE course (4 units) can be taken pass/no pass.</li>
     <li>Only one GE seminar (GESM) counts for GE credit.</li>
     <li>At most 4 units of physical education count toward your unit total.</li>
     <li>STARS computes your USC GPA only. Honors use the lower of your USC or combined GPA.</li>
-  </ul></details>`;
+  </ul></details></section>`;
 
-  // raw toggle
-  h += `<details><summary>Original report text <span class="count">personal details removed</span></summary>
+  // raw toggle (on screen only; the printout leaves it out)
+  h += `<section class="no-print" data-in="dashboard table"><details><summary>Original report text <span class="count">personal details removed</span></summary>
     <p class="section-note">Cross-check anything above against what STARS says.</p><pre class="raw">${esc(redactedText.slice(redactedText.indexOf('PREPARED')))}</pre></details></section>`;
 
   h += `</main><footer class="wrap">
@@ -754,10 +812,15 @@ function render(r, redactedText){
 
   $('#intake').classList.add('hidden');
   const res = $('#result'); res.innerHTML = h; res.classList.remove('hidden');
-  $('#again').onclick = reset; window.scrollTo(0, 0);
+  $('#again').onclick = reset; $('#print').onclick = () => window.print();
+  document.querySelectorAll('.views button').forEach(b => { b.onclick = () => setView(b.dataset.view); });
+  setView('dashboard'); window.scrollTo(0, 0);
 }
 function reset(e){ e && e.preventDefault(); $('#result').classList.add('hidden'); $('#result').innerHTML=''; $('#intake').classList.remove('hidden'); }
 
+// Printing from any view gives the full printable version, with the long lists open.
+window.addEventListener('beforeprint', () => document.querySelectorAll('#result details.list').forEach(d => { d.open = true; }));
+window.addEventListener('afterprint', () => { const v = $('#result').dataset.view; if (v) setView(v); });
 $('#sample').onclick = () => run(SAMPLE);
 $('#file').onchange = e => handleFile(e.target.files[0]);
 $('#home').onclick = reset;

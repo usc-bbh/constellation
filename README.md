@@ -1,4 +1,4 @@
-> **OPEN QUESTION: should Constellation share the STARS parser with TrojanReg?** Constellation uses its own parser (`src/parser.js`). TrojanReg uses [`stars-parser/`](https://github.com/usc-bbh/bbh-course-reg-project/tree/main/stars-parser) in `bbh-course-reg-project`. Sharing one parser is an option we haven't decided on. See [Parser strategy](#parser-strategy) for the trade-offs.
+> **OPEN QUESTION: should Constellation share the STARS parser with TrojanReg?** Constellation uses its own parser (`src/parser.js`). TrojanReg uses [`stars-parser/`](https://github.com/usc-bbh/next-sem-validator/tree/main/gui/stars-parser), which now lives in RegCheck (`usc-bbh/next-sem-validator`). Sharing one parser is an option we haven't decided on. See [Parser strategy](#parser-strategy) for the trade-offs.
 
 # Constellation
 
@@ -43,16 +43,16 @@ pdf.js is pinned to one exact version (`pdfjs-dist` 4.10.38) in `package.json`. 
 
 ## Parser strategy
 
-**Now:** Constellation keeps its own parser in `src/parser.js`. It doesn't import [`stars-parser/`](https://github.com/usc-bbh/bbh-course-reg-project/tree/main/stars-parser).
+**Now:** Constellation keeps its own parser in `src/parser.js`. It doesn't import [`stars-parser/`](https://github.com/usc-bbh/next-sem-validator/tree/main/gui/stars-parser).
 
-**Why it's separate:** Constellation needs the full requirement tree: every block and sub-requirement with its STARS status (OK/NO/IP, +/-), "pick N of M" rules, OR alternatives, and course options. That's what powers the checklist and the "what's left" list. `stars-parser/` outputs profile fields (major, GPA, completed courses, flags) for TrojanReg and doesn't produce that tree. Keeping them separate also means a Constellation change can't break RegCheck, which pins `stars-parser/` through a git submodule.
+**Why it's separate:** Constellation needs the full requirement tree: every block and sub-requirement with its STARS status (OK/NO/IP, +/-), "pick N of M" rules, OR alternatives, and course options. That's what powers the checklist and the "what's left" list. `stars-parser/` outputs profile fields (major, GPA, completed courses, flags) for TrojanReg and doesn't produce that tree. Keeping them separate also means a Constellation change can't break RegCheck, which has carried its own copy of `stars-parser/` since the bbh submodule was dropped (next-sem-validator#3, 7 Oct 2026).
 
 **Things to weigh before deciding whether to share:**
 
 - *For sharing:* one parser to fix when STARS changes format; one anonymized test set; no duplicate effort (the lead has already flagged duplicate STARS parsers across repos).
-- *Against sharing:* the two tools need different outputs; RegCheck's pin and release cadence would constrain Constellation; `stars-parser/` has an OCR fallback (Tesseract.js) that Constellation doesn't need and that would add megabytes to a zero-request page.
+- *Against sharing:* the two tools need different outputs, and RegCheck's release cadence would constrain Constellation. (The OCR fallback that used to count against sharing is being deleted in M0 of Tanzil's rebuild plan, next-sem-validator#4.)
 - *Middle options:* (a) share only the redaction and line-rebuilding steps; (b) add requirement-tree output to `stars-parser/` and have Constellation import it; (c) test both parsers against the same anonymized reports and compare the fields they both produce (major, catalog year, GPA, courses), without merging code.
-- *Signals it's time to revisit:* `stars-parser/` starts producing requirement blocks; STARS changes format and both parsers need the same fix; or the two disagree on the same report.
+- *Signals it's time to revisit:* `stars-parser/` starts producing requirement blocks (planned for M5 of next-sem-validator#4, with the shape agreed with Natalie); STARS changes format and both parsers need the same fix; or the two disagree on the same report.
 
 Until this is decided, raise parser changes with Tanzil (who owns `stars-parser/`) whenever they touch shared ground, like redaction or line rebuilding.
 
@@ -60,7 +60,7 @@ Until this is decided, raise parser changes with Tanzil (who owns `stars-parser/
 
 1. Put the anonymized PDFs in `test/samples/`. That folder is git-ignored; never commit reports or anything generated from them.
 2. Run `npm test`. For each report it first checks **redaction**: the name, any 10-digit ID, and every line of the diploma and mailing block must not appear in the parsed result or in the report text the page shows. A failure prints `LEAK` (without printing the values).
-3. For a new report it writes `test/expected/<name>.draft.json`: major, catalog year, GPA, major GPA, units (earned, in progress, needed), which fields were redacted, course count, every block's status and its sub-requirement statuses, and the "what's left" list.
+3. For a new report it writes `test/expected/<name>.draft.json`: major, catalog year, GPA, major GPA, units (earned, in progress, needed), which fields were redacted, course count, every block's status and its sub-requirement statuses, and the "what's left" list, and everything flagged as unread.
 4. Check each draft against the PDF by hand. Then have a second person check it too, so one person's misreading doesn't become the answer key. When it's right, rename it to `<name>.json`.
 5. From then on, `npm test` prints PASS or FAIL per report. A failure writes `<name>.actual.json` next to it so you can diff the two.
 
@@ -92,8 +92,8 @@ The current test proves the parser handles a few reports. Before recommending Co
 
 1. **Read the PDF.** pdf.js (bundled, running in an in-memory worker) pulls text fragments, which are regrouped into lines by vertical position (`src/pdftext.js`).
 2. **Redact.** Name, student ID, and diploma address are removed first. Browser print headers and footers and anonymizer artifacts ("X.XXX", "Lp") are dropped.
-3. **Parse.** Sections are split on the `____` rules. Every status comes from STARS's own codes (OK, NO, IP on blocks; +, -, IP+, IP- on sub-requirements), never from guessing.
-4. **Render.** A summary dashboard (units, items left, GPA), progress by area with every requirement and its status, a "what's left" table, the full checklist, course history, and the original text for cross-checking. It prints cleanly to PDF.
+3. **Parse.** Sections are split on the `____` rules. Every status comes from STARS's own codes (OK, NO, IP on blocks; +, -, IP+, IP- on sub-requirements), never from guessing. A sub-requirement with no mark shows as "Not marked", and anything shaped like report data that the parser can't place (a course row it can't read, a section it doesn't recognise) is listed under "Couldn't read confidently" at the top of the summary.
+4. **Render.** Summary tiles (units, items left, GPA) and three views: **Dashboard** (progress by area and what's left), **Table** (what's left, the full checklist, course history), and **Printable** (everything, without the original text). Printing from any view prints the printable version. The original text is one click away on the other two views for cross-checking.
 
 ## Tested on
 
@@ -112,7 +112,7 @@ Formats handled: Core Literacies and Thematic Option GE, the Dornsife 104-unit a
 
 ## Known limits
 
-- Scanned PDFs with no text layer are rejected with a message. OCR (as in `stars-parser/ocrExtract.js`) would add several megabytes and would need to be bundled, not loaded from a CDN.
+- Scanned PDFs with no text layer are rejected with a message. OCR would add several megabytes and would need to be bundled, not loaded from a CDN.
 - STARS cuts course titles at 29 characters. The page marks them with "…"; full titles need the course catalog.
 - `index.html` is about 1.8 MB because pdf.js is inside it. That's the cost of making zero requests.
 - The page is light-only and set in Times New Roman. Devices without it (some Linux and Android) fall back to Times, Liberation Serif, or their default serif font.

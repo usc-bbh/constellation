@@ -4,6 +4,7 @@
 //   1. checks redaction: the name, student ID, and diploma/mailing block must not appear anywhere
 //      in the parsed result or in the "original report text" the page shows;
 //   2. compares a summary against test/expected/<name>.json, or writes a draft to check by hand.
+//      The summary includes "unread": everything the parser flagged instead of guessing.
 // Usage: npm install && npm test
 import fs from 'fs';
 import path from 'path';
@@ -61,7 +62,8 @@ for (const f of files) {
     redacted: [...r.redacted].sort(),
     courses: r.courseList.length,
     blocks: r.blocks.map(b => ({ name: b.name, status: b.status, subs: b.subs.map(s => s.status) })),
-    left: r.left.map(l => `${l.area} | ${l.count} ${l.unit} | ${l.label}`)
+    left: r.left.map(l => `${l.area} | ${l.count} ${l.unit} | ${l.label}`),
+    unread: r.unread.map(u => `${u.where} | ${u.lines[0]}`)
   };
 
   const base = path.join(expected, f.replace(/\.pdf$/i, ''));
