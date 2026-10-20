@@ -29,6 +29,21 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 | — | README pointed at the old parser location and submodule | **Done on this branch (13 Oct), not on `main` yet.** Tanzil flagged it again in bbh-course-reg-project#7 (18 Oct). Merging this branch closes it. |
 | — | Pathwise decisions before Tanzil's M4 | **Open, time-sensitive.** See "Waiting on Natalie (Pathwise)" below. M4 (next-sem-validator#9) is already open. |
 
+## What changed on 20 Oct (UI feedback round)
+
+Feedback on the results page, decided with the BBH team:
+
+- **Look:** colors, cards, buttons and type sizes follow RegCheck (`gui/src/theme.js` in next-sem-validator). The styles moved to `src/style.css`, shared with the new feedback page. Each area has its own color.
+- **One layout instead of three views:** the Dashboard, Table and Printable tabs, the "What's left" table and the checklist table are gone. Each area card now opens requirement by requirement (caret) to show where it stands, the courses used and what's left, with "choose from" codes linked to the USC catalogue and GE categories linked to Dornsife's list. Open areas come first; finished ones go last with a star check. Cards show units applied per area.
+- **New tile:** Transfer & AP units, from the report's own TRNSFR WORK total.
+- **Navigation:** left-hand menu, which becomes a top strip on phones. "Print or save as PDF" is a button.
+- **Wording:** tagline "Your STARS report, mapped"; RegCheck's disclaimers ("Everything runs in your browser…", "Not an official USC system…"); the flags box is now "Double-check this against your STARS report"; "Rules and fine print" is now "GE and unit rules STARS applies". The top-right PDF line is gone.
+- **Counts, rating and feedback:** `src/telemetry.js` (GoatCounter, web page only) counts visits, summaries and 1-5 star ratings from a dismissible prompt on the first page, and shows "N reports summarized". `feedback.html` opens a pre-filled email to bbh@usc.edu. `check-privacy` allows the GoatCounter host only in telemetry.js and links only to usc.edu.
+
+**Waiting on:**
+1. A GoatCounter site code in `package.json` (`"goatcounter"`). Until then nothing is sent and no count shows. In GoatCounter's settings, turn on "Allow adding visitor counts on your website" so the count can be read.
+2. The static font CSS (Space Grotesk, Inter). Once it's here, build.js should inline the fonts as `data:` URIs and the CSP should gain `font-src data:`.
+
 ## What changed on 20 Oct (Chrome extension)
 
 - **`src/app.js`:** the page logic moved out of `page.html`, so the web page and the extension run the same file.

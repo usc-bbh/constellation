@@ -1,8 +1,10 @@
 // Builds index.html from src/page.html. Everything the page needs is inlined: the parser, the
 // page formatting (src/format.js), the page logic (src/app.js), the PDF text extraction, pdf.js and
-// its worker (bundled from node_modules), and the sample report. Text is set in Times New Roman,
-// which is already on the device. The result makes no network requests, and its
-// Content-Security-Policy says so.
+// its worker (bundled from node_modules), the sample report, and the styles (src/style.css). The
+// report never leaves the page. The one exception to "no requests" is src/telemetry.js: anonymous
+// GoatCounter counts (visits, summaries, star ratings) once a site code is set in package.json.
+// The Content-Security-Policy allows that one host and nothing else. Also builds feedback.html,
+// which makes no requests at all.
 //
 // With --extension it also builds the Chrome extension in dist/extension/: the same page as
 // summary.html, but with every script as its own file, because Chrome extensions (Manifest V3)
@@ -43,11 +45,20 @@ const scripts = [
   ['<script>const SAMPLE = /*SAMPLE*/;</script>', 'sample.js', `const SAMPLE = ${JSON.stringify(read('src/sample-report.txt'))};\n`],
   ['<script>/*APP*/</script>', 'app.js', read('src/app.js')]
 ];
+// GoatCounter site code (package.json "goatcounter"). Empty: telemetry stays off, CSP blocks all.
+const GOATCOUNTER = require('./package.json').goatcounter || '';
+if (GOATCOUNTER && !/^[a-z0-9-]+$/.test(GOATCOUNTER)) throw new Error('package.json goatcounter must be a GoatCounter site code, like "constellation"');
+const GC_HOST = GOATCOUNTER ? `https://${GOATCOUNTER}.goatcounter.com` : '';
+const TELEMETRY_MARK = '<script>/*TELEMETRY*/</script>';
+const STYLE_MARK = '<style>/*STYLE*/</style>';
+const style = `<style>\n${read('src/style.css')}</style>`;
 const template = read('src/page.html');
+if (!template.includes(TELEMETRY_MARK) || !template.includes(STYLE_MARK)) throw new Error('src/page.html is missing the telemetry or style placeholder');
 for (const [mark] of scripts) if (!template.includes(mark)) throw new Error(`src/page.html is missing ${mark}`);
 
 // ---------- web page: everything inline ----------
-let page = template;
+let page = template.replace(STYLE_MARK, () => style)
+  .replace(TELEMETRY_MARK, () => `<script>${safe(read('src/telemetry.js').replace('__GOATCOUNTER_SITE__', GOATCOUNTER))}</script>`);
 for (const [mark, , code] of scripts) {
   const inline = code === null
     ? `<script>const PDF_WORKER_SRC = ${str(worker)}, PDF_WORKER_URL = null;</script>`
@@ -57,16 +68,23 @@ for (const [mark, , code] of scripts) {
 
 // Content-Security-Policy: no connections, no remote anything. Scripts allowed only by hash, so
 // an injected or edited script without a rebuild will not run. Workers only from blob: (pdf.js).
-const hashes = [...page.matchAll(/<script>([\s\S]*?)<\/script>/g)]
+// With a GoatCounter code, that one host may receive the count pixel and answer the count read.
+const hashesOf = html => [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
   .map(m => `'sha256-${crypto.createHash('sha256').update(m[1]).digest('base64')}'`);
-const csp = [
-  "default-src 'none'", `script-src ${hashes.join(' ')}`, 'worker-src blob:', 'child-src blob:',
-  "style-src 'unsafe-inline'", 'img-src data: blob:', "connect-src 'none'",
+const cspOf = (html, host) => [
+  "default-src 'none'", `script-src ${hashesOf(html).join(' ')}`, 'worker-src blob:', 'child-src blob:',
+  "style-src 'unsafe-inline'", `img-src data: blob:${host ? ' ' + host : ''}`, `connect-src ${host || "'none'"}`,
   "form-action 'none'", "base-uri 'none'"
 ].join('; ');
-page = page.replace('<!--CSP-->', `<meta http-equiv="Content-Security-Policy" content="${csp}">`);
+const withCsp = (html, host) => html.replace('<!--CSP-->', `<meta http-equiv="Content-Security-Policy" content="${cspOf(html, host)}">`);
+page = withCsp(page, GC_HOST);
 fs.writeFileSync('index.html', page);
-console.log(`Built index.html (${(page.length / 1024).toFixed(0)} KB, ${hashes.length} inline scripts)`);
+console.log(`Built index.html (${(page.length / 1024).toFixed(0)} KB, ${hashesOf(page).length} inline scripts, telemetry ${GC_HOST ? 'to ' + GC_HOST : 'off'})`);
+
+// ---------- feedback page: a mailto form, no requests ----------
+const feedbackTemplate = read('src/feedback.html').replace(STYLE_MARK, () => style);
+fs.writeFileSync('feedback.html', withCsp(feedbackTemplate.replace('<script>/*FEEDBACK*/</script>', () => `<script>${safe(read('src/feedback.js'))}</script>`), ''));
+console.log('Built feedback.html');
 
 // ---------- Chrome extension: every script as its own file ----------
 if (process.argv.includes('--extension')) {
@@ -74,7 +92,8 @@ if (process.argv.includes('--extension')) {
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(path.join(out, 'icons'), { recursive: true });
 
-  let summary = template.replace('<!--CSP-->', ''); // the manifest's policy covers extension pages
+  // The manifest's policy covers extension pages. No telemetry: the extension stays offline.
+  let summary = template.replace('<!--CSP-->', '').replace(STYLE_MARK, () => style).replace(TELEMETRY_MARK, '');
   for (const [mark, file, code] of scripts) {
     fs.writeFileSync(path.join(out, file), code === null
       ? "const PDF_WORKER_SRC = null, PDF_WORKER_URL = 'pdf.worker.js';\n" : code);
@@ -85,6 +104,9 @@ if (process.argv.includes('--extension')) {
   fs.writeFileSync(path.join(out, 'summary.html'), summary);
   fs.copyFileSync('src/extension/background.js', path.join(out, 'background.js'));
   fs.copyFileSync('src/extension/summary.js', path.join(out, 'summary.js'));
+  fs.copyFileSync('src/feedback.js', path.join(out, 'feedback.js'));
+  fs.writeFileSync(path.join(out, 'feedback.html'), feedbackTemplate.replace('<!--CSP-->', '')
+    .replace('<script>/*FEEDBACK*/</script>', '<script src="feedback.js"></script>').replace(/href="index\.html"/g, 'href="summary.html"'));
 
   const sizes = [16, 32, 48, 128];
   for (const n of sizes) fs.writeFileSync(path.join(out, 'icons', `icon${n}.png`), icon(n));

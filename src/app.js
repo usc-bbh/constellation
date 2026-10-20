@@ -82,47 +82,95 @@ async function handleFile(f){
   catch (e) { showErr(e.message || 'Could not read that PDF. Try saving the STARS page as a PDF again.'); }
   finally { drop.classList.remove('busy'); title.textContent = 'Upload your STARS report PDF'; sub.textContent = 'Drag it here or click to choose a file'; $('#file').value = ''; }
 }
-/* ---------- progress by area ---------- */
-const AREAS = ['University','Writing and language','General education','School and major','Other'];
-function areaItems(r, g){
-  const items = [];
-  r.blocks.filter(b => b.group === g && b.kind !== 'cap').forEach(b => {
-    if (b.subs.length) b.subs.forEach(s => items.push({ s: s.status, t: s.name })); else items.push({ s: b.status, t: b.name });
-  });
-  return items;
-}
-function areaCards(r){
-  let h = '';
-  AREAS.forEach(g => {
-    const items = areaItems(r, g); if (!items.length) return;
-    const n = { done: 0, progress: 0, needs: 0, none: 0 }; items.forEach(i => n[i.s]++);
-    const pct = k => (n[k] / items.length * 100).toFixed(1);
-    h += `<article class="area-card"><h3>${esc(g)}<span>${n.done} of ${items.length} complete</span></h3>
-      <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-      <div class="counts"><span class="done"><b>${n.done}</b> complete</span><span class="progress"><b>${n.progress}</b> in progress</span><span class="needs"><b>${n.needs}</b> still needed</span>${n.none ? `<span class="none"><b>${n.none}</b> not marked</span>` : ''}</div>
-      <ul class="reqs">${items.map(i => `<li class="${i.s}"><i class="mk ${i.s}" aria-hidden="true"></i><span>${esc(i.t)}<span class="sr"> (${STATUS_TXT[i.s]})</span></span></li>`).join('')}</ul></article>`;
-  });
-  return h;
-}
-const MARKS = `<div class="legend" aria-hidden="true">${['done','progress','needs'].map(k => `<span><i class="mk ${k}"></i>${STATUS_TXT[k]}</span>`).join('')}</div>`;
+/* ---------- links out ---------- */
+// Plain links to USC pages; the page itself never contacts them. Course codes open a USC catalogue
+// search (cur_cat_oid=22 is the 2025-26 catalogue; update it when a new catalogue is published).
+const CATALOGUE = 'https://catalogue.usc.edu/search_advanced.php?cur_cat_oid=22&search_database=Search&search_db=Search&cpage=1&ecpage=1&ppage=1&spage=1&tpage=1&filter%5Bexact_match%5D=1&filter%5Bkeyword%5D=';
+const GE_COURSES = 'https://dornsife.usc.edu/ge/courses/ge'; // + the category letter, e.g. gea/
+const GE_REQUIREMENTS = 'https://dornsife.usc.edu/ge/requirements/';
+const EXT = '<svg class="ext" viewBox="0 0 12 12" aria-hidden="true"><path d="M5 2H2v8h8V7M7 2h3v3M10 2 5.5 6.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
+const link = (href, html, cls = '') => `<a${cls ? ` class="${cls}"` : ''} href="${esc(href)}" target="_blank" rel="noopener noreferrer">${html}${EXT}<span class="sr"> (opens in a new tab)</span></a>`;
+const courseLink = code => `<span class="course-link">${link(CATALOGUE + encodeURIComponent(code).replace(/%20/g, '+'), esc(code), 'chip code')}${copyBtn(code, code, '')}</span>`;
+const geLetter = name => (String(name).match(/\b(?:Category|GE-)\s*([A-H])\b/) || [])[1];
+const geLink = l => link(`${GE_COURSES}${l.toLowerCase()}/`, `See Dornsife's GE-${l} course list`, 'ge-link');
 
-/* ---------- couldn't read confidently ---------- */
+/* ---------- progress by area ---------- */
+const AREA_COLOR = { 'University': '#990000', 'Writing and language': '#1d4ed8', 'General education': '#6f42c1', 'School and major': '#0e7490', 'Other': '#b3006b' };
+const areaId = n => 'area-' + n.toLowerCase().replace(/[^a-z]+/g, '-');
+// A finished area: a check drawn as three stars, like the logo.
+const STAR_CHECK = '<svg class="star-check" viewBox="0 0 24 24" role="img" aria-label="Area complete"><circle cx="12" cy="12" r="11.5" fill="currentColor" opacity=".12"/><path d="M6 12.5 10 16.5 18 7.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="6" cy="12.5" r="2.1" fill="currentColor"/><circle cx="10" cy="16.5" r="2.4" fill="currentColor"/><circle cx="18" cy="7.5" r="2.1" fill="currentColor"/></svg>';
+const MARKS = `<div class="legend" aria-hidden="true">${['done','progress','needs'].map(k => `<span><i class="mk ${k}"></i>${STATUS_TXT[k]}</span>`).join('')}</div>`;
+// What's still needed for one requirement, from STARS's own "what's left" row.
+function needBox(l, withLabel){
+  const amount = l.count ? `<span class="count">${esc(l.count)} ${esc(l.unit)}</span> still needed` : 'Still needed';
+  return `<div class="need ${l.status}"><div>${withLabel ? `<b>${esc(l.label)}.</b> ` : ''}${amount}${l.detail ? `. <span class="detail">${esc(l.detail)}</span>` : ''}</div>
+    ${l.options.length ? chips(l.options) : ''}</div>`;
+}
+function subMore(s, row){
+  const bits = [];
+  if (s.courses.length) bits.push(`<div class="opts">${s.courses.map(c => (c.isAP ? `<span class="chip code">${esc(c.display)}</span>` : codeBtn(c.code, c.title)) + (c.flag === 'IP' ? ' <span class="muted">(now)</span>' : '')).join(' ')}</div>`);
+  if (row) bits.push(needBox(row));
+  else if (s.status !== 'done' && (s.needs || (s.selectFrom || []).length)) {
+    const opts = (s.selectFrom || []).concat(((s.orAlt && s.orAlt.selectFrom) || []).map(o => `or ${o}`));
+    bits.push(needBox({ status: s.status, count: s.needs ? num(s.needs) : '', unit: s.needsUnit || '', detail: '', options: opts }));
+  }
+  if (s.notes.length) bits.push(`<span class="detail">${s.notes.map(esc).join('. ')}</span>`);
+  const ge = geLetter(s.name);
+  if (ge && s.status !== 'done') bits.push(geLink(ge));
+  else if (/GE seminar/i.test(s.name) && s.status !== 'done') bits.push(link(GE_REQUIREMENTS, 'About GE seminars', 'ge-link'));
+  return bits.length ? `<div class="sub-more">${bits.join('')}</div>` : '';
+}
+function reqRow({ block: b, left, subs }){
+  const open = b.status !== 'done' && b.kind !== 'cap';
+  const body = [`<div class="where">${blockSummary(b)}</div>`];
+  if (b.notes.length) body.push(`<div class="detail">${b.notes.map(esc).join('. ')}</div>`);
+  left.forEach(l => body.push(needBox(l, true)));
+  if (subs.length) body.push(`<ul class="subs">${subs.map(({ sub: s, left: row }) => `<li class="${s.status}"><i class="mk ${s.status}" aria-hidden="true"></i>
+    <span><span class="sub-name">${esc(s.name)}</span> ${pill(s.status)}</span>${subMore(s, row)}</li>`).join('')}</ul>`);
+  return `<details class="req ${b.status}"${open ? ' open' : ''}><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${pill(b.status)}</summary>
+    <div class="req-body">${body.join('')}</div></details>`;
+}
+function areaCard(a){
+  const n = a.counts, pct = k => (n[k] / a.total * 100).toFixed(1);
+  const u = a.units ? `<small>${num(a.units.done)} units done${a.units.progress ? `, ${num(a.units.progress)} in progress` : ''}</small>` : '';
+  return `<article class="area-card" id="${areaId(a.name)}" style="--area:${AREA_COLOR[a.name]}">
+    <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3><div class="tally">${n.done} of ${a.total} complete${u}</div></header>
+    <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
+    <div class="counts"><span class="done"><b>${n.done}</b> complete</span><span class="progress"><b>${n.progress}</b> in progress</span><span class="needs"><b>${n.needs}</b> still needed</span>${n.none ? `<span class="none"><b>${n.none}</b> not marked</span>` : ''}</div>
+    <div class="reqs">${a.blocks.map(reqRow).join('')}</div></article>`;
+}
+
+/* ---------- double-check notice ---------- */
 // Anything the parser couldn't place is listed here rather than guessed at.
 function unreadNotice(r){
   if (!r.unread.length) return '';
-  return `<section class="unread" data-in="dashboard table print" role="note"><h2>Couldn't read confidently</h2>
-    <p class="section-note">Constellation couldn't read ${r.unread.length === 1 ? 'one part' : `${r.unread.length} parts`} of this report with confidence, so it flags ${r.unread.length === 1 ? 'it' : 'them'} here instead of guessing. Check ${r.unread.length === 1 ? 'it' : 'them'} against your STARS report.</p>
+  const one = r.unread.length === 1;
+  return `<section class="unread" id="check" role="note"><h2>Double-check this against your STARS report</h2>
+    <p class="section-note">Constellation wasn't sure how to read ${one ? 'this part' : `these ${r.unread.length} parts`}, so it shows ${one ? 'it' : 'them'} as-is instead of guessing. Each is labelled with the STARS section to find it under.</p>
     <ul>${r.unread.map(u => `<li><b>${esc(u.where)}</b>${u.lines.map(l => `<code>${esc(l)}</code>`).join('')}</li>`).join('')}</ul></section>`;
 }
 
-/* ---------- views ---------- */
-const VIEWS = [['dashboard', 'Dashboard'], ['table', 'Table'], ['print', 'Printable']];
-function setView(v){
-  $('#result').dataset.view = v;
-  document.querySelectorAll('.views button').forEach(b => { const on = b.dataset.view === v; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
-  const p = $('#panel'); if (p) p.setAttribute('aria-labelledby', `tab-${v}`);
-  // The table and printable views show the long lists open; the dashboard keeps them folded.
-  document.querySelectorAll('#result details.list').forEach(d => { d.open = v !== 'dashboard'; });
+/* ---------- left-hand menu ---------- */
+function sideNav(r, areas){
+  const item = (id, t, sub = '') => `<li><a href="#${id}">${t}</a>${sub}</li>`;
+  const areaLinks = `<ol>${areas.map(a => `<li><a href="#${areaId(a.name)}" style="--area:${AREA_COLOR[a.name]}"><i class="dot" aria-hidden="true"></i>${esc(a.name)}</a></li>`).join('')}</ol>`;
+  return `<aside class="side"><nav aria-label="On this page"><ol>
+    ${item('summary', 'Summary')}${r.unread.length ? item('check', 'Double-check') : ''}${item('areas', 'Progress by area', areaLinks)}
+    ${item('history', 'Course history')}${item('rules', 'GE and unit rules')}${item('original', 'Original text')}
+  </ol></nav><button type="button" class="primary" id="print"><span class="print-long">Print or save as PDF</span><span class="print-short">Print</span></button></aside>`;
+}
+// Highlight the menu entry for the section on screen.
+function trackSections(){
+  if (!('IntersectionObserver' in window)) return;
+  const links = [...document.querySelectorAll('.side nav > ol > li > a')];
+  const byId = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const io = new IntersectionObserver(entries => {
+    const vis = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+    if (!vis) return;
+    links.forEach(a => a.classList.remove('on'));
+    const a = byId.get(vis.target.id); if (a) a.classList.add('on');
+  }, { rootMargin: '0px 0px -70% 0px' });
+  byId.forEach((_, id) => { const el = document.getElementById(id); if (el) io.observe(el); });
 }
 
 /* ---------- render ---------- */
@@ -151,91 +199,62 @@ function blockSummary(b){
     }
   }
 }
-function subDetail(s){
-  const bits = [];
-  if (s.courses.length) bits.push(s.courses.map(c => (c.isAP ? `<span class="chip code">${esc(c.display)}</span>` : codeBtn(c.code, c.title)) + (c.flag === 'IP' ? ' <span class="muted">(now)</span>' : '')).join(' '));
-  if (s.status !== 'done' && (s.needs || s.selectFrom)) bits.push(`<span>${s.needs ? `Needs <b>${num(s.needs)} ${esc(s.needsUnit)}</b>` : 'Needs'}${s.selectFrom && s.selectFrom.length ? ' from ' + s.selectFrom.map(o => COURSE_CODE.test(o) ? codeBtn(o) : `<span class="chip">${esc(o)}</span>`).join(' ') : ''}${s.orAlt && s.orAlt.selectFrom ? ', or ' + s.orAlt.selectFrom.map(o => COURSE_CODE.test(o) ? codeBtn(o) : `<span class="chip">${esc(o)}</span>`).join(' ') : ''}</span>`);
-  if (s.notes.length) bits.push(`<span class="detail">${s.notes.map(esc).join('. ')}</span>`);
-  return `<div class="opts" style="align-items:center">${bits.join(' ')}</div>`;
-}
+// "Choose from" options: course codes link to the catalogue, "Any GE-X course" to Dornsife's list.
 function chips(opts){
   if (!opts.length) return '<span class="muted">Any course</span>';
   const c = o => {
     const m = o.match(/^(or )?([A-Z]{2,4} \d{3}[A-Z]?)$/);
-    if (m) return m[1] ? `<span class="opts-or">or ${codeBtn(m[2])}</span>` : codeBtn(m[2]);
+    if (m) return m[1] ? `<span class="opts-or">or ${courseLink(m[2])}</span>` : courseLink(m[2]);
+    const ge = o.match(/^Any GE-([A-H]) course$/);
+    if (ge) return link(`${GE_COURSES}${ge[1].toLowerCase()}/`, esc(o), 'chip');
     return `<span class="chip ${/^(or )?[A-Z]{2,4} \d/.test(o) ? 'code' : ''}">${esc(o)}</span>`;
   };
   if (opts.length <= 8) return `<div class="opts">${opts.map(c).join('')}</div>`;
   return `<div class="opts">${opts.slice(0,6).map(c).join('')}</div><details class="more"><summary>${opts.length - 6} more options</summary><div class="opts">${opts.slice(6).map(c).join('')}</div></details>`;
 }
 function render(r, redactedText){
-  const m = r.meta, S = StarsFormat.deriveSummary(r);
+  const m = r.meta, S = StarsFormat.deriveSummary(r), T = StarsFormat.transferCredit(r), areas = StarsFormat.areaView(r);
   const NF = 'Not found in report';
   const known = v => v !== null && v !== undefined;
   const gradTerm = m.gradDate ? m.gradDate.replace(/^\d+\s+/, '').toLowerCase().replace(/^\w/, c => c.toUpperCase()).replace(/ (\d{4})$/, ' $1') : '';
   const pctU = n => Math.min(100, n / S.unitsRequired * 100).toFixed(1);
   const left = S.requirementsLeft;
-  let h = `<header class="hero"><div class="wrap">
+  let h = `<div class="wrap layout">${sideNav(r, areas)}<div class="content">
+  <header class="hero" id="summary">
     <div class="top"><div>
+      <div class="eyebrow">STARS summary</div>
       <h1>${esc(m.major || 'Your degree')}</h1>
       <div class="sub">${esc(m.degree || '')}${m.catalogYear ? `, catalog ${esc(StarsParser.termName(m.catalogYear))}` : ''}${m.classLevel ? `. ${esc(m.classLevel)}` : ''}${gradTerm ? `, expected to graduate ${esc(gradTerm)}` : ''}.</div>
     </div>
     ${m.prepared ? `<div class="prepared">STARS report prepared<br>${esc(m.prepared)}</div>` : ''}</div>
     <div class="tiles">
-      <div class="tile gpa"><div class="l">USC GPA</div>
+      <div class="tile gpa"><div class="eyebrow">USC GPA</div>
         <div class="v${S.gpa ? '' : ' missing'}">${S.gpa ? copyBtn(S.gpa, 'GPA') : NF}</div>
         <div class="s">${S.gpa ? 'Overall, USC courses only. ' : ''}Major GPA: ${S.majorGpa ? copyBtn(S.majorGpa, 'major GPA') : NF.toLowerCase()}</div></div>
-      <div class="tile"><div class="l">Units completed</div>
+      <div class="tile"><div class="eyebrow">Units completed</div>
         <div class="v${known(S.unitsCompleted) ? '' : ' missing'}">${known(S.unitsCompleted) ? `${num(S.unitsCompleted)}${known(S.unitsRequired) ? ` <small>of ${num(S.unitsRequired)}</small>` : ''}` : NF}</div>
         ${known(S.unitsCompleted) && known(S.unitsRequired) ? `<div class="meter" role="img" aria-label="${num(S.unitsCompleted)} completed, ${num(S.unitsInProgress)} in progress, of ${num(S.unitsRequired)}"><i class="d" style="width:${pctU(S.unitsCompleted)}%"></i><i class="p" style="width:${pctU(S.unitsInProgress)}%"></i></div>` : ''}
         <div class="s">${known(S.unitsInProgress) ? `${num(S.unitsInProgress)} in progress` : ''}${known(S.unitsRequired) ? '' : `${known(S.unitsInProgress) ? '. ' : ''}Units required: ${NF.toLowerCase()}`}</div></div>
-      <div class="tile"><div class="l">Units remaining</div>
+      <div class="tile"><div class="eyebrow">Units remaining</div>
         <div class="v${known(S.unitsRemaining) ? '' : ' missing'}">${known(S.unitsRemaining) ? num(S.unitsRemaining) : NF}</div>
         <div class="s">${known(S.unitsRemaining) && S.unitsInProgress ? 'Assumes your current courses pass' : known(S.unitsRemaining) ? 'To graduate' : ''}</div></div>
-      <div class="tile${left ? ' alert' : ''}"><div class="l">Requirements left</div><div class="v">${left} <small>${left === 1 ? 'item' : 'items'}</small></div>
-        <div class="s">${left ? (m.semestersLeft ? `About ${esc(m.semestersLeft)} semesters out` : 'See the list below') : 'All requirements satisfied'}</div></div>
+      <div class="tile"><div class="eyebrow">Transfer &amp; AP units</div>
+        <div class="v${known(T.units) ? '' : ' missing'}">${known(T.units) ? num(T.units) : T.courses ? NF : 'None'}</div>
+        <div class="s">${T.courses ? `${T.courses} AP or transfer ${T.courses === 1 ? 'course' : 'courses'} listed` : 'None on this report'}</div></div>
+      <div class="tile${left ? ' alert' : ''}"><div class="eyebrow">Requirements left</div><div class="v">${left} <small>${left === 1 ? 'item' : 'items'}</small></div>
+        <div class="s">${left ? (m.semestersLeft ? `About ${esc(m.semestersLeft)} semesters out` : 'Open below, under each area') : 'All requirements satisfied'}</div></div>
     </div>
-  </div></header><main class="wrap">
-  <div class="views" role="tablist" aria-label="Views">${VIEWS.map(([k, t]) => `<button type="button" role="tab" id="tab-${k}" data-view="${k}" aria-controls="panel" aria-selected="false" tabindex="-1">${t}</button>`).join('')}</div>
-  <div id="panel" role="tabpanel">
-  <div class="view-actions no-print" data-in="print"><button class="primary" id="print">Print or save as PDF</button></div>`;
+  </header><main>`;
 
   h += unreadNotice(r);
 
-  // progress by area
-  h += `<section data-in="dashboard print"><h2>Progress by area</h2><p class="section-note">Each requirement on your report, grouped by area.</p>${MARKS}<div class="areas">${areaCards(r)}</div></section>`;
-
-  // what's left
-  h += `<section data-in="dashboard table print"><h2>What's left</h2><p class="section-note">Everything STARS still marks as open, assuming your current courses pass.</p><div class="scroll"><table class="stack">
-    <thead><tr><th>Area</th><th>Requirement</th><th>Needed</th><th>Choose from</th><th>Status</th></tr></thead><tbody>`;
-  if (!r.left.length) h += `<tr><td colspan="5">Nothing left. Every requirement is complete or in progress.</td></tr>`;
-  r.left.forEach(l => {
-    h += `<tr><td class="muted area">${esc(l.area)}</td><td><b>${esc(l.label)}</b>${l.detail ? `<div class="detail">${esc(l.detail)}</div>` : ''}</td>
-      <td class="num" data-label="Needed">${l.count ? `<span class="big">${esc(l.count)}</span> ${esc(l.unit)}` : '<span class="muted">See list</span>'}</td>
-      <td data-label="Choose from">${chips(l.options)}</td>
-      <td>${pill(l.status)}</td></tr>`;
-  });
-  h += `</tbody></table></div></section>`;
-
-  // checklist
-  h += `<section data-in="table print"><h2>Requirement checklist</h2><p class="section-note">Every requirement on your report, in plain language.</p><div class="scroll"><table class="stack check">
-    <thead><tr><th style="width:34%">Requirement</th><th>Where you stand</th><th>Status</th></tr></thead><tbody>`;
-  ['University','Writing and language','General education','School and major','Other'].forEach(g => {
-    const bs = r.blocks.filter(b => b.group === g); if (!bs.length) return;
-    h += `<tr><td colspan="3" class="group-h">${esc(g)}</td></tr>`;
-    bs.forEach(b => {
-      h += `<tr><td><b>${esc(b.name)}</b></td><td>${blockSummary(b)}${b.notes.length ? `<div class="detail">${b.notes.map(esc).join('. ')}</div>` : ''}</td><td>${pill(b.status)}</td></tr>`;
-      b.subs.forEach(s => {
-        h += `<tr class="sub"><td>${esc(s.name)}</td><td>${subDetail(s)}</td><td>${pill(s.status)}</td></tr>`;
-      });
-    });
-  });
-  h += `</tbody></table></div></section>`;
+  // progress by area, with what's left inside each requirement
+  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Every requirement on your report, grouped by area. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p>${MARKS}<div class="areas">${areas.map(areaCard).join('')}</div></section>`;
 
   // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
   const key = r.key || {};
   const groups = StarsFormat.groupCourses(r.courseList);
-  h += `<section data-in="table print"><details class="list"><summary>Course history <span class="count">${r.courseList.length} courses</span></summary>
+  h += `<section id="history"><details class="list"><summary>Course history <span class="count">${r.courseList.length} courses</span></summary>
     <p class="section-note">Click a course code to copy it, or anywhere else on its row to copy the whole line. STARS cuts titles at 29 characters, marked with "…".</p>
     <div class="copy-all no-print"><button type="button" data-copy-all="text">Copy as text</button><button type="button" data-copy-all="tsv">Copy for spreadsheet</button></div>
     <div class="scroll"><table class="stack hist"><thead><tr><th>Course</th><th>Title</th><th>Units</th><th>Grade</th><th>Counts toward</th></tr></thead><tbody>`;
@@ -259,8 +278,9 @@ function render(r, redactedText){
   });
   h += `</tbody></table></div></details></section>`;
 
-  // fine print
-  h += `<section data-in="table print"><details class="list"><summary>Rules and fine print</summary><ul class="fine">
+  // the rules STARS applies that the report doesn't spell out on each line
+  h += `<section id="rules"><details class="list"><summary>GE and unit rules STARS applies</summary>
+    <p class="section-note">How STARS counts your courses toward the requirements above.</p><ul class="fine">
     <li>A single course counts in only one GE Core Literacy category, but can also count toward Global Perspectives.</li>
     <li>At most one GE course (4 units) can be taken pass/no pass.</li>
     <li>Only one GE seminar (GESM) counts for GE credit.</li>
@@ -268,26 +288,23 @@ function render(r, redactedText){
     <li>STARS computes your USC GPA only. Honors use the lower of your USC or combined GPA.</li>
   </ul></details></section>`;
 
-  // raw toggle (on screen only; the printout leaves it out)
-  h += `<section class="no-print" data-in="dashboard table"><details><summary>Original report text <span class="count">personal details removed</span></summary>
+  // raw text (on screen only; the printout leaves it out)
+  h += `<section class="no-print" id="original"><details class="list"><summary>Original report text <span class="count">personal details removed</span></summary>
     <p class="section-note">Cross-check anything above against what STARS says.</p><pre class="raw">${esc(redactedText.slice(redactedText.indexOf('PREPARED')))}</pre></details></section>`;
 
-  h += `</div></main><footer class="wrap">
+  h += `</main><footer>
+    <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
     <p>Removed before reading: ${esc(r.redacted.join(', ') || 'nothing found')}. Report prepared ${esc(r.meta.prepared)}.</p>
-    <p>Constellation is an unofficial reading aid built by BUAI Builder Hub. STARS and your academic advisor are the source of truth for graduation.</p>
-    <p><button id="again">Summarize another report</button></p></footer>`;
+    <p>Constellation is an unofficial reading aid built by BUAI Builder Hub. Tools by Students, for Students. <a href="feedback.html">Share feedback</a></p>
+    <p><button type="button" id="again">Summarize another report</button></p></footer></div></div>`;
 
   $('#intake').classList.add('hidden');
   const res = $('#result'); res.innerHTML = h; res.classList.remove('hidden');
   $('#again').onclick = reset; $('#print').onclick = () => window.print();
-  const tabs = [...document.querySelectorAll('.views button')];
-  tabs.forEach((b, i) => {
-    b.onclick = () => setView(b.dataset.view);
-    b.onkeydown = e => {
-      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
-      const t = tabs[(i + d + tabs.length) % tabs.length]; setView(t.dataset.view); t.focus(); e.preventDefault();
-    };
-  });
+  // A menu link to a folded section opens it.
+  res.querySelectorAll('.side nav a').forEach(a => a.addEventListener('click', () => {
+    const d = document.querySelector(`${a.getAttribute('href')} > details`); if (d) d.open = true;
+  }));
   res.onclick = e => {
     const btn = e.target.closest('button[data-copy], button[data-copy-all]');
     if (btn) {
@@ -299,13 +316,19 @@ function render(r, redactedText){
     const row = e.target.closest('tr.crs');
     if (row && !String(window.getSelection())) row.querySelector('button.line').click();
   };
-  setView('dashboard'); window.scrollTo(0, 0);
+  trackSections();
+  window.scrollTo(0, 0);
+  if (window.Telemetry) window.Telemetry.summarized();
 }
 function reset(e){ e && e.preventDefault(); $('#result').classList.add('hidden'); $('#result').innerHTML=''; $('#intake').classList.remove('hidden'); }
 
-// Printing from any view gives the full printable version, with the long lists open.
-window.addEventListener('beforeprint', () => document.querySelectorAll('#result details.list').forEach(d => { d.open = true; }));
-window.addEventListener('afterprint', () => { const v = $('#result').dataset.view; if (v) setView(v); });
+// The printout shows everything: open every folded section, then put them back as they were.
+let closedForPrint = [];
+window.addEventListener('beforeprint', () => {
+  closedForPrint = [...document.querySelectorAll('#result details:not([open])')];
+  closedForPrint.forEach(d => { d.open = true; });
+});
+window.addEventListener('afterprint', () => { closedForPrint.forEach(d => { d.open = false; }); closedForPrint = []; });
 $('#sample').onclick = () => run(SAMPLE);
 $('#file').onchange = e => handleFile(e.target.files[0]);
 $('#home').onclick = reset;

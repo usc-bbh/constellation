@@ -10,11 +10,13 @@ A student or advisor opens the page, drops in a STARS report PDF, and gets one p
 
 Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/constellation`). It can be used next to RegCheck and the degree planner, but it doesn't depend on them.
 
-## Privacy: nothing leaves the device
+## Privacy: the report never leaves the device
 
-- **Zero network requests.** Everything the page needs is inside `index.html`: pdf.js, the parser, and the sample report. Text is set in Times New Roman, which is already on the device. Once it's open, it works offline.
-- **Enforced by the browser.** The page's Content-Security-Policy blocks every outgoing connection (`connect-src 'none'`, `default-src 'none'`). Scripts run only if their hash matches the build, so a script added later without a rebuild won't run.
-- **Nothing stored.** No cookies, localStorage, or IndexedDB. Closing the tab or clicking "Summarize another report" clears everything, which matters for advisors on shared computers.
+- **The report stays in the browser.** Everything the page needs is inside `index.html`: pdf.js, the parser, the styles and the sample report. Nothing from a report is ever sent anywhere, and the page works offline.
+- **The only thing sent: anonymous counts.** `src/telemetry.js` sends fixed names to GoatCounter (no cookies): a visit, "summary" when a report has been summarized, and "rating-1" to "rating-5" from the star prompt. It reads back one number, how many reports have been summarized, for the first page. It is off until a GoatCounter site code is set in `package.json` (`"goatcounter"`). The Chrome extension leaves it out.
+- **Enforced by the browser.** The page's Content-Security-Policy blocks every outgoing connection except that one GoatCounter host (`default-src 'none'`; `connect-src` and `img-src` name only it, or `'none'` while the code is empty). Scripts run only if their hash matches the build, so a script added later without a rebuild won't run.
+- **Almost nothing stored.** No cookies or IndexedDB. The only localStorage entry is `constellation-rated`, so the star prompt doesn't come back once answered. Closing the tab or clicking "Summarize another report" clears the report, which matters for advisors on shared computers.
+- **Feedback by email.** `feedback.html` (message, optional name and email) opens a pre-filled email to bbh@usc.edu in the student's own email app. The page itself sends nothing and blocks every connection.
 - **Redacted before reading.** The name, student ID, and diploma name and mailing address are removed before parsing. The test checks this on every report.
 - **Never committed.** Reports and anything derived from them (including test expected results) are git-ignored. `npm run check:privacy` also fails if one is tracked or staged, because `.gitignore` doesn't stop `git add -f`.
 
@@ -122,9 +124,9 @@ The current test proves the parser handles a few reports. Before recommending Co
 
 1. **Read the PDF.** pdf.js (bundled, running in an in-memory worker) pulls text fragments, which are regrouped into lines by vertical position (`src/pdftext.js`).
 2. **Redact.** Name, student ID, and diploma address are removed first. Browser print headers and footers and anonymizer artifacts ("X.XXX", "Lp") are dropped.
-3. **Parse.** Sections are split on the `____` rules. The LEGEND at the end of the report is read too, so codes like TR, IN and >P are explained in the report's own words; a code it doesn't define is shown as written. Every status comes from STARS's own codes (OK, NO, IP on blocks; +, -, IP+, IP- on sub-requirements), never from guessing. A sub-requirement with no mark shows as "Not marked", and anything shaped like report data that the parser can't place (a course row it can't read, a section it doesn't recognise) is listed under "Couldn't read confidently" at the top of the summary.
-4. **Render.** Summary tiles in the order students ask (GPA, units completed, units remaining, requirements left; anything the report doesn't state reads "Not found in report") and three views: **Dashboard** (progress by area and what's left), **Table** (what's left, the full checklist, course history), and **Printable** (everything, without the original text). Printing from any view prints the printable version. The original text is one click away on the other two views for cross-checking.
-5. **Copy.** Click the GPA or major GPA to copy it. In course history, click a course code to copy the code, or anywhere else on the row to copy one line (`DSCI 353, Data Visualization, 4 units, A, Fall 2025`); course codes in the checklist and "What's left" copy too. "Copy as text" and "Copy for spreadsheet" copy the whole course list, the second as tab-separated columns with a header row. Titles STARS cut short are copied with their "…" rather than completed by guessing.
+3. **Parse.** Sections are split on the `____` rules. The LEGEND at the end of the report is read too, so codes like TR, IN and >P are explained in the report's own words; a code it doesn't define is shown as written. Every status comes from STARS's own codes (OK, NO, IP on blocks; +, -, IP+, IP- on sub-requirements), never from guessing. A sub-requirement with no mark shows as "Not marked", and anything shaped like report data that the parser can't place (a course row it can't read, a section it doesn't recognise) is listed under "Double-check this against your STARS report" at the top of the summary.
+4. **Render.** Summary tiles in the order students ask (GPA, units completed, units remaining, transfer and AP units as STARS totals them, requirements left; anything the report doesn't state reads "Not found in report"). Then one card per area (University, Writing and language, General education, School and major, Other), each in its own color, with open areas first and finished ones last behind a star check. Each card shows requirements complete and the units applied there. Every requirement opens with a caret to show where it stands, the courses used, and what's left: the amount STARS says is needed and the courses to choose from. Course codes link to the USC catalogue, and GE categories link to Dornsife's course list for that category. A left-hand menu (a strip at the top on phones) jumps between sections, and "Print or save as PDF" prints everything open, without the original text.
+5. **Copy.** Click the GPA or major GPA to copy it. In course history, click a course code to copy the code, or anywhere else on the row to copy one line (`DSCI 353, Data Visualization, 4 units, A, Fall 2025`); course codes a requirement already used copy too, and each "choose from" code has a copy button next to its catalogue link. "Copy as text" and "Copy for spreadsheet" copy the whole course list, the second as tab-separated columns with a header row. Titles STARS cut short are copied with their "…" rather than completed by guessing.
 
 ## Tested on
 
@@ -145,6 +147,7 @@ Formats handled: Core Literacies and Thematic Option GE, the Dornsife 104-unit a
 
 - Scanned PDFs with no text layer are rejected with a message. OCR would add several megabytes and would need to be bundled, not loaded from a CDN.
 - STARS cuts course titles at 29 characters. The page marks them with "…"; full titles need the course catalog.
-- `index.html` is about 1.8 MB because pdf.js is inside it. That's the cost of making zero requests.
-- The page is light-only and set in Times New Roman. Devices without it (some Linux and Android) fall back to Times, Liberation Serif, or their default serif font.
+- `index.html` is about 1.8 MB because pdf.js is inside it. That's the cost of never sending the report anywhere.
+- The page is light-only. Colors follow RegCheck. Its fonts (Space Grotesk, Inter) aren't bundled yet, so the device's system sans font stands in.
+- Course links use the 2025-26 catalogue (`cur_cat_oid=22` in `src/app.js`). Update it when USC publishes a new catalogue.
 - Unofficial. STARS and the student's academic advisor are the source of truth for graduation.

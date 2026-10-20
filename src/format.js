@@ -99,6 +99,50 @@
     return ['Code\tTitle\tUnits\tGrade\tTerm', ...rows].join('\n');
   }
 
-  const api = { deriveSummary, expandCode, gradeText, isCurrent, isTransfer, groupCourses, formatCourseLine, formatCourseworkText, formatCourseworkTsv };
+  // Progress by area: each area's requirements, its open rows from R.left placed under the
+  // requirement they came from, and the units of the courses STARS applied there. Areas with
+  // anything left come first; finished areas go last.
+  const AREAS = ['University', 'Writing and language', 'General education', 'School and major', 'Other'];
+  const isGone = c => /^(D|Z|OS)$/.test(c.flag); // STARS deleted the credit
+  function areaView(R) {
+    const out = [];
+    for (const name of AREAS) {
+      const blocks = R.blocks.filter(b => b.group === name);
+      if (!blocks.length) continue;
+      const counts = { done: 0, progress: 0, needs: 0, none: 0 };
+      blocks.filter(b => b.kind !== 'cap').forEach(b => { if (b.subs.length) b.subs.forEach(s => counts[s.status]++); else counts[b.status]++; });
+      const total = counts.done + counts.progress + counts.needs + counts.none;
+      // University blocks list every course toward the unit total, so its units are already in the tiles.
+      let units = null;
+      if (name !== 'University') {
+        const seen = new Map();
+        blocks.forEach(b => [b, ...b.subs, ...b.subs.map(s => s.orAlt).filter(Boolean)]
+          .forEach(t => t.courses.forEach(c => { if (!isGone(c)) seen.set(c.term + c.code, c); })));
+        const cs = [...seen.values()];
+        if (cs.length) units = {
+          done: cs.filter(c => !isCurrent(c)).reduce((s, c) => s + (c.units || 0), 0),
+          progress: cs.filter(isCurrent).reduce((s, c) => s + (c.units || 0), 0)
+        };
+      }
+      out.push({
+        name, counts, total, units,
+        complete: total > 0 && counts.done === total,
+        blocks: blocks.map(b => ({
+          block: b,
+          left: R.left.filter(l => l.block === b && !l.sub),
+          subs: b.subs.map(s => ({ sub: s, left: R.left.find(l => l.sub === s) || null }))
+        }))
+      });
+    }
+    return out.filter(a => !a.complete).concat(out.filter(a => a.complete));
+  }
+
+  // Transfer and AP credit: STARS's own total if it states one, and the courses behind it.
+  function transferCredit(R) {
+    const courses = R.courseList.filter(isTransfer);
+    return { units: R.transferUnits ?? null, courses: courses.length };
+  }
+
+  const api = { deriveSummary, expandCode, gradeText, isCurrent, isTransfer, groupCourses, formatCourseLine, formatCourseworkText, formatCourseworkTsv, areaView, transferCredit, AREAS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StarsFormat = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="only light">
+<!--CSP-->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Constellation feedback</title>
+<style>/*STYLE*/</style>
+</head>
+<body>
+<div class="wrap bar">
+  <div class="brand">
+    <a class="mark" href="index.html" aria-label="Constellation: back to the summary page">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 19 L11 8 L17 14 L22 5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45"/><circle cx="4" cy="19" r="2.4" fill="currentColor"/><circle cx="11" cy="8" r="2.4" fill="currentColor"/><circle cx="17" cy="14" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="22" cy="5" r="2.4" fill="currentColor"/></svg>
+      Constellation
+    </a>
+    <span class="eyebrow tagline">Your STARS report, mapped</span>
+  </div>
+</div>
+
+<main class="wrap intake">
+  <h1>Tell us what you think.</h1>
+  <p class="lede">What worked, what was confusing, what Constellation got wrong. Every note goes to the BUAI Builder Hub team.</p>
+  <p class="local">This page sends nothing by itself. "Open email" starts a message in your own email app, and you choose whether to send it. Name and email are optional. Please don't paste your student ID or your STARS report.</p>
+  <form class="form" id="fb">
+    <label>Your feedback<textarea id="msg" required></textarea></label>
+    <label>Name <span>Optional</span><input id="name" autocomplete="name"></label>
+    <label>Email for a reply <span>Optional</span><input id="email" type="email" autocomplete="email"></label>
+    <div class="actions"><a class="btn primary" id="send" href="mailto:bbh@usc.edu?subject=Constellation%20feedback">Open email</a><a class="btn" href="index.html">Back to Constellation</a></div>
+  </form>
+  <footer>
+    <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
+    <p>Tools by Students, for Students. Built by BUAI Builder Hub.</p>
+  </footer>
+</main>
+<script>/*FEEDBACK*/</script>
+</body>
+</html>

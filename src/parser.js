@@ -129,6 +129,9 @@
       }
       R.blocks.push(parseBlock(chunk, R));
     }
+    // STARS states its own transfer total on a TRNSFR WORK line. Not there: null, never a sum.
+    const tt = [...R.courses.values()].find(c => c.isTransferTotal);
+    R.transferUnits = tt ? tt.units : null;
     R.courseList = [...R.courses.values()].filter(c => !c.isTransferTotal)
       .sort((a, b) => a.term.localeCompare(b.term) || a.code.localeCompare(b.code));
     delete R.courses;
@@ -313,34 +316,37 @@
     return /^the following$/i.test(s) ? 'choose from the list' : s;
   }
 
+  // Each row remembers the requirement it came from (not enumerable, so it stays out of JSON),
+  // which lets the page show it inside that requirement.
+  const from = (row, block, sub) => Object.defineProperties(row, { block: { value: block }, sub: { value: sub || null } });
   function whatsLeft(R) {
     const out = [];
     for (const b of R.blocks) {
       if (b.status === 'done' || b.kind === 'cap' || /gpa/.test(b.kind)) continue;
       if (b.kind === 'units' && b.needs) {
         const total = (b.raw.match(/MINIMUM OF (\d+)/) || [])[1];
-        out.push({ area: 'University', count: fmt(b.needs), unit: 'units', label: `Toward the ${total} unit total`,
-          detail: b.inProcess ? `Assumes your ${fmt(b.inProcess)} in-progress units pass.` : '', status: 'needs', options: [] });
+        out.push(from({ area: 'University', count: fmt(b.needs), unit: 'units', label: `Toward the ${total} unit total`,
+          detail: b.inProcess ? `Assumes your ${fmt(b.inProcess)} in-progress units pass.` : '', status: 'needs', options: [] }, b));
         continue;
       }
       if (!b.subs.length) {
-        if (b.status === 'needs' && b.needs) out.push({ area: b.group === 'University' ? 'University' : b.name, count: fmt(b.needs), unit: b.needsUnit, label: b.name,
-          detail: b.inProcess ? `Assumes your ${fmt(b.inProcess)} in-progress units pass.` : '', status: 'needs', options: [] });
+        if (b.status === 'needs' && b.needs) out.push(from({ area: b.group === 'University' ? 'University' : b.name, count: fmt(b.needs), unit: b.needsUnit, label: b.name,
+          detail: b.inProcess ? `Assumes your ${fmt(b.inProcess)} in-progress units pass.` : '', status: 'needs', options: [] }, b));
         continue;
       }
       const area = b.kind === 'major' ? 'Major' : b.name.replace(/ \(.*\)$/, '');
       const open = b.subs.filter(s => s.status === 'needs');
       const groupNeed = /sub-group/.test(b.needsUnit || '') ? +b.needs : 0;
       if (groupNeed && open.length > groupNeed) {
-        out.push({ area, count: String(groupNeed), unit: groupNeed === 1 ? 'category' : 'categories', label: `Pick ${groupNeed} of these ${open.length}`,
-          status: 'needs', options: open.map(s => shortSub(s.name)), detail: 'STARS lets you choose which ones.' });
-        b.subs.filter(s => s.status === 'progress' && s.needs).forEach(s => out.push(leftRow(area, s)));
+        out.push(from({ area, count: String(groupNeed), unit: groupNeed === 1 ? 'category' : 'categories', label: `Pick ${groupNeed} of these ${open.length}`,
+          status: 'needs', options: open.map(s => shortSub(s.name)), detail: 'STARS lets you choose which ones.' }, b));
+        b.subs.filter(s => s.status === 'progress' && s.needs).forEach(s => out.push(from(leftRow(area, s), b, s)));
         continue;
       }
       for (const s of b.subs) {
         if (s.status === 'done') continue;
         if (!s.needs && !(/needs|none/.test(s.status) && (s.selectFrom || []).length)) continue;
-        out.push(leftRow(area, s));
+        out.push(from(leftRow(area, s), b, s));
       }
     }
     return out;

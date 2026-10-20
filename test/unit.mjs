@@ -101,5 +101,30 @@ test('copy for spreadsheet: tabs or newlines inside a field cannot break columns
   assert.equal(F.formatCourseworkTsv(odd, r.key).split('\n')[1], 'DSCI 353\tData Visual ization\t4\tA\tFall 2025');
 });
 
+test('transfer units come from the report\'s own TRNSFR WORK total', () => {
+  assert.deepEqual(F.transferCredit(r), { units: 12, courses: 3 });
+  const none = P.parse(SAMPLE.replace(/^.*TRNSFR WORK.*$/m, ''));
+  assert.equal(F.transferCredit(none).units, null);
+});
+
+test('areas: open areas first, finished areas last', () => {
+  const a = F.areaView(r);
+  assert.deepEqual(a.map(x => [x.name, x.complete]), [
+    ['University', false], ['General education', false], ['School and major', false], ['Writing and language', true]
+  ]);
+  const ge = a.find(x => x.name === 'General education');
+  assert.deepEqual(ge.counts, { done: 6, progress: 1, needs: 2, none: 0 });
+  // GESM 130 counts in two GE parts but its units only once
+  assert.deepEqual(ge.units, { done: 28, progress: 4 });
+  assert.equal(a.find(x => x.name === 'University').units, null);
+});
+
+test('every "what\'s left" row is shown under some requirement', () => {
+  const placed = F.areaView(r).flatMap(a => a.blocks.flatMap(b => [...b.left, ...b.subs.map(s => s.left).filter(Boolean)]));
+  assert.equal(placed.length, r.left.length);
+  for (const l of r.left) assert.ok(placed.includes(l), l.label);
+  assert.ok(!JSON.stringify(r.left).includes('"block"'), 'row references stay out of JSON');
+});
+
 if (failed) { console.log(`\n${failed} unit test(s) failed`); process.exit(1); }
 console.log('\nAll unit tests passed');
