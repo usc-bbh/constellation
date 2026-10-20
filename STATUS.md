@@ -2,6 +2,8 @@
 
 _Last updated 20 Oct 2026 by Natalie (with Claude). Start here when picking the project back up._
 
+Live page: https://usc-bbh.github.io/constellation/ (GitHub Pages from `main`, turned on 20 Oct).
+
 This is the working to-do list for Constellation V1. [README.md](README.md) explains what the project is and how it works. This file tracks what's done, what's left, and what's waiting on whom.
 
 ## The goal for V1

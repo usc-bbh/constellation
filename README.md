@@ -4,6 +4,8 @@
 
 **Make sense of your STARS.** Turns a USC STARS report into a clear, readable summary.
 
+**Live:** https://usc-bbh.github.io/constellation/ (GitHub Pages, rebuilt on every push to `main`).
+
 A student or advisor opens the page, drops in a STARS report PDF, and gets one page showing what's done, what's in progress, and exactly what's left. It's easier to read than the raw report, and the original text is one click away for cross-checking.
 
 Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/constellation`). It can be used next to RegCheck and the degree planner, but it doesn't depend on them.
