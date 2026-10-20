@@ -5,6 +5,8 @@
 //      renders it, and forgets it.
 //   3. Built page: index.html carries the Content-Security-Policy that blocks every request,
 //      and loads nothing from outside itself.
+//   4. Built extension (dist/extension/, if built): asks only for activeTab and scripting, no
+//      host permissions or storage, blocks connections, and loads only its own files.
 // Usage: npm run check:privacy
 import fs from 'fs';
 import path from 'path';
@@ -32,8 +34,10 @@ const NETWORK = [
   [/localStorage|sessionStorage|indexedDB|document\.cookie|caches\./, 'browser storage'],
   [/<(?:script|link|iframe|img|object|embed)\b[^>]*\b(?:src|href)=/i, 'an external resource tag']
 ];
-for (const f of fs.readdirSync(path.join(root, 'src'))) {
-  const text = fs.readFileSync(path.join(root, 'src', f), 'utf8');
+const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+for (const full of walk(path.join(root, 'src'))) {
+  const f = path.relative(path.join(root, 'src'), full);
+  const text = fs.readFileSync(full, 'utf8');
   for (const [re, what] of NETWORK) if (re.test(text)) problems.push(`src/${f} contains ${what} (${text.match(re)[0]}). The page must make no requests and store nothing.`);
 }
 
@@ -53,6 +57,26 @@ else {
   }
   const ext = page.match(/<(?:script|link|iframe|img|object|embed)\b[^>]*\b(?:src|href)=["']?(?!data:|#)[^"'\s>]+|@import|url\(\s*["']?(?:https?:)?\/\//i);
   if (ext) problems.push(`index.html loads something from outside itself: ${ext[0].slice(0, 80)}`);
+}
+
+// 4. Built extension
+const extDir = path.join(root, 'dist', 'extension');
+if (fs.existsSync(extDir)) {
+  const m = JSON.parse(fs.readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
+  const extra = (m.permissions || []).filter(p => !['activeTab', 'scripting'].includes(p));
+  if (extra.length) problems.push(`extension asks for more than activeTab and scripting: ${extra.join(', ')}.`);
+  if ((m.host_permissions || []).length || (m.optional_host_permissions || []).length) problems.push('extension asks for host permissions. It should read a tab only when the student clicks the button.');
+  if (m.content_scripts) problems.push('extension declares content scripts, which run without a click.');
+  const policy = (m.content_security_policy || {}).extension_pages || '';
+  for (const rule of ["connect-src 'none'", "script-src 'self'", "form-action 'none'"])
+    if (!policy.includes(rule)) problems.push(`extension policy is missing ${rule}.`);
+  for (const file of walk(extDir).filter(f => /\.(html|js)$/.test(f) && !/pdf(\.worker)?\.js$/.test(f))) {
+    const text = fs.readFileSync(file, 'utf8');
+    const name = path.relative(root, file);
+    const ext = text.match(/<(?:script|link|iframe|img|object|embed)\b[^>]*\b(?:src|href)=["']?(?:https?:)?\/\/[^"'\s>]+/i);
+    if (ext) problems.push(`${name} loads something from outside the extension: ${ext[0].slice(0, 80)}`);
+    if (/localStorage|sessionStorage|indexedDB|chrome\.storage|document\.cookie/.test(text)) problems.push(`${name} uses storage. The extension must store nothing.`);
+  }
 }
 
 if (problems.length) {

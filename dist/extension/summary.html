@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="only light">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Constellation: make sense of your STARS</title>
+<style>
+:root{
+  color-scheme:only light;
+  --paper:#FAF6EC; --surface:#FFFDF8; --cream:#F3ECDB; --ink:#1A1512; --muted:#5E5646; --line:#E2D8C3;
+  --night:#990000; --accent:#990000; --accent-bg:#F6E3DF;
+  --done:#1F3A8A; --done-bg:#EAEEF8; --prog:#8A5A00; --prog-bg:#FAF1DE; --needs:#A3161A; --needs-bg:#FBEAEA;
+  --display:"Times New Roman", Times, "Liberation Serif", serif;
+  --body:"Times New Roman", Times, "Liberation Serif", serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 var(--body);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+a{color:var(--accent)}
+button,.btn{touch-action:manipulation;font:600 15px/1 var(--body);border-radius:4px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:12px 16px;cursor:pointer}
+button:focus-visible,.btn:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.primary{background:var(--night);color:#fff;border-color:var(--night)}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:18px;padding-bottom:18px}
+.mark{display:flex;align-items:center;gap:10px;font:700 21px/1 var(--display);letter-spacing:0;color:var(--accent);text-decoration:none;background:none;border:0;padding:0}
+.bar small{color:var(--muted);font-size:13.5px;text-align:right}
+
+/* intake */
+.intake{padding-top:40px;padding-bottom:64px}
+.intake h1{font:700 clamp(38px,6vw,64px)/1.02 var(--display);letter-spacing:0;margin:0 0 14px;max-width:14ch}
+.intake p.lede{font-size:18px;color:var(--muted);max-width:56ch;margin:0 0 28px}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-height:240px;background:var(--surface);border:2px dashed var(--line);border-radius:4px;padding:28px;cursor:pointer;color:var(--muted);transition:border-color .15s,background .15s}
+.drop:hover{border-color:var(--muted)}
+.drop:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.drop-title{font:700 22px/1.2 var(--display);color:var(--ink)}
+.drop-sub{font-size:15px}
+.drop.busy{pointer-events:none;opacity:.75}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.drop.over{border-color:var(--accent);background:var(--accent-bg)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+.actions .hint{color:var(--muted);font-size:14px}
+.err{margin-top:14px;padding:12px 14px;border-radius:4px;background:var(--needs-bg);color:var(--needs);font-weight:500}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:36px;color:var(--muted);font-size:14.5px}
+.how b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+
+/* report header */
+.hero{padding:28px 0 4px}
+.hero .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:flex-end;padding-bottom:18px;border-bottom:2px solid var(--accent)}
+.hero h1{font:700 clamp(21px,2.6vw,26px)/1.15 var(--display);letter-spacing:0;margin:0}
+.hero .sub{color:var(--muted);margin-top:6px;font-size:15px}
+.hero .prepared{color:var(--muted);font-size:13.5px;text-align:right}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:minmax(0,1.35fr) repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}
+.tile{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:4px;padding:14px 16px}
+.tile .l{font:600 14px/1.2 var(--body);color:var(--muted)}
+.tile .v{font:700 28px/1.1 var(--display);margin-top:8px}
+/* The GPA is the number students come for most, so it is the one large thing on the page. */
+.tile.gpa .v{font-size:clamp(44px,6vw,60px);line-height:1;color:var(--accent)}
+.tile .v.missing,.tile.gpa .v.missing{font:500 17px/1.3 var(--body);color:var(--muted)}
+.tile .s .copy{font-weight:700;color:var(--ink)}
+.tile .v small{font:500 15px var(--body);color:var(--muted)}
+.tile .s{color:var(--muted);font-size:13.5px;margin-top:6px}
+.tile.alert .v{color:var(--needs)}
+.meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden;display:flex;margin-top:10px}
+.meter i{display:block;height:100%}
+.meter .d{background:var(--done)}
+.meter .p{background:var(--prog)}
+
+/* click to copy */
+.copy{font:inherit;color:inherit;background:none;border:0;border-radius:3px;padding:0;margin:0;text-align:inherit;cursor:copy;
+  text-decoration:underline dotted transparent;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.copy:hover,.copy:focus-visible{text-decoration-color:var(--accent)}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ci{display:inline-block;width:.72em;height:.72em;margin-left:.25em;vertical-align:baseline;opacity:0;color:var(--accent)}
+.copy:hover .ci,.copy:focus-visible .ci{opacity:1}
+.copied-msg{font:600 13px/1 var(--body);color:var(--done);margin-left:8px;white-space:nowrap;vertical-align:middle}
+.tile.gpa .v .copied-msg{font-size:14px}
+@media (hover:none){.ci{opacity:.7}}
+button.chip.copy{font:600 13.5px/1.5 var(--body);border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--paper);color:var(--ink);text-decoration:none}
+button.chip.copy:hover,button.chip.copy:focus-visible{border-color:var(--accent);background:var(--accent-bg)}
+.copy-all{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.copy-all .copied-msg{margin-left:0}
+.copyfail{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.copyfail textarea{width:100%;min-height:120px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;margin-top:8px}
+tr.crs{cursor:copy}
+tr.crs:hover td{background:var(--paper)}
+tr.crs.gone td{color:var(--muted)}
+.tag{display:inline-block;font:600 12.5px/1.4 var(--body);border-radius:3px;padding:0 7px;margin:2px 6px 0 0;background:var(--cream);color:var(--muted);white-space:nowrap}
+.term-h .tu{float:right;font-weight:500;color:var(--muted)}
+
+/* progress by area */
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--muted);margin:0 0 12px}
+.legend span,.reqs li{display:flex;align-items:baseline;gap:8px}
+.mk{flex:none;width:9px;height:9px;border-radius:2px;transform:translateY(-1px)}
+.mk.done{background:var(--done)}
+.mk.progress{background:var(--prog)}
+.mk.needs{border:1.5px solid var(--needs)}
+.areas{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.area-card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:16px}
+.area-card h3{font:600 16px/1.3 var(--body);margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.area-card h3 span{font:500 13.5px var(--body);color:var(--muted);white-space:nowrap}
+.counts{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);margin-top:8px}
+.counts b{font-weight:700}
+.counts .done b{color:var(--done)}
+.counts .progress b{color:var(--prog)}
+.counts .needs b{color:var(--needs)}
+.reqs{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--line);display:grid;gap:7px;font-size:13.5px;line-height:1.35}
+.reqs li.done{color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* sections */
+main section{padding:34px 0 6px}
+h2{font:700 26px/1.15 var(--display);letter-spacing:0;margin:0 0 4px;padding-left:12px;border-left:3px solid var(--accent)}
+.section-note{color:var(--muted);margin:0 0 16px;font-size:15px}
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num{white-space:nowrap}
+.big{font-weight:700;font-size:17px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:13.5px;white-space:nowrap;background:var(--paper)}
+.chip.code{font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:3px;padding:2px 9px 2px 7px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill.done{background:var(--done-bg);color:var(--done)}
+.pill.progress{background:var(--prog-bg);color:var(--prog)}
+.pill.progress::before{background:linear-gradient(90deg,currentColor 50%,transparent 50%);border:1.5px solid currentColor;width:9px;height:9px}
+.pill.needs{background:var(--needs-bg);color:var(--needs)}
+.pill.needs::before{background:transparent;border:1.5px solid currentColor}
+.pill.none{background:var(--cream);color:var(--muted)}
+.pill.none::before{background:transparent;border:1.5px dashed currentColor}
+.mk.none{border:1.5px dashed var(--muted)}
+.counts .none b{color:var(--muted)}
+
+/* couldn't read confidently */
+.unread{margin-top:22px;background:var(--prog-bg);border:1px solid var(--line);border-left:3px solid var(--prog);border-radius:4px;padding:14px 16px}
+.unread h2{border:0;padding:0;font-size:20px;color:var(--prog)}
+.unread ul{margin:8px 0 0;padding-left:20px;font-size:14.5px}
+.unread li{margin:6px 0}
+.unread code{display:block;font-size:12.5px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* views */
+.views{display:flex;flex-wrap:wrap;gap:6px;margin-top:22px;border-bottom:1px solid var(--line)}
+.views button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 12px;color:var(--muted)}
+.views button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.view-actions{display:flex;justify-content:flex-end;margin-top:18px}
+#result[data-view="dashboard"] [data-in]:not([data-in~="dashboard"]),
+#result[data-view="table"] [data-in]:not([data-in~="table"]),
+#result[data-view="print"] [data-in]:not([data-in~="print"]){display:none}
+.detail{color:var(--muted);font-size:13.5px;margin-top:3px}
+.group-h{font:600 13.5px/1 var(--body);color:var(--muted);background:var(--cream);padding:10px 14px}
+tr.sub td:first-child{padding-left:30px}
+tr.sub td{font-size:14.5px}
+.muted{color:var(--muted)}
+details{margin-top:14px}
+summary{cursor:pointer;font:700 20px/1.2 var(--display);padding:10px 0;list-style:none;display:flex;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"";width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s}
+details[open]>summary::before{transform:rotate(45deg)}
+summary .count{font:500 14px var(--body);color:var(--muted)}
+.more{margin-top:6px}.more summary{font:500 13.5px var(--body);padding:2px 0;color:var(--done)}.more summary::before{width:6px;height:6px}
+.term-h td{background:var(--cream);font-weight:600;font-size:14px}
+pre.raw{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:16px;overflow:auto;font-size:12.5px;line-height:1.4;max-height:520px}
+.fine{color:var(--muted);font-size:14.5px;max-width:70ch}
+.fine li{margin:4px 0}
+footer{padding-top:36px;padding-bottom:48px;color:var(--muted);font-size:13.5px}
+.redact{display:inline-flex;gap:6px;align-items:center}
+.hidden{display:none !important}
+@media (max-width:640px){
+  .bar small{display:none}
+  td,th{padding:10px 10px}
+  tr.sub td:first-child{padding-left:20px}
+}
+@media (max-width:640px){
+  .stack thead{display:none}
+  .stack, .stack tbody{display:block}
+  .stack tr{display:block;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .stack tr:last-child{border-bottom:0}
+  .stack td{display:block;border:0;padding:3px 0}
+  .stack td[data-label]::before{content:attr(data-label);display:block;color:var(--muted);font-size:12.5px;font-weight:500}
+  .stack td.area{font-size:13px}
+  .stack tr.sub{padding-left:28px}
+  .stack tr.sub td:first-child{padding-left:0}
+  .stack td.group-h,.stack .more{margin-top:6px}.more summary{font:500 13.5px var(--body);padding:2px 0;color:var(--done)}.more summary::before{width:6px;height:6px}
+.term-h td{margin:-12px -14px;padding:10px 14px}
+  .stack .pill{margin-top:4px}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile.gpa{grid-column:1 / -1}
+  .tile .v{font-size:24px}
+  .hero .prepared{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important;animation:none !important}}
+@media print{
+  .ci,.copied-msg,.copy-all,.copyfail{display:none !important}
+  :root{--paper:#fff;--surface:#fff}
+  body{background:#fff}
+  .bar,footer button,.more,.views,.view-actions,.no-print{display:none !important}
+  /* Whatever view is on screen, the printout is the full printable version. */
+  #result [data-in]:not(.no-print){display:block !important}
+  .tile,.area-card,.scroll{break-inside:avoid}
+  main section{padding-top:22px}
+}
+</style>
+</head>
+<body>
+<div class="wrap bar">
+  <button type="button" class="mark" id="home" aria-label="Constellation: start over">
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 19 L11 8 L17 14 L22 5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45"/><circle cx="4" cy="19" r="2.4" fill="currentColor"/><circle cx="11" cy="8" r="2.4" fill="currentColor"/><circle cx="17" cy="14" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="22" cy="5" r="2.4" fill="currentColor"/></svg>
+    Constellation
+  </button>
+  <small>Your PDF is read in your browser and never leaves your device.</small>
+</div>
+
+<div id="intake" class="wrap intake">
+  <h1>Make sense of your STARS.</h1>
+  <p class="lede">Upload your STARS report PDF. You get a clean summary of what's done, what's in progress, and exactly what's left.</p>
+  <label class="drop" id="drop" for="file">
+    <input type="file" id="file" accept="application/pdf,.pdf" class="visually-hidden">
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 27V9m0 0-7 7m7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 26v4a3 3 0 0 0 3 3h18a3 3 0 0 0 3-3v-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    <span class="drop-title" id="dropTitle">Upload your STARS report PDF</span>
+    <span class="drop-sub" id="dropSub">Drag it here or click to choose a file</span>
+  </label>
+  <div class="actions">
+    <button id="sample">Try a sample report</button>
+    <span class="hint">No PDF yet? On your STARS page, click Print Report and choose Save as PDF.</span>
+  </div>
+  <div id="err" class="err hidden" role="alert"></div>
+  <div class="how">
+    <div><b>Private by design</b>Your name, student ID, and mailing address are stripped before anything is read.</div>
+    <div><b>Faithful to STARS</b>Every status comes straight from your report. Nothing is guessed or rewritten by AI.</div>
+    <div><b>Unofficial</b>STARS and your advisor remain the source of truth for graduation.</div>
+  </div>
+</div>
+
+<div id="result" class="hidden"></div>
+<div id="live" class="sr" aria-live="polite"></div>
+
+<script src="parser.js"></script>
+<script src="format.js"></script>
+<script src="pdftext.js"></script>
+<script src="pdf.js"></script>
+<script src="pdf-config.js"></script>
+<script src="sample.js"></script>
+<script src="app.js"></script>
+<script src="summary.js"></script>
+</body>
+</html>

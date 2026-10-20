@@ -24,10 +24,17 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 | 2 | 10 anonymized reports | **Not started.** `test/samples/` is empty on this machine. Only 3 reports were ever hand-checked, and that was before pdf.js 4.10. Tanzil has 11 redacted reports. |
 | 2 | Line rebuilding (optional) | **Open decision.** Tanzil's fixed-width column method (character width read from the PDF) is more robust than `src/pdftext.js`, which guesses spaces from gaps. Only switch once real reports can confirm it. |
 | 3 | Three views | **Done (13 Oct).** Dashboard, Table and Printable tabs. |
-| 3 | V2: build that writes scripts as separate files | **Not started.** Chrome Manifest V3 forbids inline scripts. Add a `build.js` mode, and keep the V1 single page unchanged. |
-| 3 | V2: STARS web page text vs PDF text | **Not started.** Do this locally with your own report. Don't commit the output. |
+| 3 | V2: build that writes scripts as separate files | **Done (20 Oct).** `npm run build` also writes `dist/extension/` (load unpacked). The V1 page is unchanged. |
+| 3 | V2: STARS web page text vs PDF text | **Next.** Load the extension, open your own STARS report, click the button, and compare with the PDF summary. Don't commit anything it shows. If the report is in a frame from another site, the extension needs a narrow host permission for it. |
 | — | README pointed at the old parser location and submodule | **Done on this branch (13 Oct), not on `main` yet.** Tanzil flagged it again in bbh-course-reg-project#7 (18 Oct). Merging this branch closes it. |
 | — | Pathwise decisions before Tanzil's M4 | **Open, time-sensitive.** See "Waiting on Natalie (Pathwise)" below. M4 (next-sem-validator#9) is already open. |
+
+## What changed on 20 Oct (Chrome extension)
+
+- **`src/app.js`:** the page logic moved out of `page.html`, so the web page and the extension run the same file.
+- **`src/extension/background.js`:** clicking the toolbar button reads the open tab, using `activeTab` only and no host permissions. It picks the frame that looks like a STARS report and opens the summary in a new tab. The text is handed over once with a one-time key, then forgotten.
+- **`build.js`:** also builds `dist/extension/`, with every script as its own file, a manifest whose policy blocks connections, and generated icons. It also builds `dist/sample-stars-page.html` for trying the button.
+- **Privacy and tests:** `check-privacy` now also checks the extension's permissions, policy and storage use. `test/extension.mjs` tests the background script with a stand-in for Chrome.
 
 ## What changed on 20 Oct (interview redesign, branch `interview-redesign`)
 

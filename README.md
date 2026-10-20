@@ -27,23 +27,49 @@ Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/cons
 | `index.html` | The built page (about 1.8 MB, self-contained). Open it in a browser. |
 | `src/parser.js` | The STARS parser: report text in, requirement tree, deduplicated course list, and "what's left" list out. |
 | `src/format.js` | Pure functions from parsed report to what the page shows and copies: the summary numbers, course lines, the copy-as-text and copy-for-spreadsheet formats, and course history order. |
+| `src/app.js` | The page logic: reads a report (PDF, sample, or text from the extension) and renders the summary. |
+| `src/extension/` | The Chrome extension's own scripts: `background.js` reads the STARS tab when the button is clicked; `summary.js` hands that text to the page. |
+| `dist/extension/` | The built extension. Load it at `chrome://extensions` with "Load unpacked". |
+| `dist/sample-stars-page.html` | The fictional sample report as a web page, to try the extension button without a real report. |
 | `src/pdftext.js` | PDF to text: runs pdf.js and rebuilds lines. Shared by the page and the test so both run the same code. |
 | `src/page.html` | The page template: layout, styles, rendering. |
 | `src/sample-report.txt` | A synthetic report behind the "Try a sample report" button. The student, major, program code, courses, and grades are all invented; it is not based on any real or anonymized report. It uses real STARS formatting and covers most formats the parser handles, so it doubles as a quick check that the page still renders. |
 | `build.js` | Builds `index.html`: inlines everything, bundles pdf.js from `node_modules`, writes the CSP. |
 | `scripts/check-privacy.mjs` | The privacy check described above. |
 | `test/unit.mjs` | Unit tests on the synthetic sample: the abbreviation key, the summary numbers, and the exact text each copy action produces. |
+| `test/extension.mjs` | Tests the extension's background script with a stand-in for Chrome's APIs. |
 | `test/run.mjs` | Runs every PDF in `test/samples/` through the same pipeline as the page. |
 
 ## Working on it
 
 ```
 npm install
-npm run build          # after editing anything in src/
+npm run build          # after editing anything in src/; builds index.html and dist/extension/
 npm test               # builds, runs the privacy check and unit tests, then tests every report in test/samples/
 ```
 
 pdf.js is pinned to one exact version (`pdfjs-dist` 4.10.38) in `package.json`. The page and the test both use it. Upgrade it on purpose and re-run every report.
+
+## Chrome extension (V2, in testing)
+
+The extension reads the STARS report already open in your browser, so there's no PDF to save and upload.
+
+**Try it:**
+1. Run `npm run build`, or download this repo as a ZIP and unzip it.
+2. In Chrome, go to `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and choose the `dist/extension` folder.
+3. Pin Constellation from the puzzle-piece menu.
+4. Open your STARS report and click the Constellation button. The summary opens in a new tab.
+
+   To try it without a real report, open `dist/sample-stars-page.html` first. Chrome only lets extensions read local files if you turn on "Allow access to file URLs" in the extension's details.
+
+**Privacy:**
+- **Permissions:** only `activeTab` and `scripting`, with no access to any website until you click the button. The click lets it read that one tab, once.
+- **Storage and network:** the report text goes to the summary tab by message and is never stored. Extension pages block every network connection.
+- **Same safeguards as the web page:** redaction and the "Couldn't read confidently" notice work the same way, and the summary tab still accepts a PDF.
+
+`npm run check:privacy` checks the built extension's permissions and policy too.
+
+**Not yet confirmed on a real STARS page.** The PDF is printed from the STARS web page, so the text should match. Check one locally against your own report and never commit what it shows. If the report sits inside a frame from another site, the extension may need a narrow host permission for that site.
 
 ## Parser strategy
 
@@ -113,7 +139,7 @@ Formats handled: Core Literacies and Thematic Option GE, the Dornsife 104-unit a
 ## Roadmap
 
 - **V1 (this):** a single self-contained web page.
-- **V2: Chrome extension.** Same parser and rendering, opened from the browser toolbar. Chrome's extension rules (Manifest V3) don't allow inline scripts or code loaded from the internet. Bundling pdf.js already covers the second. For the first, `build.js` will need a mode that writes the scripts as separate files. `src/` is kept split into modules for that reason. The extension should ask for no host permissions: the student picks the file, just like on the page.
+- **V2: Chrome extension (built, in testing).** Same parser and rendering, opened from the browser toolbar on the STARS page. `build.js --extension` writes every script as its own file, because Chrome extensions don't allow inline scripts. See [Chrome extension](#chrome-extension-v2-in-testing).
 
 ## Known limits
 
