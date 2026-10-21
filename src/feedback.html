@@ -22,13 +22,17 @@
 <main class="wrap intake">
   <h1>Tell us what you think.</h1>
   <p class="lede">What worked, what was confusing, what Constellation got wrong. Every note goes to the BUAI Builder Hub team.</p>
-  <p class="local">This page sends nothing by itself. "Open email" starts a message in your own email app, and you choose whether to send it. Name and email are optional. Please don't paste your student ID or your STARS report.</p>
-  <form class="form" id="fb">
+  <p class="local" id="note">Pressing Send sends your message, and your name and email if you add them, over the internet to the BBH team at bbh@usc.edu through a USC Google Form. Nothing from your STARS report is sent. Please don't paste your student ID or your report.</p>
+  <form class="form" id="fb" novalidate>
     <label>Your feedback<textarea id="msg" required></textarea></label>
-    <label>Name <span>Optional</span><input id="name" autocomplete="name"></label>
-    <label>Email for a reply <span>Optional</span><input id="email" type="email" autocomplete="email"></label>
-    <div class="actions"><a class="btn primary" id="send" href="mailto:bbh@usc.edu?subject=Constellation%20feedback">Open email</a><a class="btn" href="index.html">Back to Constellation</a></div>
+    <label><span>Name <span class="opt">(optional)</span></span><input id="name" autocomplete="name"></label>
+    <label><span>Email for a reply <span class="opt">(optional)</span></span><input id="email" type="email" autocomplete="email"></label>
+    <!-- Left empty by people; bots that fill every field get a quiet "Received" and nothing is sent. -->
+    <label class="trap" aria-hidden="true">Website<input id="website" tabindex="-1" autocomplete="off"></label>
+    <div class="actions"><button type="submit" class="primary" id="send">Send</button></div>
+    <div id="err" class="err hidden" role="alert"></div>
   </form>
+  <p class="sent hidden" id="sent" role="status" tabindex="-1">Received. Thank you.</p>
   <footer>
     <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
     <p>Tools by Students, for Students. Built by BUAI Builder Hub.</p>

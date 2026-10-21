@@ -4,7 +4,8 @@
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Still needed', none: 'Not marked' };
-const pill = s => `<span class="pill ${s}">${STATUS_TXT[s]}</span>`;
+// Status in words for screen readers; on screen the icon and the row highlight carry it.
+const srStatus = s => `<span class="sr">${STATUS_TXT[s]}</span>`;
 const num = n => { const f = parseFloat(n); return Number.isInteger(f) ? String(f) : String(f); };
 
 const CI = '<svg class="ci" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 3.5V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
@@ -53,8 +54,17 @@ function run(text){
   let r;
   try { r = StarsParser.parse(text); } catch (e) { showErr(e.message); return; }
   if (!r.blocks.length) { showErr('Found the report header but no requirement sections. Make sure the PDF includes the whole report, down to "END OF ANALYSIS".'); return; }
-  render(r, StarsParser.redact(text).text);
+  render(r, text);
 }
+
+/* ---------- feedback ---------- */
+// The feedback page is part of the website. The extension has no copy of it, so there the link
+// opens the live site in a new tab and the summary stays open.
+const IN_EXTENSION = location.protocol === 'chrome-extension:';
+const FEEDBACK_URL = IN_EXTENSION ? 'https://usc-bbh.github.io/constellation/feedback.html' : 'feedback.html';
+const feedbackLink = () => IN_EXTENSION
+  ? `<a class="feedback-link" href="${FEEDBACK_URL}" target="_blank" rel="noopener noreferrer">Send feedback<span class="sr"> (opens in a new tab)</span></a>`
+  : `<a class="feedback-link" href="${FEEDBACK_URL}">Send feedback</a>`;
 
 /* ---------- PDF ---------- */
 // pdf.js is bundled into this page by build.js. Its worker runs from a blob made from the bundled
@@ -95,7 +105,6 @@ const geLetter = name => (String(name).match(/\b(?:Category|GE-)\s*([A-H])\b/) |
 const geLink = l => link(`${GE_COURSES}${l.toLowerCase()}/`, `See Dornsife's GE-${l} course list`, 'ge-link');
 
 /* ---------- progress by area ---------- */
-const AREA_COLOR = { 'University': '#990000', 'Writing and language': '#1d4ed8', 'General education': '#6f42c1', 'School and major': '#0e7490', 'Other': '#b3006b' };
 const areaId = n => 'area-' + n.toLowerCase().replace(/[^a-z]+/g, '-');
 // A finished area: a check drawn as three stars, like the logo.
 const STAR_CHECK = '<svg class="star-check" viewBox="0 0 24 24" role="img" aria-label="Area complete"><circle cx="12" cy="12" r="11.5" fill="currentColor" opacity=".12"/><path d="M6 12.5 10 16.5 18 7.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="6" cy="12.5" r="2.1" fill="currentColor"/><circle cx="10" cy="16.5" r="2.4" fill="currentColor"/><circle cx="18" cy="7.5" r="2.1" fill="currentColor"/></svg>';
@@ -108,7 +117,7 @@ function needBox(l, withLabel){
 }
 function subMore(s, row){
   const bits = [];
-  if (s.courses.length) bits.push(`<div class="opts">${s.courses.map(c => (c.isAP ? `<span class="chip code">${esc(c.display)}</span>` : codeBtn(c.code, c.title)) + (c.flag === 'IP' ? ' <span class="muted">(now)</span>' : '')).join(' ')}</div>`);
+  if (s.courses.length) bits.push(`<div class="opts">${s.courses.map(c => (c.isAP ? `<span class="chip code">${esc(c.display)}</span>` : codeBtn(c.code, c.title))).join(' ')}</div>`);
   if (row) bits.push(needBox(row));
   else if (s.status !== 'done' && (s.needs || (s.selectFrom || []).length)) {
     const opts = (s.selectFrom || []).concat(((s.orAlt && s.orAlt.selectFrom) || []).map(o => `or ${o}`));
@@ -126,14 +135,14 @@ function reqRow({ block: b, left, subs }){
   if (b.notes.length) body.push(`<div class="detail">${b.notes.map(esc).join('. ')}</div>`);
   left.forEach(l => body.push(needBox(l, true)));
   if (subs.length) body.push(`<ul class="subs">${subs.map(({ sub: s, left: row }) => `<li class="${s.status}"><i class="mk ${s.status}" aria-hidden="true"></i>
-    <span><span class="sub-name">${esc(s.name)}</span> ${pill(s.status)}</span>${subMore(s, row)}</li>`).join('')}</ul>`);
-  return `<details class="req ${b.status}"${open ? ' open' : ''}><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${pill(b.status)}</summary>
+    <span><span class="sub-name">${esc(s.name)}</span>${srStatus(s.status)}</span>${subMore(s, row)}</li>`).join('')}</ul>`);
+  return `<details class="req ${b.status}"${open ? ' open' : ''}><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
 }
 function areaCard(a){
   const n = a.counts, pct = k => (n[k] / a.total * 100).toFixed(1);
   const u = a.units ? `<small>${num(a.units.done)} units done${a.units.progress ? `, ${num(a.units.progress)} in progress` : ''}</small>` : '';
-  return `<article class="area-card" id="${areaId(a.name)}" style="--area:${AREA_COLOR[a.name]}">
+  return `<article class="area-card" id="${areaId(a.name)}">
     <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3><div class="tally">${n.done} of ${a.total} complete${u}</div></header>
     <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
     <div class="counts"><span class="done"><b>${n.done}</b> complete</span><span class="progress"><b>${n.progress}</b> in progress</span><span class="needs"><b>${n.needs}</b> still needed</span>${n.none ? `<span class="none"><b>${n.none}</b> not marked</span>` : ''}</div>
@@ -153,7 +162,7 @@ function unreadNotice(r){
 /* ---------- left-hand menu ---------- */
 function sideNav(r, areas){
   const item = (id, t, sub = '') => `<li><a href="#${id}">${t}</a>${sub}</li>`;
-  const areaLinks = `<ol>${areas.map(a => `<li><a href="#${areaId(a.name)}" style="--area:${AREA_COLOR[a.name]}"><i class="dot" aria-hidden="true"></i>${esc(a.name)}</a></li>`).join('')}</ol>`;
+  const areaLinks = `<ol>${areas.map(a => `<li><a href="#${areaId(a.name)}">${esc(a.name)}</a></li>`).join('')}</ol>`;
   return `<aside class="side"><nav aria-label="On this page"><ol>
     ${item('summary', 'Summary')}${r.unread.length ? item('check', 'Double-check') : ''}${item('areas', 'Progress by area', areaLinks)}
     ${item('history', 'Course history')}${item('rules', 'GE and unit rules')}${item('original', 'Original text')}
@@ -212,7 +221,7 @@ function chips(opts){
   if (opts.length <= 8) return `<div class="opts">${opts.map(c).join('')}</div>`;
   return `<div class="opts">${opts.slice(0,6).map(c).join('')}</div><details class="more"><summary>${opts.length - 6} more options</summary><div class="opts">${opts.slice(6).map(c).join('')}</div></details>`;
 }
-function render(r, redactedText){
+function render(r, reportText){
   const m = r.meta, S = StarsFormat.deriveSummary(r), T = StarsFormat.transferCredit(r), areas = StarsFormat.areaView(r);
   const NF = 'Not found in report';
   const known = v => v !== null && v !== undefined;
@@ -222,7 +231,6 @@ function render(r, redactedText){
   let h = `<div class="wrap layout">${sideNav(r, areas)}<div class="content">
   <header class="hero" id="summary">
     <div class="top"><div>
-      <div class="eyebrow">STARS summary</div>
       <h1>${esc(m.major || 'Your degree')}</h1>
       <div class="sub">${esc(m.degree || '')}${m.catalogYear ? `, catalog ${esc(StarsParser.termName(m.catalogYear))}` : ''}${m.classLevel ? `. ${esc(m.classLevel)}` : ''}${gradTerm ? `, expected to graduate ${esc(gradTerm)}` : ''}.</div>
     </div>
@@ -288,14 +296,14 @@ function render(r, redactedText){
     <li>STARS computes your USC GPA only. Honors use the lower of your USC or combined GPA.</li>
   </ul></details></section>`;
 
-  // raw text (on screen only; the printout leaves it out)
-  h += `<section class="no-print" id="original"><details class="list"><summary>Original report text <span class="count">personal details removed</span></summary>
-    <p class="section-note">Cross-check anything above against what STARS says.</p><pre class="raw">${esc(redactedText.slice(redactedText.indexOf('PREPARED')))}</pre></details></section>`;
+  // the report text exactly as read (on screen only; the printout leaves it out)
+  h += `<section class="no-print" id="original"><details class="list"><summary>Original report text</summary>
+    <p class="section-note">Cross-check anything above against what STARS says.</p><pre class="raw">${esc(reportText.trim())}</pre></details></section>`;
 
   h += `</main><footer>
     <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
-    <p>Removed before reading: ${esc(r.redacted.join(', ') || 'nothing found')}. Report prepared ${esc(r.meta.prepared)}.</p>
-    <p>Constellation is an unofficial reading aid built by BUAI Builder Hub. Tools by Students, for Students. <a href="feedback.html">Share feedback</a></p>
+    <p>Constellation is an unofficial reading aid built by BUAI Builder Hub. Tools by Students, for Students.</p>
+    <p>${feedbackLink()}</p>
     <p><button type="button" id="again">Summarize another report</button></p></footer></div></div>`;
 
   $('#intake').classList.add('hidden');
@@ -330,6 +338,9 @@ window.addEventListener('beforeprint', () => {
 });
 window.addEventListener('afterprint', () => { closedForPrint.forEach(d => { d.open = false; }); closedForPrint = []; });
 $('#sample').onclick = () => run(SAMPLE);
+document.querySelectorAll('[data-feedback]').forEach(p => { p.innerHTML = feedbackLink(); });
+// The extension promo is for the website; in the extension it would advertise itself.
+if (IN_EXTENSION) $('#promo').remove();
 $('#file').onchange = e => handleFile(e.target.files[0]);
 $('#home').onclick = reset;
 const drop = $('#drop');

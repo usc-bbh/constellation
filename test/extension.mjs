@@ -1,6 +1,6 @@
 // Tests the extension's background script (src/extension/background.js) with a stand-in for Chrome's
 // APIs: what happens when the student clicks the button on a STARS tab, on another tab, or on a tab
-// whose frames can't all be read. Uses the fictional sample report only.
+// whose frames can't all be read. Uses the fictional test/fixture-report.txt only.
 // Usage: node test/extension.mjs (also part of npm test)
 import fs from 'fs';
 import vm from 'vm';
@@ -9,7 +9,7 @@ import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const P = require('../src/parser.js');
-const SAMPLE = fs.readFileSync(new URL('../src/sample-report.txt', import.meta.url), 'utf8');
+const SAMPLE = fs.readFileSync(new URL('./fixture-report.txt', import.meta.url), 'utf8');
 const BG = fs.readFileSync(new URL('../src/extension/background.js', import.meta.url), 'utf8');
 
 // Load background.js with a fake chrome object. `frames` is what each frame of the clicked tab shows.

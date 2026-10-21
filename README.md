@@ -6,7 +6,7 @@
 
 **Live:** https://usc-bbh.github.io/constellation/ (GitHub Pages, rebuilt on every push to `main`).
 
-A student or advisor opens the page, drops in a STARS report PDF, and gets one page showing what's done, what's in progress, and exactly what's left. It's easier to read than the raw report, and the original text is one click away for cross-checking.
+A student or advisor opens the page, drops in a STARS report PDF, and gets one page showing what's done, what's in progress, and what's left. It's easier to read than the raw report, and the original text is one click away for cross-checking.
 
 Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/constellation`). It can be used next to RegCheck and the degree planner, but it doesn't depend on them.
 
@@ -16,8 +16,8 @@ Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/cons
 - **The only thing sent: anonymous counts.** `src/telemetry.js` sends fixed names to GoatCounter (no cookies): a visit, "summary" when a report has been summarized, and "rating-1" to "rating-5" from the star prompt. It reads back one number, how many reports have been summarized, for the first page. It is off until a GoatCounter site code is set in `package.json` (`"goatcounter"`). The Chrome extension leaves it out.
 - **Enforced by the browser.** The page's Content-Security-Policy blocks every outgoing connection except that one GoatCounter host (`default-src 'none'`; `connect-src` and `img-src` name only it, or `'none'` while the code is empty). Scripts run only if their hash matches the build, so a script added later without a rebuild won't run.
 - **Almost nothing stored.** No cookies or IndexedDB. The only localStorage entry is `constellation-rated`, so the star prompt doesn't come back once answered. Closing the tab or clicking "Summarize another report" clears the report, which matters for advisors on shared computers.
-- **Feedback by email.** `feedback.html` (message, optional name and email) opens a pre-filled email to bbh@usc.edu in the student's own email app. The page itself sends nothing and blocks every connection.
-- **Redacted before reading.** The name, student ID, and diploma name and mailing address are removed before parsing. The test checks this on every report.
+- **Feedback goes to a USC Google Form.** `feedback.html` is a separate page with three fields: message, optional name, optional email. Pressing Send posts only those fields to a Google Form owned by bbh@usc.edu, and the page says so before anyone presses it. Its Content-Security-Policy allows `docs.google.com` and nothing else. The summary page never connects to Google. Until a Form is set in `package.json`, Send opens a pre-filled email in the student's own email app instead. See [Feedback form setup](#feedback-form-setup).
+- **Redacted before reading.** The name, student ID, and diploma name and mailing address are removed before parsing, so none of them reach the parser or the summary. The "Original report text" section shows the report exactly as uploaded, personal details included, so it can be checked against STARS. It stays on the screen and is left out of the printout. Whether to show the student's name on the summary, or to stop redacting altogether, is an open team question (see STATUS.md).
 - **Never committed.** Reports and anything derived from them (including test expected results) are git-ignored. `npm run check:privacy` also fails if one is tracked or staged, because `.gitignore` doesn't stop `git add -f`.
 
 `npm run check:privacy` checks all of this. It runs as part of `npm test`.
@@ -35,10 +35,12 @@ Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/cons
 | `dist/sample-stars-page.html` | The fictional sample report as a web page, to try the extension button without a real report. |
 | `src/pdftext.js` | PDF to text: runs pdf.js and rebuilds lines. Shared by the page and the test so both run the same code. |
 | `src/page.html` | The page template: layout, styles, rendering. |
-| `src/sample-report.txt` | A synthetic report behind the "Try a sample report" button. The student, major, program code, courses, and grades are all invented; it is not based on any real or anonymized report. It uses real STARS formatting and covers most formats the parser handles, so it doubles as a quick check that the page still renders. |
+| `src/sample-report.txt` | The report behind the "Try a sample report" button: Tommy Trojan (ID 12345678), a junior in the invented "Business of Fighting On" BS. It uses real STARS formatting and typical USC courses, with AP credit, a transfer course, a retake, a term in progress and several requirements still needed. The student, major, program code and grades are invented; it is not based on any real or anonymized report. |
+| `src/feedback.html`, `src/feedback.js` | The feedback page and the script that posts it to the Google Form. |
+| `test/fixture-report.txt` | The earlier synthetic sample ("Data and Society"), kept for the unit tests because it covers most formats the parser handles. |
 | `build.js` | Builds `index.html`: inlines everything, bundles pdf.js from `node_modules`, writes the CSP. |
 | `scripts/check-privacy.mjs` | The privacy check described above. |
-| `test/unit.mjs` | Unit tests on the synthetic sample: the abbreviation key, the summary numbers, and the exact text each copy action produces. |
+| `test/unit.mjs` | Unit tests on the synthetic fixture, plus a check that the on-page sample reads cleanly: the abbreviation key, the summary numbers, and the exact text each copy action produces. |
 | `test/extension.mjs` | Tests the extension's background script with a stand-in for Chrome's APIs. |
 | `test/run.mjs` | Runs every PDF in `test/samples/` through the same pipeline as the page. |
 
@@ -68,10 +70,22 @@ The extension reads the STARS report already open in your browser, so there's no
 - **Permissions:** only `activeTab` and `scripting`, with no access to any website until you click the button. The click lets it read that one tab, once.
 - **Storage and network:** the report text goes to the summary tab by message and is never stored. Extension pages block every network connection.
 - **Same safeguards as the web page:** redaction and the "Couldn't read confidently" notice work the same way, and the summary tab still accepts a PDF.
+- **Feedback:** the extension has no feedback page of its own. "Send feedback" opens the website's feedback page in a new tab, so the summary stays open.
 
 `npm run check:privacy` checks the built extension's permissions and policy too.
 
 **Not yet confirmed on a real STARS page.** The PDF is printed from the STARS web page, so the text should match. Check one locally against your own report and never commit what it shows. If the report sits inside a frame from another site, the extension may need a narrow host permission for that site.
+
+## Feedback form setup
+
+The feedback page posts into a Google Form so that messages land in a USC account, not a third-party service. To turn it on (once, signed in as bbh@usc.edu):
+
+1. Create a Google Form with three questions, in this order: **Feedback** (paragraph, required), **Name** (short answer) and **Email** (short answer).
+2. In **Settings → Responses**, turn off **Restrict to users in University of Southern California and its trusted organizations** and leave **Collect email addresses** off. The page posts without signing in, so a restricted Form rejects every message. Also turn on **Get email notifications for new responses** (Responses tab, ⋮ menu) so each message arrives at bbh@usc.edu.
+3. Click ⋮ → **Get pre-filled link**, type `x` in each field, and click **Get link**. The link looks like `https://docs.google.com/forms/d/e/<FORM_ID>/viewform?entry.111=x&entry.222=x&entry.333=x`.
+4. Put those values in `package.json`: `"feedbackForm": { "id": "<FORM_ID>", "message": "111", "name": "222", "email": "333" }`. Then run `npm test` and push.
+
+Google doesn't let another site read the Form's reply, so the page can only tell a network failure from everything else. If the Form is deleted or restricted again, the page still says "Received", so send yourself a test message after any change to the Form. The name and email arrive in the response, not as the reply-to address. Reply from bbh@usc.edu by writing to the email in the response.
 
 ## Parser strategy
 

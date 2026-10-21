@@ -63,6 +63,10 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .err{margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--needs-bg);color:var(--needs);font-weight:500}
 .how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:36px;color:var(--body);font-size:14.5px}
 .how b{display:block;color:var(--ink);font:600 15px/1.3 var(--display);margin-bottom:4px}
+.promo{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px}
+.promo-icon{flex:none;color:var(--cardinal)}
+.promo p{flex:1 1 260px;margin:0;color:var(--body);font-size:15px}
+.promo p b{color:var(--ink);font-family:var(--display)}
 .usage{margin-top:28px;font-size:14px;color:var(--muted)}
 .usage b{color:var(--ink);font-family:var(--display)}
 
@@ -74,8 +78,7 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .side nav a:hover{background:var(--card);color:var(--ink)}
 .side nav a.on{background:var(--card);color:var(--cardinal);box-shadow:inset 3px 0 0 var(--cardinal)}
 .side nav ol ol{padding-left:12px}
-.side nav ol ol a{font-size:13px;display:flex;align-items:center;gap:8px}
-.side nav .dot{width:8px;height:8px;border-radius:50%;background:var(--area);flex:none}
+.side nav ol ol a{font-size:13px}
 .side .primary{justify-content:center}
 .print-short{display:none}
 
@@ -133,7 +136,7 @@ tr.crs.gone td{color:var(--muted)}
 .mk.needs{border:1.5px solid var(--needs)}
 .mk.none{border:1.5px dashed var(--muted)}
 .areas{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
-.area-card{flex:1 1 340px;min-width:0;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--area);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px 10px;scroll-margin-top:16px}
+.area-card{--area:var(--cardinal);flex:1 1 340px;min-width:0;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--area);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px 10px;scroll-margin-top:16px}
 .area-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .area-card h3{font:700 17px/1.25 var(--display);margin:0;display:flex;align-items:center;gap:8px;color:var(--ink)}
 .area-card .tally{font:600 13px/1.3 var(--display);color:var(--area);white-space:nowrap;text-align:right}
@@ -153,7 +156,9 @@ tr.crs.gone td{color:var(--muted)}
 .req>summary{font:500 14.5px/1.35 var(--body-font);padding:11px 18px;gap:10px;align-items:center}
 .req>summary .name{flex:1;min-width:0}
 .req.done>summary .name{color:var(--body)}
-.req>summary .pill{flex:none}
+/* Still-needed requirements stand out; everything else stays plain. */
+.req.needs>summary{background:var(--needs-bg)}
+.req.needs>summary .name{font-weight:600;color:var(--ink)}
 .req-body{padding:0 18px 14px 37px;font-size:14px;display:grid;gap:10px}
 .req-body .where{color:var(--body)}
 .subs{list-style:none;margin:0;padding:0;display:grid;gap:10px}
@@ -162,6 +167,7 @@ tr.crs.gone td{color:var(--muted)}
 .subs .sub-name{font-weight:600;color:var(--ink)}
 .subs>li.done .sub-name{font-weight:500;color:var(--body)}
 .subs .sub-more{grid-column:2;display:grid;gap:6px}
+.subs>li.needs{background:var(--needs-bg);border-radius:8px;padding:6px 8px;margin:0 -8px}
 .need{background:var(--needs-bg);border-radius:8px;padding:8px 10px;display:grid;gap:6px}
 .need.progress{background:var(--prog-bg)}
 .need .count{font:700 15px var(--display);color:var(--needs)}
@@ -188,15 +194,6 @@ a.chip:hover{border-color:var(--cardinal);background:var(--cardinal-tint);color:
 .course-link button.copy{padding:2px 4px}
 .course-link button.copy .ci{opacity:.55;margin:0}
 .opts-or{display:inline-flex;align-items:center;gap:4px;color:var(--muted)}
-.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 9px 2px 7px;font:600 12px/1.5 var(--display);white-space:nowrap}
-.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
-.pill.done{background:var(--done-bg);color:var(--done-ink)}
-.pill.progress{background:var(--prog-bg);color:var(--prog)}
-.pill.progress::before{background:linear-gradient(90deg,currentColor 50%,transparent 50%);border:1.5px solid currentColor;width:9px;height:9px}
-.pill.needs{background:var(--needs-bg);color:var(--needs)}
-.pill.needs::before{background:transparent;border:1.5px solid currentColor}
-.pill.none{background:var(--sunk);color:var(--muted)}
-.pill.none::before{background:transparent;border:1.5px dashed currentColor}
 
 /* double-check notice */
 .unread{margin-top:22px;background:var(--prog-bg);border:1px solid var(--gold-line);border-left:4px solid var(--prog);border-radius:14px;padding:16px 18px}
@@ -238,7 +235,9 @@ footer .official{color:var(--ink);font-weight:500}
 /* feedback page */
 .form{max-width:620px;display:grid;gap:16px;margin-top:8px}
 .form label{display:grid;gap:6px;font:600 14px/1.3 var(--display)}
-.form label span{font:400 13px var(--body-font);color:var(--muted)}
+.form label .opt{font:400 13px var(--body-font);color:var(--muted)}
+.form .trap{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.sent{max-width:620px;margin-top:8px;padding:16px 18px;border-radius:14px;background:var(--done-bg);color:var(--done-ink);font:600 17px/1.3 var(--display)}
 .form input,.form textarea{font:15px/1.4 var(--body-font);padding:10px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--card);color:var(--ink);width:100%}
 .form textarea{min-height:160px;resize:vertical}
 
@@ -305,7 +304,7 @@ footer .official{color:var(--ink);font-weight:500}
 
 <div id="intake" class="wrap intake">
   <h1>Make sense of your STARS.</h1>
-  <p class="lede">Upload your STARS report PDF. You get a clean summary of what's done, what's in progress, and exactly what's left.</p>
+  <p class="lede">Upload your STARS report PDF. You get a clean summary of what's done, what's in progress, and what's left.</p>
   <p class="local">Everything runs in your browser: your report is never uploaded anywhere.</p>
   <label class="drop" id="drop" for="file">
     <input type="file" id="file" accept="application/pdf,.pdf" class="visually-hidden">
@@ -318,6 +317,12 @@ footer .official{color:var(--ink);font-weight:500}
     <span class="hint">No PDF yet? On your STARS page, click Print Report and choose Save as PDF.</span>
   </div>
   <div id="err" class="err hidden" role="alert"></div>
+  <aside class="promo" id="promo" aria-labelledby="promoT">
+    <svg class="promo-icon" width="34" height="34" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 19 L11 8 L17 14 L22 5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45"/><circle cx="4" cy="19" r="2.4" fill="currentColor"/><circle cx="11" cy="8" r="2.4" fill="currentColor"/><circle cx="17" cy="14" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="22" cy="5" r="2.4" fill="currentColor"/></svg>
+    <p id="promoT"><b>Like this?</b> Check out our extension that works directly on your STARS report tab, no need to download the PDF.</p>
+    <!-- TODO: replace # with the Chrome Web Store link once the extension is published. -->
+    <a class="btn primary" href="#">Add to Chrome</a>
+  </aside>
   <div class="how">
     <div><b>Private by design</b>Your name, student ID, and mailing address are stripped before anything is read.</div>
     <div><b>Faithful to STARS</b>Every status comes straight from your report. Nothing is guessed or rewritten by AI.</div>
@@ -326,7 +331,8 @@ footer .official{color:var(--ink);font-weight:500}
   <p class="usage hidden" id="usage"></p>
   <footer>
     <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
-    <p>Tools by Students, for Students. Built by BUAI Builder Hub. <a href="feedback.html">Share feedback</a></p>
+    <p>Tools by Students, for Students. Built by BUAI Builder Hub.</p>
+    <p data-feedback><a class="feedback-link" href="feedback.html">Send feedback</a></p>
   </footer>
 </div>
 
@@ -334,7 +340,7 @@ footer .official{color:var(--ink);font-weight:500}
 <div class="rate hidden" id="rate" role="dialog" aria-labelledby="rateQ">
   <p id="rateQ">How many stars would you give Constellation?</p>
   <div class="stars" role="group" aria-label="Rate Constellation"><button type="button" data-rate="1" aria-label="1 star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button><button type="button" data-rate="2" aria-label="2 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button><button type="button" data-rate="3" aria-label="3 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button><button type="button" data-rate="4" aria-label="4 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button><button type="button" data-rate="5" aria-label="5 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button></div>
-  <a class="feedback" href="feedback.html">Share feedback</a>
+  <a class="feedback" href="feedback.html">Send feedback</a>
   <button type="button" class="x" id="rateClose" aria-label="Dismiss">&times;</button>
 </div>
 

@@ -4,6 +4,7 @@
   "private": true,
   "description": "Make sense of your STARS. Turns a USC STARS report PDF into a clear, readable summary.",
   "goatcounter": "",
+  "feedbackForm": { "id": "", "message": "", "name": "", "email": "" },
   "scripts": {
     "build": "node build.js --extension",
     "check:privacy": "node scripts/check-privacy.mjs",

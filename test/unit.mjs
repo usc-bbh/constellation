@@ -1,6 +1,7 @@
 // Unit tests for the parts of the page that can be checked without a PDF: the abbreviation key,
 // the summary numbers, and exactly what each copy action puts on the clipboard. Runs on the
-// fictional sample report (src/sample-report.txt), so no real record is needed.
+// fictional report in test/fixture-report.txt, so no real record is needed. It was the on-page
+// sample before Tommy Trojan and is kept because it covers most formats the parser handles.
 // Usage: node test/unit.mjs (also part of npm test)
 import fs from 'fs';
 import assert from 'assert/strict';
@@ -9,7 +10,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const P = require('../src/parser.js');
 const F = require('../src/format.js');
-const SAMPLE = fs.readFileSync(new URL('../src/sample-report.txt', import.meta.url), 'utf8');
+const SAMPLE = fs.readFileSync(new URL('./fixture-report.txt', import.meta.url), 'utf8');
 const r = P.parse(SAMPLE);
 
 let failed = 0;
@@ -124,6 +125,18 @@ test('every "what\'s left" row is shown under some requirement', () => {
   assert.equal(placed.length, r.left.length);
   for (const l of r.left) assert.ok(placed.includes(l), l.label);
   assert.ok(!JSON.stringify(r.left).includes('"block"'), 'row references stay out of JSON');
+});
+
+test('on-page sample (Tommy Trojan) reads cleanly, with nothing to double-check', () => {
+  const t = P.parse(fs.readFileSync(new URL('../src/sample-report.txt', import.meta.url), 'utf8'));
+  assert.deepEqual(t.unread, []);
+  assert.equal(t.meta.major, 'Business of Fighting On');
+  assert.equal(t.meta.classLevel, 'Junior');
+  assert.deepEqual(F.deriveSummary(t), {
+    gpa: '3.487', majorGpa: '3.567', unitsCompleted: 72, unitsInProgress: 16,
+    unitsRequired: 128, unitsRemaining: 40, requirementsLeft: 7
+  });
+  assert.deepEqual(F.transferCredit(t), { units: 12, courses: 3 });
 });
 
 if (failed) { console.log(`\n${failed} unit test(s) failed`); process.exit(1); }

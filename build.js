@@ -4,7 +4,7 @@
 // report never leaves the page. The one exception to "no requests" is src/telemetry.js: anonymous
 // GoatCounter counts (visits, summaries, star ratings) once a site code is set in package.json.
 // The Content-Security-Policy allows that one host and nothing else. Also builds feedback.html,
-// which makes no requests at all.
+// whose only request is the feedback itself, posted to the USC Google Form set in package.json.
 //
 // With --extension it also builds the Chrome extension in dist/extension/: the same page as
 // summary.html, but with every script as its own file, because Chrome extensions (Manifest V3)
@@ -81,10 +81,20 @@ page = withCsp(page, GC_HOST);
 fs.writeFileSync('index.html', page);
 console.log(`Built index.html (${(page.length / 1024).toFixed(0)} KB, ${hashesOf(page).length} inline scripts, telemetry ${GC_HOST ? 'to ' + GC_HOST : 'off'})`);
 
-// ---------- feedback page: a mailto form, no requests ----------
+// ---------- feedback page: posts to a USC Google Form (mailto until one is set) ----------
+// package.json "feedbackForm": the Form's id (from its /forms/d/e/<id>/viewform link) and the
+// entry number of each question. Set: the page may post to docs.google.com and nowhere else.
+const FF = require('./package.json').feedbackForm || {};
+const FF_ON = Boolean(FF.id);
+if (FF_ON && !(/^[\w-]{20,}$/.test(FF.id) && [FF.message, FF.name, FF.email].every(f => /^\d+$/.test(f))))
+  throw new Error('package.json feedbackForm needs the Form id and the entry number of each question (digits only)');
+const feedbackJs = read('src/feedback.js').replace('__FEEDBACK_FORM_ID__', FF.id || '')
+  .replace('__FEEDBACK_MSG__', FF.message || '').replace('__FEEDBACK_NAME__', FF.name || '').replace('__FEEDBACK_EMAIL__', FF.email || '');
 const feedbackTemplate = read('src/feedback.html').replace(STYLE_MARK, () => style);
-fs.writeFileSync('feedback.html', withCsp(feedbackTemplate.replace('<script>/*FEEDBACK*/</script>', () => `<script>${safe(read('src/feedback.js'))}</script>`), ''));
-console.log('Built feedback.html');
+const feedbackPage = withCsp(feedbackTemplate.replace('<script>/*FEEDBACK*/</script>', () => `<script>${safe(feedbackJs)}</script>`), '')
+  .replace("connect-src 'none'", FF_ON ? 'connect-src https://docs.google.com' : "connect-src 'none'");
+fs.writeFileSync('feedback.html', feedbackPage);
+console.log(`Built feedback.html (${FF_ON ? 'sends to the Google Form' : 'no Google Form set: Send opens an email'})`);
 
 // ---------- Chrome extension: every script as its own file ----------
 if (process.argv.includes('--extension')) {
@@ -104,9 +114,7 @@ if (process.argv.includes('--extension')) {
   fs.writeFileSync(path.join(out, 'summary.html'), summary);
   fs.copyFileSync('src/extension/background.js', path.join(out, 'background.js'));
   fs.copyFileSync('src/extension/summary.js', path.join(out, 'summary.js'));
-  fs.copyFileSync('src/feedback.js', path.join(out, 'feedback.js'));
-  fs.writeFileSync(path.join(out, 'feedback.html'), feedbackTemplate.replace('<!--CSP-->', '')
-    .replace('<script>/*FEEDBACK*/</script>', '<script src="feedback.js"></script>').replace(/href="index\.html"/g, 'href="summary.html"'));
+  // No feedback page in the extension: its "Send feedback" link opens the website's in a new tab.
 
   const sizes = [16, 32, 48, 128];
   for (const n of sizes) fs.writeFileSync(path.join(out, 'icons', `icon${n}.png`), icon(n));

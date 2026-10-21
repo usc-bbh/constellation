@@ -1,6 +1,6 @@
 # Constellation: status and next steps
 
-_Last updated 20 Oct 2026 by Natalie (with Claude). Start here when picking the project back up._
+_Last updated 21 Oct 2026 by Natalie (with Claude). Start here when picking the project back up._
 
 Live page: https://usc-bbh.github.io/constellation/ (GitHub Pages from `main`, turned on 20 Oct).
 
@@ -16,7 +16,7 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Synthetic sample in this repo | **Done.** `src/sample-report.txt` (program 9000, "Data and Society") is invented. |
+| 1 | Synthetic sample in this repo | **Done.** `src/sample-report.txt` is now Tommy Trojan (program 9001, "Business of Fighting On", 21 Oct). The earlier invented "Data and Society" report (program 9000) moved to `test/fixture-report.txt` for the unit tests. |
 | 1 | Earlier sample in `bbh-course-reg-project` history | **Open.** The pre-move sample (BS AI for Business, program 1915) is still in that repo's history at commit `2c019dd`. Confirm it was fully invented. If not, ask Vishal about removing it from history (see "Removing the old sample" below). |
 | 2 | Flag instead of guess | **Done (13 Oct).** See "What changed on 13 Oct". |
 | 2 | Walkthrough mapping | **Not started.** The walkthrough is `docs/reference/01-reading-a-stars-report.md` in `bbh-course-reg-project`. Section 12 of Tanzil's `STARS_PARSER_DESIGN.md` (in next-sem-validator, formerly PLAN.md) lists where real reports contradict it. Start there. |
@@ -27,13 +27,25 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 | 3 | V2: build that writes scripts as separate files | **Done (20 Oct).** `npm run build` also writes `dist/extension/` (load unpacked). The V1 page is unchanged. |
 | 3 | V2: STARS web page text vs PDF text | **Next.** Load the extension, open your own STARS report, click the button, and compare with the PDF summary. Don't commit anything it shows. If the report is in a frame from another site, the extension needs a narrow host permission for it. |
 | — | README pointed at the old parser location and submodule | **Done on this branch (13 Oct), not on `main` yet.** Tanzil flagged it again in bbh-course-reg-project#7 (18 Oct). Merging this branch closes it. |
+| — | Name on the summary / stop redacting | **Open, for the team (Natalie to raise).** The original report text now shows the report as uploaded. Still to decide: (b) show the student's name at the top of the summary (useful on advisor printouts, but it's on every shared screenshot) and (c) stop redacting everywhere, page and extension (simpler, but the ID and address spread beyond the collapsed text and the "Private by design" wording must change). Suggested: keep as is, and revisit (b) as a print-only header if advisors ask. Meant to be a GitHub issue; open one if wanted. |
 | — | Pathwise decisions before Tanzil's M4 | **Open, time-sensitive.** See "Waiting on Natalie (Pathwise)" below. M4 (next-sem-validator#9) is already open. |
+
+## What changed on 21 Oct (UI feedback round 2)
+
+Natalie's markup of the live site, decided in one session:
+
+- **Feedback page sends directly.** Send posts the message, name and email to a USC Google Form owned by bbh@usc.edu (see "Feedback form setup" in the README). **Waiting on bbh@usc.edu** to create the Form and put its IDs in `package.json`. Until then Send opens an email as before. On success the form is replaced by "Received. Thank you."; a network failure offers a mailto link. Labels read "Name (optional)" and "Email for a reply (optional)". The "sends nothing" paragraph and the "Back to Constellation" button are gone, and the page now says that Send sends a request.
+- **"Send feedback"** is in the footer of the first page and the results page. In the extension it opens the website's feedback page in a new tab.
+- **Front page:** "exactly" is gone from the intro. An extension promo card ("Like this? Check out our extension…") with an **Add to Chrome** button links to `#` until the extension is on the Chrome Web Store (TODO in `src/page.html`).
+- **Results page:** no "STARS summary" label, no "(now)" after in-progress courses, and no Complete/Still needed pills. Still-needed rows are tinted instead. Every area uses USC cardinal, and the menu has no colored dots.
+- **Original report text** shows the report as uploaded, with no "personal details removed" label and no "Removed before reading" line. Parsing still runs on redacted text.
+- **Sample:** Tommy Trojan, BS in Business of Fighting On (see above).
 
 ## What changed on 20 Oct (UI feedback round)
 
 Feedback on the results page, decided with the BBH team:
 
-- **Look:** colors, cards, buttons and type sizes follow RegCheck (`gui/src/theme.js` in next-sem-validator). The styles moved to `src/style.css`, shared with the new feedback page. Each area has its own color.
+- **Look:** colors, cards, buttons and type sizes follow RegCheck (`gui/src/theme.js` in next-sem-validator). The styles moved to `src/style.css`, shared with the new feedback page. Each area had its own color (one color since 21 Oct).
 - **One layout instead of three views:** the Dashboard, Table and Printable tabs, the "What's left" table and the checklist table are gone. Each area card now opens requirement by requirement (caret) to show where it stands, the courses used and what's left, with "choose from" codes linked to the USC catalogue and GE categories linked to Dornsife's list. Open areas come first; finished ones go last with a star check. Cards show units applied per area.
 - **New tile:** Transfer & AP units, from the report's own TRNSFR WORK total.
 - **Navigation:** left-hand menu, which becomes a top strip on phones. "Print or save as PDF" is a button.

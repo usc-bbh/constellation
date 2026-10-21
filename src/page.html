@@ -21,7 +21,7 @@
 
 <div id="intake" class="wrap intake">
   <h1>Make sense of your STARS.</h1>
-  <p class="lede">Upload your STARS report PDF. You get a clean summary of what's done, what's in progress, and exactly what's left.</p>
+  <p class="lede">Upload your STARS report PDF. You get a clean summary of what's done, what's in progress, and what's left.</p>
   <p class="local">Everything runs in your browser: your report is never uploaded anywhere.</p>
   <label class="drop" id="drop" for="file">
     <input type="file" id="file" accept="application/pdf,.pdf" class="visually-hidden">
@@ -34,6 +34,12 @@
     <span class="hint">No PDF yet? On your STARS page, click Print Report and choose Save as PDF.</span>
   </div>
   <div id="err" class="err hidden" role="alert"></div>
+  <aside class="promo" id="promo" aria-labelledby="promoT">
+    <svg class="promo-icon" width="34" height="34" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 19 L11 8 L17 14 L22 5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45"/><circle cx="4" cy="19" r="2.4" fill="currentColor"/><circle cx="11" cy="8" r="2.4" fill="currentColor"/><circle cx="17" cy="14" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="22" cy="5" r="2.4" fill="currentColor"/></svg>
+    <p id="promoT"><b>Like this?</b> Check out our extension that works directly on your STARS report tab, no need to download the PDF.</p>
+    <!-- TODO: replace # with the Chrome Web Store link once the extension is published. -->
+    <a class="btn primary" href="#">Add to Chrome</a>
+  </aside>
   <div class="how">
     <div><b>Private by design</b>Your name, student ID, and mailing address are stripped before anything is read.</div>
     <div><b>Faithful to STARS</b>Every status comes straight from your report. Nothing is guessed or rewritten by AI.</div>
@@ -42,7 +48,8 @@
   <p class="usage hidden" id="usage"></p>
   <footer>
     <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
-    <p>Tools by Students, for Students. Built by BUAI Builder Hub. <a href="feedback.html">Share feedback</a></p>
+    <p>Tools by Students, for Students. Built by BUAI Builder Hub.</p>
+    <p data-feedback><a class="feedback-link" href="feedback.html">Send feedback</a></p>
   </footer>
 </div>
 
@@ -50,7 +57,7 @@
 <div class="rate hidden" id="rate" role="dialog" aria-labelledby="rateQ">
   <p id="rateQ">How many stars would you give Constellation?</p>
   <div class="stars" role="group" aria-label="Rate Constellation"><button type="button" data-rate="1" aria-label="1 star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button><button type="button" data-rate="2" aria-label="2 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button><button type="button" data-rate="3" aria-label="3 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button><button type="button" data-rate="4" aria-label="4 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button><button type="button" data-rate="5" aria-label="5 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="currentColor"/></svg></button></div>
-  <a class="feedback" href="feedback.html">Share feedback</a>
+  <a class="feedback" href="feedback.html">Send feedback</a>
   <button type="button" class="x" id="rateClose" aria-label="Dismiss">&times;</button>
 </div>
 
