@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-W+SL5R2EQod8ZwOXYzZSXx/GGmYBt7lNmPVJRb/SSFo=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-rQvLLtP43dKtBWC/AdjRE8Z34Lw2v+YpTTBGGuB5EwQ=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation: make sense of your STARS</title>
 <style>
@@ -15,7 +15,7 @@
   --page:#F7F7F5; --card:#FFFFFF; --ink:#1C1C1F; --body:#52525B; --muted:#5B5B63; --faint:#71717A;
   --line:rgba(0,0,0,.08); --line-strong:rgba(0,0,0,.15); --sunk:#F2F2F4;
   --cardinal:#990000; --cardinal-deep:#7d0000; --cardinal-tint:rgba(153,0,0,.08); --gold:#B8952E; --gold-line:rgba(212,175,55,.4);
-  /* Status colors, one palette for the key, the bars, the dots and the counts: red fills in as
+  /* Status colors, one palette for the bars, the dots and the counts: red fills in as
      requirements are met. Complete is solid cardinal, in progress a lighter red, still needed gray. */
   --done:#990000; --done-ink:#990000; --done-bg:rgba(153,0,0,.08);
   --prog:#D27979; --prog-ink:#A64444; --prog-bg:#FBF0F0;
@@ -51,7 +51,8 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .tagline{margin-left:36px}
 
 /* intake */
-.intake{padding-top:32px;padding-bottom:64px}
+/* The first page fills the window below the top bar (about 80px), so its footer sits at the bottom. */
+.intake{padding-top:32px;display:flex;flex-direction:column;min-height:calc(100vh - 80px);min-height:calc(100svh - 80px)}
 .intake h1{font:700 clamp(36px,6vw,60px)/1.02 var(--display);letter-spacing:-1px;margin:0 0 12px;max-width:16ch}
 .intake p.lede{font-size:18px;color:var(--body);max-width:56ch;margin:0 0 6px}
 .intake p.local{font-size:15px;color:var(--muted);margin:0 0 26px}
@@ -110,7 +111,7 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .meter .p{background:var(--prog)}
 .meter,.mk,.need,.tag,.term-h td,.req.needs>summary,.subs>li.needs{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sw{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:0}
-.sw.d{background:var(--done)}.sw.p{background:var(--prog)}.sw.n{background:var(--sunk);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.sw.p{background:var(--prog)}
 
 /* click to copy */
 .copy{font:inherit;color:inherit;background:none;border:0;border-radius:3px;padding:0;margin:0;text-align:inherit;cursor:copy;letter-spacing:inherit;display:inline;
@@ -135,12 +136,6 @@ tr.crs.gone td{color:var(--muted)}
 .term-h .tu{float:right;font-weight:500;color:var(--muted)}
 
 /* progress by area */
-.area-tools{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 18px;margin:0 0 14px;padding:10px 14px;background:var(--card);border:1px solid var(--line);border-radius:10px}
-.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;font-size:13px;color:var(--body)}
-.legend b{font:600 12px/1.3 var(--display);letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
-.legend span{display:flex;align-items:center;gap:8px}
-.legend .sw{margin-right:0}
-.area-tools button{padding:8px 12px}
 .mk{flex:none;width:10px;height:10px;border-radius:50%}
 .mk.done{background:var(--done)}
 .mk.progress{background:linear-gradient(90deg,var(--prog) 50%,transparent 50%);border:1.5px solid var(--prog)}
@@ -156,9 +151,13 @@ tr.crs.gone td{color:var(--muted)}
 .area-card .meter .d{background:var(--area)}
 .area-card .meter .p{background:var(--area);opacity:.35}
 .star-check{flex:none;width:22px;height:22px;color:var(--area)}
-.counts{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);margin-top:8px}
+/* Each count carries the dot it stands for, so the line under the bar doubles as its key. */
+.counts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted);margin-top:8px}
+.counts span{display:inline-flex;align-items:center;gap:6px}
+.counts .mk{width:9px;height:9px}
+/* A finished requirement carries no dot; the space stays so names line up. */
+.req>summary>.mk.done,.subs>li>.mk.done{visibility:hidden}
 .counts b{font-weight:700;font-family:var(--display)}
-.counts .done b{color:var(--done-ink)}
 .counts .progress b{color:var(--prog-ink)}
 .counts .needs b{color:var(--needs-ink)}
 .counts .none b{color:var(--muted)}
@@ -232,6 +231,11 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 .fine li{margin:4px 0}
 footer{padding-top:36px;padding-bottom:96px;color:var(--muted);font-size:13.5px}
 footer .official{color:var(--ink);font-weight:500}
+/* First page and feedback page: a thin footer bar at the bottom of the window. */
+footer.site-foot{margin-top:auto;padding:16px 0 calc(20px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 24px;font-size:13px}
+.how,.gform{margin-bottom:48px}
+footer.site-foot p{margin:0}
+footer.site-foot .official{color:var(--body)}
 
 /* rating prompt */
 .rate{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(560px,calc(100% - 32px));background:var(--card);border:1px solid var(--line-strong);border-radius:14px;box-shadow:0 18px 40px -12px rgba(28,28,31,.35);padding:14px 44px 14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;z-index:10}
@@ -299,9 +303,8 @@ footer .official{color:var(--ink);font-weight:500}
   .tile .v,.tile .v small{font-size:20px}
   .tile.gpa .v{font-size:32px}
   .hero .prepared{text-align:left}
-  .tile,.req,.scroll tr,.area-tools{break-inside:avoid}
+  .tile,.req,.scroll tr{break-inside:avoid}
   .area-card{break-inside:auto;border-color:var(--line-strong)}
-  .area-tools{padding:6px 0;border:0}
   h2,details.list>summary{break-after:avoid}
   main section{padding-top:18px}
   .hist{font-size:12px}
@@ -351,10 +354,9 @@ footer .official{color:var(--ink);font-weight:500}
     <div><b>Unofficial</b>STARS and your advisor remain the source of truth for graduation.</div>
   </div>
   <p class="usage hidden" id="usage"></p>
-  <footer>
+  <footer class="site-foot">
     <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
-    <p>Tools by Students, for Students. Built by BUAI Builder Hub.</p>
-    <p data-feedback><a class="feedback-link" href="feedback.html">Send feedback</a></p>
+    <p>Tools by Students, for Students. Built by BUAI Builder Hub. <span data-feedback><a class="feedback-link" href="feedback.html">Send feedback</a></span></p>
   </footer>
 </div>
 
@@ -1064,10 +1066,6 @@ const geLink = l => link(`${GE_COURSES}${l.toLowerCase()}/`, `See Dornsife's GE-
 const areaId = n => 'area-' + n.toLowerCase().replace(/[^a-z]+/g, '-');
 // A finished area: a check drawn as three stars, like the logo.
 const STAR_CHECK = '<svg class="star-check" viewBox="0 0 24 24" role="img" aria-label="Area complete"><circle cx="12" cy="12" r="11.5" fill="currentColor" opacity=".12"/><path d="M6 12.5 10 16.5 18 7.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="6" cy="12.5" r="2.1" fill="currentColor"/><circle cx="10" cy="16.5" r="2.4" fill="currentColor"/><circle cx="18" cy="7.5" r="2.1" fill="currentColor"/></svg>';
-// One key for the whole page: the dots on each requirement and the bars use the same colors.
-const SWATCH = { done: 'd', progress: 'p', needs: 'n' };
-const legend = withNone => `<div class="legend" aria-hidden="true"><b>Key</b>${['done', 'progress', 'needs'].concat(withNone ? ['none'] : [])
-  .map(k => `<span>${SWATCH[k] ? `<i class="sw ${SWATCH[k]}"></i>` : ''}<i class="mk ${k}"></i>${STATUS_TXT[k]}</span>`).join('')}</div>`;
 // What's still needed for one requirement, from STARS's own "what's left" row.
 function needBox(l, withLabel){
   const amount = l.count ? `<span class="count">${esc(l.count)} ${esc(l.unit)}</span> still needed` : 'Still needed';
@@ -1088,7 +1086,7 @@ function subMore(s, row){
   else if (/GE seminar/i.test(s.name) && s.status !== 'done') bits.push(link(GE_REQUIREMENTS, 'About GE seminars', 'ge-link'));
   return bits.length ? `<div class="sub-more">${bits.join('')}</div>` : '';
 }
-// Requirements start folded, so a long report opens as a short list of areas. "Open all" unfolds them.
+// Requirements start folded, so a long report opens as a short list of areas.
 function reqRow({ block: b, left, subs }){
   const body = [`<div class="where">${blockSummary(b)}</div>`];
   if (b.notes.length) body.push(`<div class="detail">${b.notes.map(esc).join('. ')}</div>`);
@@ -1098,13 +1096,20 @@ function reqRow({ block: b, left, subs }){
   return `<details class="req ${b.status}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
 }
+// What's left in an area: only the in-progress and still-needed counts, and only those above zero.
+// Each carries its dot, so the line also explains the dots on the requirements below.
+const counts = n => {
+  const bits = ['progress', 'needs', 'none'].filter(k => n[k]).map(k => `<span class="${k}"><i class="mk ${k}" aria-hidden="true"></i><b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</span>`);
+  return bits.length ? `<div class="counts">${bits.join('')}</div>` : '';
+};
 function areaCard(a){
   const n = a.counts, pct = k => (n[k] / a.total * 100).toFixed(1);
+  const left = a.total - n.done; // a finished area says nothing here; its star check says it
   const u = a.units ? `<small>${num(a.units.done)} units done${a.units.progress ? `, ${num(a.units.progress)} in progress` : ''}</small>` : '';
   return `<article class="area-card" id="${areaId(a.name)}">
-    <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3><div class="tally">${n.done} of ${a.total} complete${u}</div></header>
+    <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3>${left ? `<div class="tally">${left} left${u}</div>` : ''}</header>
     <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-    <div class="counts"><span class="done"><b>${n.done}</b> complete</span><span class="progress"><b>${n.progress}</b> in progress</span><span class="needs"><b>${n.needs}</b> still needed</span>${n.none ? `<span class="none"><b>${n.none}</b> not marked</span>` : ''}</div>
+    ${counts(n)}
     <div class="reqs">${a.blocks.map(reqRow).join('')}</div></article>`;
 }
 
@@ -1216,8 +1221,7 @@ function render(r, reportText){
   h += unreadNotice(r);
 
   // progress by area, with what's left inside each requirement
-  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Every requirement on your report, grouped by area. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p>
-    <div class="area-tools">${legend(areas.some(a => a.counts.none))}<button type="button" class="no-print" id="toggleReqs" aria-controls="areas">Open all requirements</button></div><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
+  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Every requirement on your report, grouped by area. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
 
   // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
   const key = r.key || {};
@@ -1270,10 +1274,6 @@ function render(r, reportText){
   const res = $('#result'); res.innerHTML = h; res.classList.remove('hidden');
   res.querySelectorAll('[data-again]').forEach(b => { b.onclick = uploadAnother; });
   $('#print').onclick = () => window.print();
-  const reqs = [...res.querySelectorAll('details.req')], toggle = $('#toggleReqs');
-  const syncToggle = () => { toggle.textContent = reqs.every(d => d.open) ? 'Close all requirements' : 'Open all requirements'; };
-  toggle.onclick = () => { const open = !reqs.every(d => d.open); reqs.forEach(d => { d.open = open; }); syncToggle(); };
-  reqs.forEach(d => d.addEventListener('toggle', syncToggle));
   // A menu link to a folded section opens it.
   res.querySelectorAll('.side nav a').forEach(a => a.addEventListener('click', () => {
     const d = document.querySelector(`${a.getAttribute('href')} > details`); if (d) d.open = true;

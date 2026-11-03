@@ -34,14 +34,16 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 
 From the team's review of the live page, for the bug-fix push before the meeting with Vishal:
 
-- **One color key:** the key said green meant complete, but the area bars were cardinal, and the units bar was green and brown. Now there's one red-and-gray palette everywhere: complete is solid cardinal, in progress is a lighter red, still needed is gray (including the still-needed row tint). The key sits in a bar at the top of "Progress by area", shows the bar swatches next to the dots, and adds "Not marked" only when the report has any. The "double-check" notice stays amber, errors stay red, and "Received. Thank you." stays green, because they aren't statuses.
-- **Requirements start folded:** after an upload, every requirement is closed. An "Open all requirements" button opens or closes them all. Printing still opens everything.
+- **One color palette:** the old key said green meant complete, but the area bars were cardinal and the units bar was green and brown. Now there's one red-and-gray palette everywhere: complete is solid cardinal, in progress is a lighter red, still needed is gray (including the still-needed row tint). There's no separate key: under each area's bar, the counts of what's in progress and still needed carry their dots ("◐ 1 in progress ○ 2 still needed"), and zero counts are left out. Each card's header says "3 left" (nothing once the area is finished), and finished requirements have no dot. The "double-check" notice stays amber and errors stay red, because they aren't statuses.
+- **Requirements start folded:** after an upload, every requirement is closed. Printing still opens everything.
 - **"Major:" label** on the page title, so it's clear it's the major read from the report.
 - **Upload another report:** a button under "Print or save as PDF" (and the footer button, renamed). It clears the summary and opens the file picker, with no page refresh.
 - **Feedback page embeds the Google Form** (replaces 21 Oct's direct send). Once `"feedbackForm"` in `package.json` holds the Form's embed link, `feedback.html` shows the Form in a frame. The email form below it was removed the same day, along with `feedback.js`, so the page runs no scripts of its own; with no Form set it shows an email link to bbh@usc.edu. The page's policy allows a frame from `docs.google.com` and no connections. The extension still opens the website's feedback page.
 - **PDF export:** the five tiles were too narrow at page width and labels spilled out. The "Counts toward" column wrapped word by word. Bars and row tints vanished unless "Background graphics" was ticked. All three are fixed (`print-color-adjust: exact`). Checked in headless Chrome only.
 
 - **Star rating hidden until counts are on:** the rating prompt used to thank students while the rating went nowhere, because GoatCounter was never set up. It now shows only once `"goatcounter"` in `package.json` holds a site code. Until then nothing is sent and the prompt never appears.
+
+- **Footer (first page and feedback page):** a thin bar at the bottom of the window, with the disclaimer on the left and the credit and "Send feedback" on the right.
 
 **Waiting on Natalie:**
 1. **Feedback form: embedded (3 Nov).** "Constellation Feedback Form" (feedback, optional email) is set in `package.json` and loads without sign-in. Still to do: send a test response from the live page and confirm the notification reaches bbh@usc.edu.
