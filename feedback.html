@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-81HF/rYHFKEx9xrECiDo/Ae/LgbbyUm69Q04wf+BJyQ='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-81HF/rYHFKEx9xrECiDo/Ae/LgbbyUm69Q04wf+BJyQ='; worker-src blob:; child-src blob:; frame-src https://docs.google.com; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation feedback</title>
 <style>
@@ -249,7 +249,9 @@ footer .official{color:var(--ink);font-weight:500}
 .form label{display:grid;gap:6px;font:600 14px/1.3 var(--display)}
 .form label .opt{font:400 13px var(--body-font);color:var(--muted)}
 .gform{max-width:760px;margin-top:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-.gform iframe{display:block;width:100%;height:min(1100px,85vh);border:0}
+/* About the height Google suggests for this Form; a longer Form scrolls inside the frame. */
+.gform iframe{display:block;width:100%;height:660px;border:0}
+@media (max-width:640px){.gform iframe{height:760px}}
 .or-email{margin-top:40px}
 .form input,.form textarea{font:15px/1.4 var(--body-font);padding:10px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--card);color:var(--ink);width:100%}
 .form textarea{min-height:160px;resize:vertical}
@@ -331,8 +333,9 @@ footer .official{color:var(--ink);font-weight:500}
 <main class="wrap intake">
   <h1>Tell us what you think.</h1>
   <p class="lede">What worked, what was confusing, what Constellation got wrong. Every note goes to the BUAI Builder Hub team.</p>
-  <!--FORM-->
-  <h2 class="or-email hidden" id="orEmail">Or send an email</h2>
+  <p class="local">This is a Google Form, run by Google: Google sees what you type and may set cookies. Answers go to the BBH team at bbh@usc.edu. Nothing from your STARS report is sent. Please don't share your student ID or your report.</p>
+  <div class="gform"><iframe src="https://docs.google.com/forms/d/e/1FAIpQLScW8VSSEoFM6iHoWwCNpQOWtaJXY6rQgqoCQDqujTCH8dcWhQ/viewform?embedded=true" title="Constellation feedback form (Google Form)" loading="lazy" referrerpolicy="no-referrer">Loading the feedback form…</iframe></div>
+  <h2 class="or-email" id="orEmail">Or send an email</h2>
   <p class="local">Send opens a message to bbh@usc.edu in your own email app, and you choose whether to send it. Name and email are optional. Please don't paste your student ID or your STARS report.</p>
   <form class="form" id="fb" novalidate>
     <label>Your feedback<textarea id="msg" required></textarea></label>

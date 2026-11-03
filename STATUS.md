@@ -42,7 +42,7 @@ From the team's review of the live page, for the bug-fix push before the meeting
 - **PDF export:** the five tiles were too narrow at page width and labels spilled out. The "Counts toward" column wrapped word by word. Bars and row tints vanished unless "Background graphics" was ticked. All three are fixed (`print-color-adjust: exact`). Checked in headless Chrome only.
 
 **Waiting on Natalie:**
-1. The feedback Google Form (see "Feedback form setup" in the README). Paste its embed link into `package.json` ("feedbackForm"), rebuild, and send a test response.
+1. **Feedback form: embedded (3 Nov).** "Constellation Feedback Form" (feedback, optional email) is set in `package.json` and loads without sign-in. Still to do: send a test response from the live page and confirm the notification reaches bbh@usc.edu.
 2. Print the sample from Chrome and Safari with "Background graphics" off, to confirm the export.
 
 ## What changed on 21 Oct (UI feedback round 2)
