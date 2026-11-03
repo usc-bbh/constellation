@@ -72,7 +72,7 @@ for (const [mark, , code] of scripts) {
 const hashesOf = html => [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
   .map(m => `'sha256-${crypto.createHash('sha256').update(m[1]).digest('base64')}'`);
 const cspOf = (html, host) => [
-  "default-src 'none'", `script-src ${hashesOf(html).join(' ')}`, 'worker-src blob:', 'child-src blob:',
+  "default-src 'none'", `script-src ${hashesOf(html).join(' ') || "'none'"}`, 'worker-src blob:', 'child-src blob:',
   "style-src 'unsafe-inline'", `img-src data: blob:${host ? ' ' + host : ''}`, `connect-src ${host || "'none'"}`,
   "form-action 'none'", "base-uri 'none'"
 ].join('; ');
@@ -81,7 +81,7 @@ page = withCsp(page, GC_HOST);
 fs.writeFileSync('index.html', page);
 console.log(`Built index.html (${(page.length / 1024).toFixed(0)} KB, ${hashesOf(page).length} inline scripts, telemetry ${GC_HOST ? 'to ' + GC_HOST : 'off'})`);
 
-// ---------- feedback page: the team's Google Form in a frame, with email below (email only until set) ----------
+// ---------- feedback page: the team's Google Form in a frame (an email link until one is set) ----------
 // package.json "feedbackForm": the Form's link, from Send > <> (embed) in Google Forms, or its id.
 // Set: the page may show docs.google.com in a frame, and nothing else. Google's page runs in the
 // frame, so the feedback goes to Google directly; this page itself still connects to nothing.
@@ -89,15 +89,14 @@ const FF = String(require('./package.json').feedbackForm || '').trim();
 const FF_ID = (FF.match(/^https:\/\/docs\.google\.com\/forms\/d\/e\/([\w-]{20,})\//) || FF.match(/^([\w-]{20,})$/) || [])[1] || '';
 if (FF && !FF_ID) throw new Error('package.json feedbackForm must be the Google Form embed link (https://docs.google.com/forms/d/e/<id>/viewform?embedded=true) or its id');
 const FORM_URL = FF_ID ? `https://docs.google.com/forms/d/e/${FF_ID}/viewform?embedded=true` : '';
-const formBlock = `<p class="local">This is a Google Form, run by Google: Google sees what you type and may set cookies. Answers go to the BBH team at bbh@usc.edu. Nothing from your STARS report is sent. Please don't share your student ID or your report.</p>
-  <div class="gform"><iframe src="${FORM_URL}" title="Constellation feedback form (Google Form)" loading="lazy" referrerpolicy="no-referrer">Loading the feedback form…</iframe></div>`;
-let feedbackPage = read('src/feedback.html').replace(STYLE_MARK, () => style)
-  .replace('<script>/*FEEDBACK*/</script>', () => `<script>${safe(read('src/feedback.js'))}</script>`);
-if (FORM_URL) feedbackPage = feedbackPage.replace('<!--FORM-->', () => formBlock).replace('class="or-email hidden"', 'class="or-email"');
+const formBlock = FORM_URL ? `<p class="local">This is a Google Form, run by Google: Google sees what you type and may set cookies. Answers go to the BBH team at bbh@usc.edu. Nothing from your STARS report is sent. Please don't share your student ID or your report.</p>
+  <div class="gform"><iframe src="${FORM_URL}" title="Constellation feedback form (Google Form)" loading="lazy" referrerpolicy="no-referrer">Loading the feedback form…</iframe></div>`
+  : `<p class="local">Email the BBH team at <a href="mailto:bbh@usc.edu?subject=Constellation%20feedback">bbh@usc.edu</a>. Please don't send your student ID or your STARS report.</p>`;
+let feedbackPage = read('src/feedback.html').replace(STYLE_MARK, () => style).replace('<!--FORM-->', () => formBlock);
 feedbackPage = withCsp(feedbackPage, '');
 if (FORM_URL) feedbackPage = feedbackPage.replace("child-src blob:", "child-src blob:; frame-src https://docs.google.com");
 fs.writeFileSync('feedback.html', feedbackPage);
-console.log(`Built feedback.html (${FORM_URL ? 'embeds the Google Form ' + FF_ID : 'no Google Form set: email only'})`);
+console.log(`Built feedback.html (${FORM_URL ? 'embeds the Google Form ' + FF_ID : 'no Google Form set: email link only'})`);
 
 // ---------- Chrome extension: every script as its own file ----------
 if (process.argv.includes('--extension')) {
