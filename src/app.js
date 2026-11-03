@@ -306,11 +306,7 @@ function render(r, reportText){
   h += `<section class="no-print" id="original"><details class="list"><summary>Original report text</summary>
     <p class="section-note">Cross-check anything above against what STARS says.</p><pre class="raw">${esc(reportText.trim())}</pre></details></section>`;
 
-  h += `</main><footer>
-    <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
-    <p>Constellation is an unofficial reading aid built by BUAI Builder Hub. Tools by Students, for Students.</p>
-    <p>${feedbackLink()}</p>
-    <p><button type="button" data-again>Upload another report</button></p></footer></div></div>`;
+  h += `</main></div></div>`;
 
   $('#intake').classList.add('hidden');
   const res = $('#result'); res.innerHTML = h; res.classList.remove('hidden');
