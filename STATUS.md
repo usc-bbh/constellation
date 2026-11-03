@@ -43,6 +43,7 @@ From the team's review of the live page, for the bug-fix push before the meeting
 
 - **Star rating hidden until counts are on:** the rating prompt used to thank students while the rating went nowhere, because GoatCounter was never set up. It now shows only once `"goatcounter"` in `package.json` holds a site code. Until then nothing is sent and the prompt never appears.
 
+- **First page:** "Private by design", "Faithful to STARS" and "Unofficial" are folded under "More about Constellation", closed by default.
 - **Footer:** one footer for every page (first page, results, feedback): a dark band across the full window width at the end of the page, with the disclaimer, the credit and "Send feedback". On a short page it sits at the bottom of the window. The results page's own footer and its "Upload another report" button are gone; the button in the left menu stays. The printout keeps the disclaimer as plain text.
 
 **Waiting on Natalie:**
