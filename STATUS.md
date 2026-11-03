@@ -41,6 +41,8 @@ From the team's review of the live page, for the bug-fix push before the meeting
 - **Feedback page embeds the Google Form** (replaces 21 Oct's direct send). Once `"feedbackForm"` in `package.json` holds the Form's embed link, `feedback.html` shows the Form in a frame. The email form below it was removed the same day, along with `feedback.js`, so the page runs no scripts of its own; with no Form set it shows an email link to bbh@usc.edu. The page's policy allows a frame from `docs.google.com` and no connections. The extension still opens the website's feedback page.
 - **PDF export:** the five tiles were too narrow at page width and labels spilled out. The "Counts toward" column wrapped word by word. Bars and row tints vanished unless "Background graphics" was ticked. All three are fixed (`print-color-adjust: exact`). Checked in headless Chrome only.
 
+- **Star rating hidden until counts are on:** the rating prompt used to thank students while the rating went nowhere, because GoatCounter was never set up. It now shows only once `"goatcounter"` in `package.json` holds a site code. Until then nothing is sent and the prompt never appears.
+
 **Waiting on Natalie:**
 1. **Feedback form: embedded (3 Nov).** "Constellation Feedback Form" (feedback, optional email) is set in `package.json` and loads without sign-in. Still to do: send a test response from the live page and confirm the notification reaches bbh@usc.edu.
 2. Print the sample from Chrome and Safari with "Background graphics" off, to confirm the export.

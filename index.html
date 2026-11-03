@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-W+SL5R2EQod8ZwOXYzZSXx/GGmYBt7lNmPVJRb/SSFo=' 'sha256-jPybIdOn3Bx39S4R17zMunvaSDv8tGveRBu/j/zOSj4='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-W+SL5R2EQod8ZwOXYzZSXx/GGmYBt7lNmPVJRb/SSFo=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation: make sense of your STARS</title>
 <style>
@@ -1359,14 +1359,15 @@ window.Constellation = { run, showErr };
     } catch (e) { /* no count shown */ }
   }
 
-  // The rating prompt at the bottom of the first page. Once a student rates or closes it, it
-  // stays closed: the only thing stored is that it was answered.
+  // The rating prompt at the bottom of the first page. It shows only while counts are on, so a
+  // rating is never thanked and then dropped. Once a student rates or closes it, it stays closed:
+  // the only thing stored is that it was answered.
   const KEY = 'constellation-rated';
   const answered = () => { try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; } };
   const remember = () => { try { localStorage.setItem(KEY, '1'); } catch (e) { /* asks again next visit */ } };
   const rate = document.getElementById('rate');
   const intake = document.getElementById('intake');
-  function showRate() { if (rate && !answered() && !intake.classList.contains('hidden')) rate.classList.remove('hidden'); }
+  function showRate() { if (on && rate && !answered() && !intake.classList.contains('hidden')) rate.classList.remove('hidden'); }
   function hideRate() { if (rate) rate.classList.add('hidden'); }
   if (rate) {
     rate.querySelectorAll('[data-rate]').forEach(b => b.addEventListener('click', () => {

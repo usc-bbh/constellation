@@ -38,14 +38,15 @@
     } catch (e) { /* no count shown */ }
   }
 
-  // The rating prompt at the bottom of the first page. Once a student rates or closes it, it
-  // stays closed: the only thing stored is that it was answered.
+  // The rating prompt at the bottom of the first page. It shows only while counts are on, so a
+  // rating is never thanked and then dropped. Once a student rates or closes it, it stays closed:
+  // the only thing stored is that it was answered.
   const KEY = 'constellation-rated';
   const answered = () => { try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; } };
   const remember = () => { try { localStorage.setItem(KEY, '1'); } catch (e) { /* asks again next visit */ } };
   const rate = document.getElementById('rate');
   const intake = document.getElementById('intake');
-  function showRate() { if (rate && !answered() && !intake.classList.contains('hidden')) rate.classList.remove('hidden'); }
+  function showRate() { if (on && rate && !answered() && !intake.classList.contains('hidden')) rate.classList.remove('hidden'); }
   function hideRate() { if (rate) rate.classList.add('hidden'); }
   if (rate) {
     rate.querySelectorAll('[data-rate]').forEach(b => b.addEventListener('click', () => {
