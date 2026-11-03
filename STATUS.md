@@ -1,6 +1,6 @@
 # Constellation: status and next steps
 
-_Last updated 21 Oct 2026 by Natalie (with Claude). Start here when picking the project back up._
+_Last updated 3 Nov 2026 by Natalie (with Claude). Start here when picking the project back up._
 
 Live page: https://usc-bbh.github.io/constellation/ (GitHub Pages from `main`, turned on 20 Oct).
 
@@ -29,6 +29,20 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 | — | README pointed at the old parser location and submodule | **Done on this branch (13 Oct), not on `main` yet.** Tanzil flagged it again in bbh-course-reg-project#7 (18 Oct). Merging this branch closes it. |
 | — | Name on the summary / stop redacting | **Open, for the team (Natalie to raise).** The original report text now shows the report as uploaded. Still to decide: (b) show the student's name at the top of the summary (useful on advisor printouts, but it's on every shared screenshot) and (c) stop redacting everywhere, page and extension (simpler, but the ID and address spread beyond the collapsed text and the "Private by design" wording must change). Suggested: keep as is, and revisit (b) as a print-only header if advisors ask. Meant to be a GitHub issue; open one if wanted. |
 | — | Pathwise decisions before Tanzil's M4 | **Open, time-sensitive.** See "Waiting on Natalie (Pathwise)" below. M4 (next-sem-validator#9) is already open. |
+
+## What changed on 3 Nov (team review fixes)
+
+From the team's review of the live page, for the bug-fix push before the meeting with Vishal:
+
+- **One color key:** the key said green meant complete, but the area bars were cardinal, and the units bar was green and brown. Now there's one red-and-gray palette everywhere: complete is solid cardinal, in progress is a lighter red, still needed is gray (including the still-needed row tint). The key sits in a bar at the top of "Progress by area", shows the bar swatches next to the dots, and adds "Not marked" only when the report has any. The "double-check" notice stays amber, errors stay red, and "Received. Thank you." stays green, because they aren't statuses.
+- **Requirements start folded:** after an upload, every requirement is closed. An "Open all requirements" button opens or closes them all. Printing still opens everything.
+- **"Major:" label** on the page title, so it's clear it's the major read from the report.
+- **Upload another report:** a button under "Print or save as PDF" (and the footer button, renamed). It clears the summary and opens the file picker, with no page refresh.
+- **PDF export:** the five tiles were too narrow at page width and labels spilled out. The "Counts toward" column wrapped word by word. Bars and row tints vanished unless "Background graphics" was ticked. All three are fixed (`print-color-adjust: exact`). Checked in headless Chrome only.
+
+**Waiting on Natalie:**
+1. The feedback Google Form (see "Feedback form setup" in the README). Fill in its IDs in `package.json`, rebuild, and send a test response.
+2. Print the sample from Chrome and Safari with "Background graphics" off, to confirm the export.
 
 ## What changed on 21 Oct (UI feedback round 2)
 

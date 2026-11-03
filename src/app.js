@@ -108,7 +108,10 @@ const geLink = l => link(`${GE_COURSES}${l.toLowerCase()}/`, `See Dornsife's GE-
 const areaId = n => 'area-' + n.toLowerCase().replace(/[^a-z]+/g, '-');
 // A finished area: a check drawn as three stars, like the logo.
 const STAR_CHECK = '<svg class="star-check" viewBox="0 0 24 24" role="img" aria-label="Area complete"><circle cx="12" cy="12" r="11.5" fill="currentColor" opacity=".12"/><path d="M6 12.5 10 16.5 18 7.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="6" cy="12.5" r="2.1" fill="currentColor"/><circle cx="10" cy="16.5" r="2.4" fill="currentColor"/><circle cx="18" cy="7.5" r="2.1" fill="currentColor"/></svg>';
-const MARKS = `<div class="legend" aria-hidden="true">${['done','progress','needs'].map(k => `<span><i class="mk ${k}"></i>${STATUS_TXT[k]}</span>`).join('')}</div>`;
+// One key for the whole page: the dots on each requirement and the bars use the same colors.
+const SWATCH = { done: 'd', progress: 'p', needs: 'n' };
+const legend = withNone => `<div class="legend" aria-hidden="true"><b>Key</b>${['done', 'progress', 'needs'].concat(withNone ? ['none'] : [])
+  .map(k => `<span>${SWATCH[k] ? `<i class="sw ${SWATCH[k]}"></i>` : ''}<i class="mk ${k}"></i>${STATUS_TXT[k]}</span>`).join('')}</div>`;
 // What's still needed for one requirement, from STARS's own "what's left" row.
 function needBox(l, withLabel){
   const amount = l.count ? `<span class="count">${esc(l.count)} ${esc(l.unit)}</span> still needed` : 'Still needed';
@@ -129,14 +132,14 @@ function subMore(s, row){
   else if (/GE seminar/i.test(s.name) && s.status !== 'done') bits.push(link(GE_REQUIREMENTS, 'About GE seminars', 'ge-link'));
   return bits.length ? `<div class="sub-more">${bits.join('')}</div>` : '';
 }
+// Requirements start folded, so a long report opens as a short list of areas. "Open all" unfolds them.
 function reqRow({ block: b, left, subs }){
-  const open = b.status !== 'done' && b.kind !== 'cap';
   const body = [`<div class="where">${blockSummary(b)}</div>`];
   if (b.notes.length) body.push(`<div class="detail">${b.notes.map(esc).join('. ')}</div>`);
   left.forEach(l => body.push(needBox(l, true)));
   if (subs.length) body.push(`<ul class="subs">${subs.map(({ sub: s, left: row }) => `<li class="${s.status}"><i class="mk ${s.status}" aria-hidden="true"></i>
     <span><span class="sub-name">${esc(s.name)}</span>${srStatus(s.status)}</span>${subMore(s, row)}</li>`).join('')}</ul>`);
-  return `<details class="req ${b.status}"${open ? ' open' : ''}><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
+  return `<details class="req ${b.status}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
 }
 function areaCard(a){
@@ -166,7 +169,7 @@ function sideNav(r, areas){
   return `<aside class="side"><nav aria-label="On this page"><ol>
     ${item('summary', 'Summary')}${r.unread.length ? item('check', 'Double-check') : ''}${item('areas', 'Progress by area', areaLinks)}
     ${item('history', 'Course history')}${item('rules', 'GE and unit rules')}${item('original', 'Original text')}
-  </ol></nav><button type="button" class="primary" id="print"><span class="print-long">Print or save as PDF</span><span class="print-short">Print</span></button></aside>`;
+  </ol></nav><button type="button" class="primary" id="print"><span class="print-long">Print or save as PDF</span><span class="print-short">Print</span></button><button type="button" class="again" data-again>Upload another report</button></aside>`;
 }
 // Highlight the menu entry for the section on screen.
 function trackSections(){
@@ -231,7 +234,7 @@ function render(r, reportText){
   let h = `<div class="wrap layout">${sideNav(r, areas)}<div class="content">
   <header class="hero" id="summary">
     <div class="top"><div>
-      <h1>${esc(m.major || 'Your degree')}</h1>
+      <h1><span class="label">Major:</span> ${m.major ? esc(m.major) : `<span class="label">${NF.toLowerCase()}</span>`}</h1>
       <div class="sub">${esc(m.degree || '')}${m.catalogYear ? `, catalog ${esc(StarsParser.termName(m.catalogYear))}` : ''}${m.classLevel ? `. ${esc(m.classLevel)}` : ''}${gradTerm ? `, expected to graduate ${esc(gradTerm)}` : ''}.</div>
     </div>
     ${m.prepared ? `<div class="prepared">STARS report prepared<br>${esc(m.prepared)}</div>` : ''}</div>
@@ -242,7 +245,7 @@ function render(r, reportText){
       <div class="tile"><div class="eyebrow">Units completed</div>
         <div class="v${known(S.unitsCompleted) ? '' : ' missing'}">${known(S.unitsCompleted) ? `${num(S.unitsCompleted)}${known(S.unitsRequired) ? ` <small>of ${num(S.unitsRequired)}</small>` : ''}` : NF}</div>
         ${known(S.unitsCompleted) && known(S.unitsRequired) ? `<div class="meter" role="img" aria-label="${num(S.unitsCompleted)} completed, ${num(S.unitsInProgress)} in progress, of ${num(S.unitsRequired)}"><i class="d" style="width:${pctU(S.unitsCompleted)}%"></i><i class="p" style="width:${pctU(S.unitsInProgress)}%"></i></div>` : ''}
-        <div class="s">${known(S.unitsInProgress) ? `${num(S.unitsInProgress)} in progress` : ''}${known(S.unitsRequired) ? '' : `${known(S.unitsInProgress) ? '. ' : ''}Units required: ${NF.toLowerCase()}`}</div></div>
+        <div class="s">${known(S.unitsInProgress) ? `<i class="sw p" aria-hidden="true"></i>${num(S.unitsInProgress)} in progress` : ''}${known(S.unitsRequired) ? '' : `${known(S.unitsInProgress) ? '. ' : ''}Units required: ${NF.toLowerCase()}`}</div></div>
       <div class="tile"><div class="eyebrow">Units remaining</div>
         <div class="v${known(S.unitsRemaining) ? '' : ' missing'}">${known(S.unitsRemaining) ? num(S.unitsRemaining) : NF}</div>
         <div class="s">${known(S.unitsRemaining) && S.unitsInProgress ? 'Assumes your current courses pass' : known(S.unitsRemaining) ? 'To graduate' : ''}</div></div>
@@ -257,7 +260,8 @@ function render(r, reportText){
   h += unreadNotice(r);
 
   // progress by area, with what's left inside each requirement
-  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Every requirement on your report, grouped by area. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p>${MARKS}<div class="areas">${areas.map(areaCard).join('')}</div></section>`;
+  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Every requirement on your report, grouped by area. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p>
+    <div class="area-tools">${legend(areas.some(a => a.counts.none))}<button type="button" class="no-print" id="toggleReqs" aria-controls="areas">Open all requirements</button></div><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
 
   // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
   const key = r.key || {};
@@ -304,11 +308,16 @@ function render(r, reportText){
     <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
     <p>Constellation is an unofficial reading aid built by BUAI Builder Hub. Tools by Students, for Students.</p>
     <p>${feedbackLink()}</p>
-    <p><button type="button" id="again">Summarize another report</button></p></footer></div></div>`;
+    <p><button type="button" data-again>Upload another report</button></p></footer></div></div>`;
 
   $('#intake').classList.add('hidden');
   const res = $('#result'); res.innerHTML = h; res.classList.remove('hidden');
-  $('#again').onclick = reset; $('#print').onclick = () => window.print();
+  res.querySelectorAll('[data-again]').forEach(b => { b.onclick = uploadAnother; });
+  $('#print').onclick = () => window.print();
+  const reqs = [...res.querySelectorAll('details.req')], toggle = $('#toggleReqs');
+  const syncToggle = () => { toggle.textContent = reqs.every(d => d.open) ? 'Close all requirements' : 'Open all requirements'; };
+  toggle.onclick = () => { const open = !reqs.every(d => d.open); reqs.forEach(d => { d.open = open; }); syncToggle(); };
+  reqs.forEach(d => d.addEventListener('toggle', syncToggle));
   // A menu link to a folded section opens it.
   res.querySelectorAll('.side nav a').forEach(a => a.addEventListener('click', () => {
     const d = document.querySelector(`${a.getAttribute('href')} > details`); if (d) d.open = true;
@@ -328,7 +337,10 @@ function render(r, reportText){
   window.scrollTo(0, 0);
   if (window.Telemetry) window.Telemetry.summarized();
 }
-function reset(e){ e && e.preventDefault(); $('#result').classList.add('hidden'); $('#result').innerHTML=''; $('#intake').classList.remove('hidden'); }
+function reset(e){ e && e.preventDefault(); $('#result').classList.add('hidden'); $('#result').innerHTML=''; $('#err').classList.add('hidden'); $('#intake').classList.remove('hidden'); }
+// Clears this report and opens the file picker straight away, so a new report needs no page refresh.
+// Cancelling the picker leaves the upload page showing.
+function uploadAnother(e){ reset(e); window.scrollTo(0, 0); $('#file').click(); }
 
 // The printout shows everything: open every folded section, then put them back as they were.
 let closedForPrint = [];
