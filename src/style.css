@@ -296,6 +296,7 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
   .site-foot .wrap{padding:12px 0 0}
   .more>div{display:flex !important}
   .layout{display:block}
+  .wrap{padding:0}
   /* A printed page is about 720px wide: five tiles fit only with smaller type. */
   .tiles{grid-template-columns:1.2fr repeat(4,minmax(0,1fr));gap:8px}
   .tile.gpa{grid-column:auto}
@@ -305,13 +306,23 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
   .tile.gpa .v{font-size:32px}
   .hero .prepared{text-align:left}
   .tile,.req,.scroll tr{break-inside:avoid}
-  .area-card{break-inside:auto;border-color:var(--line-strong)}
+  /* One area per row: side-by-side cards are too narrow on paper and leave half a page empty
+     when one breaks across pages. */
+  .areas{display:block}
+  .area-card{break-inside:auto;border-color:var(--line-strong);margin:0 0 14px}
   h2,details.list>summary{break-after:avoid}
   main section{padding-top:18px}
-  .hist{font-size:12px}
-  .hist td,.hist th{padding:6px 8px}
-  .hist td:last-child{width:38%}
+  /* Course history: fixed columns that wrap inside the page, instead of a scroll box that clips. */
+  .scroll{overflow:visible;border-color:var(--line-strong)}
+  .hist{font-size:12px;table-layout:fixed}
+  .hist td,.hist th{padding:6px 8px;white-space:normal;overflow-wrap:break-word}
+  .hist th:nth-child(1){width:13%}
+  .hist th:nth-child(2){width:29%}
+  .hist th:nth-child(3){width:8%}
+  .hist th:nth-child(4){width:14%}
   .hist .detail{font-size:11px}
-  details.list>summary::before{display:none}
+  .hist .tag{white-space:normal}
+  /* Carets mean "click to open"; on paper everything is open. */
+  summary::before{display:none}
   a{color:inherit;text-decoration:none}
 }
