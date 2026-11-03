@@ -4,7 +4,7 @@
 // report never leaves the page. The one exception to "no requests" is src/telemetry.js: anonymous
 // GoatCounter counts (visits, summaries, star ratings) once a site code is set in package.json.
 // The Content-Security-Policy allows that one host and nothing else. Also builds feedback.html,
-// whose only request is the feedback itself, posted to the USC Google Form set in package.json.
+// which embeds the team's Google Form (set in package.json) in a frame and makes no requests itself.
 //
 // With --extension it also builds the Chrome extension in dist/extension/: the same page as
 // summary.html, but with every script as its own file, because Chrome extensions (Manifest V3)
@@ -81,20 +81,23 @@ page = withCsp(page, GC_HOST);
 fs.writeFileSync('index.html', page);
 console.log(`Built index.html (${(page.length / 1024).toFixed(0)} KB, ${hashesOf(page).length} inline scripts, telemetry ${GC_HOST ? 'to ' + GC_HOST : 'off'})`);
 
-// ---------- feedback page: posts to a USC Google Form (mailto until one is set) ----------
-// package.json "feedbackForm": the Form's id (from its /forms/d/e/<id>/viewform link) and the
-// entry number of each question. Set: the page may post to docs.google.com and nowhere else.
-const FF = require('./package.json').feedbackForm || {};
-const FF_ON = Boolean(FF.id);
-if (FF_ON && !(/^[\w-]{20,}$/.test(FF.id) && [FF.message, FF.name, FF.email].every(f => /^\d+$/.test(f))))
-  throw new Error('package.json feedbackForm needs the Form id and the entry number of each question (digits only)');
-const feedbackJs = read('src/feedback.js').replace('__FEEDBACK_FORM_ID__', FF.id || '')
-  .replace('__FEEDBACK_MSG__', FF.message || '').replace('__FEEDBACK_NAME__', FF.name || '').replace('__FEEDBACK_EMAIL__', FF.email || '');
-const feedbackTemplate = read('src/feedback.html').replace(STYLE_MARK, () => style);
-const feedbackPage = withCsp(feedbackTemplate.replace('<script>/*FEEDBACK*/</script>', () => `<script>${safe(feedbackJs)}</script>`), '')
-  .replace("connect-src 'none'", FF_ON ? 'connect-src https://docs.google.com' : "connect-src 'none'");
+// ---------- feedback page: the team's Google Form in a frame, with email below (email only until set) ----------
+// package.json "feedbackForm": the Form's link, from Send > <> (embed) in Google Forms, or its id.
+// Set: the page may show docs.google.com in a frame, and nothing else. Google's page runs in the
+// frame, so the feedback goes to Google directly; this page itself still connects to nothing.
+const FF = String(require('./package.json').feedbackForm || '').trim();
+const FF_ID = (FF.match(/^https:\/\/docs\.google\.com\/forms\/d\/e\/([\w-]{20,})\//) || FF.match(/^([\w-]{20,})$/) || [])[1] || '';
+if (FF && !FF_ID) throw new Error('package.json feedbackForm must be the Google Form embed link (https://docs.google.com/forms/d/e/<id>/viewform?embedded=true) or its id');
+const FORM_URL = FF_ID ? `https://docs.google.com/forms/d/e/${FF_ID}/viewform?embedded=true` : '';
+const formBlock = `<p class="local">This is a Google Form, run by Google: Google sees what you type and may set cookies. Answers go to the BBH team at bbh@usc.edu. Nothing from your STARS report is sent. Please don't share your student ID or your report.</p>
+  <div class="gform"><iframe src="${FORM_URL}" title="Constellation feedback form (Google Form)" loading="lazy" referrerpolicy="no-referrer">Loading the feedback form…</iframe></div>`;
+let feedbackPage = read('src/feedback.html').replace(STYLE_MARK, () => style)
+  .replace('<script>/*FEEDBACK*/</script>', () => `<script>${safe(read('src/feedback.js'))}</script>`);
+if (FORM_URL) feedbackPage = feedbackPage.replace('<!--FORM-->', () => formBlock).replace('class="or-email hidden"', 'class="or-email"');
+feedbackPage = withCsp(feedbackPage, '');
+if (FORM_URL) feedbackPage = feedbackPage.replace("child-src blob:", "child-src blob:; frame-src https://docs.google.com");
 fs.writeFileSync('feedback.html', feedbackPage);
-console.log(`Built feedback.html (${FF_ON ? 'sends to the Google Form' : 'no Google Form set: Send opens an email'})`);
+console.log(`Built feedback.html (${FORM_URL ? 'embeds the Google Form ' + FF_ID : 'no Google Form set: email only'})`);
 
 // ---------- Chrome extension: every script as its own file ----------
 if (process.argv.includes('--extension')) {

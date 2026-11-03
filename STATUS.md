@@ -38,10 +38,11 @@ From the team's review of the live page, for the bug-fix push before the meeting
 - **Requirements start folded:** after an upload, every requirement is closed. An "Open all requirements" button opens or closes them all. Printing still opens everything.
 - **"Major:" label** on the page title, so it's clear it's the major read from the report.
 - **Upload another report:** a button under "Print or save as PDF" (and the footer button, renamed). It clears the summary and opens the file picker, with no page refresh.
+- **Feedback page embeds the Google Form** (replaces 21 Oct's direct send). Once `"feedbackForm"` in `package.json` holds the Form's embed link, `feedback.html` shows the Form in a frame, and the email form moves below it as a fallback. Until then the page is email-only. The page's policy allows a frame from `docs.google.com` and no connections. `feedback.js` is back to email only, and `check-privacy` holds it to the no-network rule. The extension still opens the website's feedback page.
 - **PDF export:** the five tiles were too narrow at page width and labels spilled out. The "Counts toward" column wrapped word by word. Bars and row tints vanished unless "Background graphics" was ticked. All three are fixed (`print-color-adjust: exact`). Checked in headless Chrome only.
 
 **Waiting on Natalie:**
-1. The feedback Google Form (see "Feedback form setup" in the README). Fill in its IDs in `package.json`, rebuild, and send a test response.
+1. The feedback Google Form (see "Feedback form setup" in the README). Paste its embed link into `package.json` ("feedbackForm"), rebuild, and send a test response.
 2. Print the sample from Chrome and Safari with "Background graphics" off, to confirm the export.
 
 ## What changed on 21 Oct (UI feedback round 2)
