@@ -112,7 +112,7 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .meter i{display:block;height:100%}
 .meter .d{background:var(--done)}
 .meter .p{background:var(--prog)}
-.meter,.mk,.need,.tag,.term-h td,.req.needs>summary,.subs>li.needs{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.meter,.mk,.need,.tag,.term-h td,.req.needs>summary,.req.progress>summary,.subs>li.needs,.subs>li.progress{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sw{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:0}
 .sw.p{background:var(--prog)}
 
@@ -170,9 +170,9 @@ tr.crs.gone td{color:var(--muted)}
 .req>summary{font:500 14.5px/1.35 var(--body-font);padding:11px 18px;gap:10px;align-items:center}
 .req>summary .name{flex:1;min-width:0}
 .req.done>summary .name{color:var(--body)}
-/* Still-needed requirements stand out; everything else stays plain. */
-.req.needs>summary{background:var(--needs-bg)}
-.req.needs>summary .name{font-weight:600;color:var(--ink)}
+/* Unfinished requirements (still needed or in progress) stand out; finished ones stay plain. */
+.req.needs>summary,.req.progress>summary{background:var(--needs-bg)}
+.req.needs>summary .name,.req.progress>summary .name{font-weight:600;color:var(--ink)}
 .req-body{padding:0 18px 14px 37px;font-size:14px;display:grid;gap:10px}
 .req-body .where{color:var(--body)}
 .subs{list-style:none;margin:0;padding:0;display:grid;gap:10px}
@@ -181,7 +181,7 @@ tr.crs.gone td{color:var(--muted)}
 .subs .sub-name{font-weight:600;color:var(--ink)}
 .subs>li.done .sub-name{font-weight:500;color:var(--body)}
 .subs .sub-more{grid-column:2;display:grid;gap:6px}
-.subs>li.needs{background:var(--needs-bg);border-radius:8px;padding:6px 8px;margin:0 -8px}
+.subs>li.needs,.subs>li.progress{background:var(--needs-bg);border-radius:8px;padding:6px 8px;margin:0 -8px}
 .need{background:var(--needs-bg);border-radius:8px;padding:8px 10px;display:grid;gap:6px}
 .need.progress{background:var(--prog-bg)}
 .need .count{font:700 15px var(--display);color:var(--needs-ink)}
