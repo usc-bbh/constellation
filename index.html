@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-zcyMNobPdkmNOPbE00KHb5vQT2mMVqx7og+iHNP5YKY=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-AnCFxYTPvNdxp6LsbbTxipf+uoSij6r9emRzG4uYlGE=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation: make sense of your STARS</title>
 <style>
@@ -16,7 +16,7 @@
   --line:rgba(0,0,0,.08); --line-strong:rgba(0,0,0,.15); --sunk:#F2F2F4;
   --cardinal:#990000; --cardinal-deep:#7d0000; --cardinal-tint:rgba(153,0,0,.08); --gold:#B8952E; --gold-line:rgba(212,175,55,.4);
   /* Status colors, one palette for the bars, the dots and the counts: red fills in as
-     requirements are met. Complete is solid cardinal, in progress a lighter red, still needed gray. */
+     requirements are met. Complete is solid cardinal, in progress a lighter red, needed gray. */
   --done:#990000; --done-ink:#990000; --done-bg:rgba(153,0,0,.08);
   --prog:#D27979; --prog-ink:#A64444; --prog-bg:#FBF0F0;
   --needs:#71717A; --needs-ink:#3F3F46; --needs-bg:#F2F2F4;
@@ -99,7 +99,7 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .hero .prepared{color:var(--muted);font-size:13.5px;text-align:right}
 
 /* stat tiles */
-.tiles{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.tiles{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px}
 .tile .v{font:700 26px/1.1 var(--display);margin-top:10px;letter-spacing:-.3px}
 /* The GPA is the number students come for most, so it is the one large thing on the page. */
@@ -112,7 +112,7 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .meter i{display:block;height:100%}
 .meter .d{background:var(--done)}
 .meter .p{background:var(--prog)}
-.meter,.mk,.need,.tag,.term-h td,.req.needs>summary,.req.progress>summary,.subs>li.needs,.subs>li.progress{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.meter,.mk,.need,.tag,.term-h td{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sw{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:0}
 .sw.p{background:var(--prog)}
 
@@ -149,14 +149,15 @@ tr.crs.gone td{color:var(--muted)}
 .area-card{--area:var(--cardinal);flex:1 1 340px;min-width:0;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--area);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px 10px;scroll-margin-top:16px}
 .area-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .area-card h3{font:700 17px/1.25 var(--display);margin:0;display:flex;align-items:center;gap:8px;color:var(--ink)}
-.area-card .tally{font:600 13px/1.3 var(--display);color:var(--area);white-space:nowrap;text-align:right}
-.area-card .tally small{display:block;font:500 12.5px var(--body-font);color:var(--muted)}
+.area-card .tally{font:500 12.5px/1.3 var(--body-font);color:var(--muted);white-space:nowrap;text-align:right}
 .area-card .meter .d{background:var(--area)}
 .area-card .meter .p{background:var(--area);opacity:.35}
 .star-check{flex:none;width:22px;height:22px;color:var(--area)}
 /* Each count carries the dot it stands for, so the line under the bar doubles as its key. */
-.counts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted);margin-top:8px}
-.counts span{display:inline-flex;align-items:center;gap:6px}
+.counts{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--muted);margin-top:10px}
+.counts button{display:inline-flex;align-items:center;gap:6px;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer}
+.counts button:hover{border-color:var(--line-strong);color:var(--ink)}
+.counts button[aria-pressed="true"]{border-color:var(--cardinal);background:var(--cardinal-tint);color:var(--ink)}
 .counts .mk{width:9px;height:9px}
 /* A finished requirement carries no dot; the space stays so names line up. */
 .req>summary>.mk.done,.subs>li>.mk.done{visibility:hidden}
@@ -164,24 +165,29 @@ tr.crs.gone td{color:var(--muted)}
 .counts .progress b{color:var(--prog-ink)}
 .counts .needs b{color:var(--needs-ink)}
 .counts .none b{color:var(--muted)}
+.counts .done b{color:var(--cardinal)}
+/* On screen an area shows only its headline until a count is clicked; then only the requirements,
+   and the parts inside them, with that status. Print shows everything. */
+@media screen{
+  .area-card:not([data-show]) .reqs{display:none}
+  .area-card[data-show="done"] .req:not([data-has~="done"]),.area-card[data-show="done"] .subs>li:not(.done),
+  .area-card[data-show="progress"] .req:not([data-has~="progress"]),.area-card[data-show="progress"] .subs>li:not(.progress),
+  .area-card[data-show="needs"] .req:not([data-has~="needs"]),.area-card[data-show="needs"] .subs>li:not(.needs),
+  .area-card[data-show="none"] .req:not([data-has~="none"]),.area-card[data-show="none"] .subs>li:not(.none){display:none}
+}
 .reqs{margin:12px -18px 0;border-top:1px solid var(--line)}
 .req{margin:0;border-bottom:1px solid var(--line)}
 .req:last-child{border-bottom:0}
 .req>summary{font:500 14.5px/1.35 var(--body-font);padding:11px 18px;gap:10px;align-items:center}
 .req>summary .name{flex:1;min-width:0}
 .req.done>summary .name{color:var(--body)}
-/* Unfinished requirements (still needed or in progress) stand out; finished ones stay plain. */
-.req.needs>summary,.req.progress>summary{background:var(--needs-bg)}
-.req.needs>summary .name,.req.progress>summary .name{font-weight:600;color:var(--ink)}
 .req-body{padding:0 18px 14px 37px;font-size:14px;display:grid;gap:10px}
 .req-body .where{color:var(--body)}
 .subs{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .subs>li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 9px;align-items:baseline}
 .subs>li>.mk{transform:translateY(1px)}
 .subs .sub-name{font-weight:600;color:var(--ink)}
-.subs>li.done .sub-name{font-weight:500;color:var(--body)}
 .subs .sub-more{grid-column:2;display:grid;gap:6px}
-.subs>li.needs,.subs>li.progress{background:var(--needs-bg);border-radius:8px;padding:6px 8px;margin:0 -8px}
 .need{background:var(--needs-bg);border-radius:8px;padding:8px 10px;display:grid;gap:6px}
 .need.progress{background:var(--prog-bg)}
 .need .count{font:700 15px var(--display);color:var(--needs-ink)}
@@ -259,10 +265,6 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 .gform iframe{display:block;width:100%;height:660px;border:0}
 @media (max-width:640px){.gform iframe{height:760px}}
 
-@media (max-width:1000px){
-  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .tile.gpa{grid-column:span 3}
-}
 /* Under 900px the left menu becomes a strip that stays at the top. */
 @media (max-width:900px){
   .layout{grid-template-columns:minmax(0,1fr);gap:0}
@@ -306,8 +308,8 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
   .more>div{display:flex !important}
   .layout{display:block}
   .wrap{padding:0}
-  /* A printed page is about 720px wide: five tiles fit only with smaller type. */
-  .tiles{grid-template-columns:1.2fr repeat(4,minmax(0,1fr));gap:8px}
+  /* A printed page is about 720px wide: the tiles fit with smaller type. */
+  .tiles{grid-template-columns:1.2fr repeat(2,minmax(0,1fr));gap:8px}
   .tile.gpa{grid-column:auto}
   .tile{padding:10px 12px;border-color:var(--line-strong)}
   .tile .eyebrow{letter-spacing:.6px}
@@ -395,7 +397,7 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 <footer class="site-foot">
   <div class="wrap">
     <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
-    <p class="credit">Constellation is an unofficial reading aid built by BUAI Builder Hub. Tools by Students, for Students.</p>
+    <p class="credit">Constellation is a <a href="https://usc-bbh.github.io/bbh-website/" target="_blank" rel="noopener noreferrer">BUAI Builder Hub ↗<span class="sr"> (opens in a new tab)</span></a> tool · Tools by Students, for Students</p>
     <p class="feedback" data-feedback><a class="feedback-link" href="feedback.html">Send feedback</a></p>
   </div>
 </footer>
@@ -990,8 +992,8 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 // as its own file in the extension, where inline scripts aren't allowed.
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Still needed', none: 'Not marked' };
-// Status in words for screen readers; on screen the icon and the row highlight carry it.
+const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Needed', none: 'Not marked' };
+// Status in words for screen readers; on screen the icon carries it.
 const srStatus = s => `<span class="sr">${STATUS_TXT[s]}</span>`;
 const num = n => { const f = parseFloat(n); return Number.isInteger(f) ? String(f) : String(f); };
 
@@ -1097,7 +1099,7 @@ const areaId = n => 'area-' + n.toLowerCase().replace(/[^a-z]+/g, '-');
 const STAR_CHECK = '<svg class="star-check" viewBox="0 0 24 24" role="img" aria-label="Area complete"><circle cx="12" cy="12" r="11.5" fill="currentColor" opacity=".12"/><path d="M6 12.5 10 16.5 18 7.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="6" cy="12.5" r="2.1" fill="currentColor"/><circle cx="10" cy="16.5" r="2.4" fill="currentColor"/><circle cx="18" cy="7.5" r="2.1" fill="currentColor"/></svg>';
 // What's still needed for one requirement, from STARS's own "what's left" row.
 function needBox(l, withLabel){
-  const amount = l.count ? `<span class="count">${esc(l.count)} ${esc(l.unit)}</span> still needed` : 'Still needed';
+  const amount = l.count ? `<span class="count">${esc(l.count)} ${esc(l.unit)}</span> needed` : 'Needed';
   return `<div class="need ${l.status}"><div>${withLabel ? `<b>${esc(l.label)}.</b> ` : ''}${amount}${l.detail ? `. <span class="detail">${esc(l.detail)}</span>` : ''}</div>
     ${l.options.length ? chips(l.options) : ''}</div>`;
 }
@@ -1115,31 +1117,40 @@ function subMore(s, row){
   else if (/GE seminar/i.test(s.name) && s.status !== 'done') bits.push(link(GE_REQUIREMENTS, 'About GE seminars', 'ge-link'));
   return bits.length ? `<div class="sub-more">${bits.join('')}</div>` : '';
 }
-// Requirements start folded, so a long report opens as a short list of areas.
+// Requirements start hidden; a count in the card shows the rows holding that status, folded.
+// data-has lists the statuses a row holds: its parts' statuses, or its own when it has no parts.
 function reqRow({ block: b, left, subs }){
+  const has = [...new Set(subs.length ? subs.map(x => x.sub.status) : [b.status])].join(' ');
   const body = [`<div class="where">${blockSummary(b)}</div>`];
   if (b.notes.length) body.push(`<div class="detail">${b.notes.map(esc).join('. ')}</div>`);
   left.forEach(l => body.push(needBox(l, true)));
   if (subs.length) body.push(`<ul class="subs">${subs.map(({ sub: s, left: row }) => `<li class="${s.status}"><i class="mk ${s.status}" aria-hidden="true"></i>
     <span><span class="sub-name">${esc(s.name)}</span>${srStatus(s.status)}</span>${subMore(s, row)}</li>`).join('')}</ul>`);
-  return `<details class="req ${b.status}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
+  return `<details class="req ${b.status}" data-has="${has}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
 }
-// What's left in an area: only the in-progress and still-needed counts, and only those above zero.
-// Each carries its dot, so the line also explains the dots on the requirements below.
-const counts = n => {
-  const bits = ['progress', 'needs', 'none'].filter(k => n[k]).map(k => `<span class="${k}"><i class="mk ${k}" aria-hidden="true"></i><b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</span>`);
-  return bits.length ? `<div class="counts">${bits.join('')}</div>` : '';
+// The headline of an area: how many parts are complete, in progress and needed, zeros left out.
+// Each count is a button that shows the requirements with that status (see showStatus).
+// Each carries its dot, so the line also explains the dots on the requirements.
+const counts = (n, id) => {
+  const bits = ['done', 'progress', 'needs', 'none'].filter(k => n[k]).map(k => `<button type="button" class="${k}" data-show="${k}" aria-pressed="false" aria-controls="${id}-reqs"><i class="mk ${k}" aria-hidden="true"></i><b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</button>`);
+  return bits.length ? `<div class="counts" role="group" aria-label="Show requirements">${bits.join('')}</div>` : '';
 };
+// Clicking a count shows that status's requirements; clicking it again hides them.
+function showStatus(btn){
+  const card = btn.closest('.area-card'), on = btn.getAttribute('aria-pressed') !== 'true';
+  card.querySelectorAll('.counts button').forEach(b => b.setAttribute('aria-pressed', String(on && b === btn)));
+  if (on) card.dataset.show = btn.dataset.show; else delete card.dataset.show;
+}
 function areaCard(a){
   const n = a.counts, pct = k => (n[k] / a.total * 100).toFixed(1);
-  const left = a.total - n.done; // a finished area says nothing here; its star check says it
-  const u = a.units ? `<small>${num(a.units.done)} units done${a.units.progress ? `, ${num(a.units.progress)} in progress` : ''}</small>` : '';
-  return `<article class="area-card" id="${areaId(a.name)}">
-    <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3>${left ? `<div class="tally">${left} left${u}</div>` : ''}</header>
-    <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-    ${counts(n)}
-    <div class="reqs">${a.blocks.map(reqRow).join('')}</div></article>`;
+  const id = areaId(a.name);
+  const u = a.units ? `<div class="tally">${num(a.units.done)} units${a.units.progress ? `, ${num(a.units.progress)} in progress` : ''}</div>` : '';
+  return `<article class="area-card" id="${id}">
+    <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3>${u}</header>
+    <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
+    ${counts(n, id)}
+    <div class="reqs" id="${id}-reqs">${a.blocks.map(reqRow).join('')}</div></article>`;
 }
 
 /* ---------- double-check notice ---------- */
@@ -1176,13 +1187,15 @@ function trackSections(){
 }
 
 /* ---------- render ---------- */
+// Degree names as students say them; anything not listed shows in full.
+const DEGREE_ABBR = { 'Bachelor of Science': 'BS', 'Bachelor of Arts': 'BA', 'Bachelor of Fine Arts': 'BFA', 'Bachelor of Music': 'BM', 'Bachelor of Architecture': 'BArch' };
 function blockSummary(b){
   const e = b.earned && num(b.earned);
   const unitsLine = () => {
     const bits = [];
     if (b.earned) bits.push(`<b>${e}</b> earned`);
     if (b.inProcess) bits.push(`<b>${num(b.inProcess)}</b> in progress`);
-    if (b.needs && b.status !== 'done') bits.push(`<b>${num(b.needs)}</b> still needed`);
+    if (b.needs && b.status !== 'done') bits.push(`<b>${num(b.needs)}</b> needed`);
     return bits.join(', ');
   };
   switch (b.kind){
@@ -1190,7 +1203,7 @@ function blockSummary(b){
       return (b.kind === 'upper' && b.status === 'progress') ? `${unitsLine()}. Met once this term's courses are graded.` : unitsLine();
     case 'cap': return `A cap, not a requirement. ${b.status === 'needs' ? 'You are over it; talk to your department.' : 'You are under it.'}`;
     case 'gpa-overall': case 'gpa-major':
-      if (b.gpaHidden) return '<span class="muted">GPA not shown in this copy of the report</span>';
+      if (b.gpaHidden) return '<span class="muted">Hidden in this copy of the report</span>';
       if (!b.earned) return '<span class="muted">No USC grades yet</span>';
       return `Your GPA: <b>${b.earned}</b>${b.status === 'progress' ? '. Final once this term is graded.' : ''}`;
     default: {
@@ -1224,33 +1237,28 @@ function render(r, reportText){
   let h = `<div class="wrap layout">${sideNav(r, areas)}<div class="content">
   <header class="hero" id="summary">
     <div class="top"><div>
-      <h1><span class="label">Major:</span> ${m.major ? esc(m.major) : `<span class="label">${NF.toLowerCase()}</span>`}</h1>
-      <div class="sub">${esc(m.degree || '')}${m.catalogYear ? `, catalog ${esc(StarsParser.termName(m.catalogYear))}` : ''}${m.classLevel ? `. ${esc(m.classLevel)}` : ''}${gradTerm ? `, expected to graduate ${esc(gradTerm)}` : ''}.</div>
+      <h1><span class="label">Major:</span> ${m.major ? `${DEGREE_ABBR[m.degree] ? `${DEGREE_ABBR[m.degree]}, ` : ''}${esc(m.major)}` : `<span class="label">${NF.toLowerCase()}</span>`}</h1>
+      <div class="sub">${[DEGREE_ABBR[m.degree] && m.major ? '' : esc(m.degree || ''), m.classLevel ? `${esc(m.classLevel)} by units` : '', gradTerm ? `Expected graduation ${esc(gradTerm)}` : ''].filter(Boolean).join(' · ')}</div>
     </div>
     ${m.prepared ? `<div class="prepared">STARS report prepared<br>${esc(m.prepared)}</div>` : ''}</div>
     <div class="tiles">
       <div class="tile gpa"><div class="eyebrow">USC GPA</div>
         <div class="v${S.gpa ? '' : ' missing'}">${S.gpa ? copyBtn(S.gpa, 'GPA') : NF}</div>
-        <div class="s">${S.gpa ? 'Overall, USC courses only. ' : ''}Major GPA: ${S.majorGpa ? copyBtn(S.majorGpa, 'major GPA') : NF.toLowerCase()}</div></div>
-      <div class="tile"><div class="eyebrow">Units completed</div>
+        <div class="s">Major ${S.majorGpa ? copyBtn(S.majorGpa, 'major GPA') : NF.toLowerCase()}</div></div>
+      <div class="tile"><div class="eyebrow">Units</div>
         <div class="v${known(S.unitsCompleted) ? '' : ' missing'}">${known(S.unitsCompleted) ? `${num(S.unitsCompleted)}${known(S.unitsRequired) ? ` <small>of ${num(S.unitsRequired)}</small>` : ''}` : NF}</div>
         ${known(S.unitsCompleted) && known(S.unitsRequired) ? `<div class="meter" role="img" aria-label="${num(S.unitsCompleted)} completed, ${num(S.unitsInProgress)} in progress, of ${num(S.unitsRequired)}"><i class="d" style="width:${pctU(S.unitsCompleted)}%"></i><i class="p" style="width:${pctU(S.unitsInProgress)}%"></i></div>` : ''}
-        <div class="s">${known(S.unitsInProgress) ? `<i class="sw p" aria-hidden="true"></i>${num(S.unitsInProgress)} in progress` : ''}${known(S.unitsRequired) ? '' : `${known(S.unitsInProgress) ? '. ' : ''}Units required: ${NF.toLowerCase()}`}</div></div>
-      <div class="tile"><div class="eyebrow">Units remaining</div>
-        <div class="v${known(S.unitsRemaining) ? '' : ' missing'}">${known(S.unitsRemaining) ? num(S.unitsRemaining) : NF}</div>
-        <div class="s">${known(S.unitsRemaining) && S.unitsInProgress ? 'Assumes your current courses pass' : known(S.unitsRemaining) ? 'To graduate' : ''}</div></div>
-      <div class="tile"><div class="eyebrow">Transfer &amp; AP units</div>
-        <div class="v${known(T.units) ? '' : ' missing'}">${known(T.units) ? num(T.units) : T.courses ? NF : 'None'}</div>
-        <div class="s">${T.courses ? `${T.courses} AP or transfer ${T.courses === 1 ? 'course' : 'courses'} listed` : 'None on this report'}</div></div>
-      <div class="tile${left ? ' alert' : ''}"><div class="eyebrow">Requirements left</div><div class="v">${left} <small>${left === 1 ? 'item' : 'items'}</small></div>
-        <div class="s">${left ? (m.semestersLeft ? `About ${esc(m.semestersLeft)} semesters out` : 'Open below, under each area') : 'All requirements satisfied'}</div></div>
+        <div class="s">${[S.unitsInProgress ? `<i class="sw p" aria-hidden="true"></i>${num(S.unitsInProgress)} in progress` : '', known(S.unitsRemaining) && S.unitsRemaining ? `${num(S.unitsRemaining)} needed` : '', known(S.unitsRequired) ? '' : `Units required: ${NF.toLowerCase()}`].filter(Boolean).join(' · ')}</div>
+        ${known(T.units) ? `<div class="s">${num(T.units)} from AP and transfer</div>` : T.courses ? `<div class="s">AP and transfer units: ${NF.toLowerCase()}</div>` : ''}</div>
+      <div class="tile${left ? ' alert' : ''}"><div class="eyebrow">Requirements left</div><div class="v">${left}</div>
+        <div class="s">${left ? (m.semestersLeft ? `About ${esc(m.semestersLeft)} semesters to go` : '') : 'All requirements met'}</div></div>
     </div>
   </header><main>`;
 
   h += unreadNotice(r);
 
   // progress by area, with what's left inside each requirement
-  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Every requirement on your report, grouped by area. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
+  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Click a count to list those requirements. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
 
   // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
   const key = r.key || {};
@@ -1304,6 +1312,8 @@ function render(r, reportText){
     const d = document.querySelector(`${a.getAttribute('href')} > details`); if (d) d.open = true;
   }));
   res.onclick = e => {
+    const show = e.target.closest('.counts button');
+    if (show) { showStatus(show); return; }
     const btn = e.target.closest('button[data-copy], button[data-copy-all]');
     if (btn) {
       if (btn.dataset.copyAll) doCopy(btn, btn.dataset.copyAll === 'tsv' ? StarsFormat.formatCourseworkTsv(r.courseList, key) : StarsFormat.formatCourseworkText(r.courseList, key), btn.dataset.copyAll === 'tsv' ? 'all courses for a spreadsheet' : 'all courses as text');

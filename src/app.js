@@ -3,8 +3,8 @@
 // as its own file in the extension, where inline scripts aren't allowed.
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Still needed', none: 'Not marked' };
-// Status in words for screen readers; on screen the icon and the row highlight carry it.
+const STATUS_TXT = { done: 'Complete', progress: 'In progress', needs: 'Needed', none: 'Not marked' };
+// Status in words for screen readers; on screen the icon carries it.
 const srStatus = s => `<span class="sr">${STATUS_TXT[s]}</span>`;
 const num = n => { const f = parseFloat(n); return Number.isInteger(f) ? String(f) : String(f); };
 
@@ -110,7 +110,7 @@ const areaId = n => 'area-' + n.toLowerCase().replace(/[^a-z]+/g, '-');
 const STAR_CHECK = '<svg class="star-check" viewBox="0 0 24 24" role="img" aria-label="Area complete"><circle cx="12" cy="12" r="11.5" fill="currentColor" opacity=".12"/><path d="M6 12.5 10 16.5 18 7.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="6" cy="12.5" r="2.1" fill="currentColor"/><circle cx="10" cy="16.5" r="2.4" fill="currentColor"/><circle cx="18" cy="7.5" r="2.1" fill="currentColor"/></svg>';
 // What's still needed for one requirement, from STARS's own "what's left" row.
 function needBox(l, withLabel){
-  const amount = l.count ? `<span class="count">${esc(l.count)} ${esc(l.unit)}</span> still needed` : 'Still needed';
+  const amount = l.count ? `<span class="count">${esc(l.count)} ${esc(l.unit)}</span> needed` : 'Needed';
   return `<div class="need ${l.status}"><div>${withLabel ? `<b>${esc(l.label)}.</b> ` : ''}${amount}${l.detail ? `. <span class="detail">${esc(l.detail)}</span>` : ''}</div>
     ${l.options.length ? chips(l.options) : ''}</div>`;
 }
@@ -128,31 +128,40 @@ function subMore(s, row){
   else if (/GE seminar/i.test(s.name) && s.status !== 'done') bits.push(link(GE_REQUIREMENTS, 'About GE seminars', 'ge-link'));
   return bits.length ? `<div class="sub-more">${bits.join('')}</div>` : '';
 }
-// Requirements start folded, so a long report opens as a short list of areas.
+// Requirements start hidden; a count in the card shows the rows holding that status, folded.
+// data-has lists the statuses a row holds: its parts' statuses, or its own when it has no parts.
 function reqRow({ block: b, left, subs }){
+  const has = [...new Set(subs.length ? subs.map(x => x.sub.status) : [b.status])].join(' ');
   const body = [`<div class="where">${blockSummary(b)}</div>`];
   if (b.notes.length) body.push(`<div class="detail">${b.notes.map(esc).join('. ')}</div>`);
   left.forEach(l => body.push(needBox(l, true)));
   if (subs.length) body.push(`<ul class="subs">${subs.map(({ sub: s, left: row }) => `<li class="${s.status}"><i class="mk ${s.status}" aria-hidden="true"></i>
     <span><span class="sub-name">${esc(s.name)}</span>${srStatus(s.status)}</span>${subMore(s, row)}</li>`).join('')}</ul>`);
-  return `<details class="req ${b.status}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
+  return `<details class="req ${b.status}" data-has="${has}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
 }
-// What's left in an area: only the in-progress and still-needed counts, and only those above zero.
-// Each carries its dot, so the line also explains the dots on the requirements below.
-const counts = n => {
-  const bits = ['progress', 'needs', 'none'].filter(k => n[k]).map(k => `<span class="${k}"><i class="mk ${k}" aria-hidden="true"></i><b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</span>`);
-  return bits.length ? `<div class="counts">${bits.join('')}</div>` : '';
+// The headline of an area: how many parts are complete, in progress and needed, zeros left out.
+// Each count is a button that shows the requirements with that status (see showStatus).
+// Each carries its dot, so the line also explains the dots on the requirements.
+const counts = (n, id) => {
+  const bits = ['done', 'progress', 'needs', 'none'].filter(k => n[k]).map(k => `<button type="button" class="${k}" data-show="${k}" aria-pressed="false" aria-controls="${id}-reqs"><i class="mk ${k}" aria-hidden="true"></i><b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</button>`);
+  return bits.length ? `<div class="counts" role="group" aria-label="Show requirements">${bits.join('')}</div>` : '';
 };
+// Clicking a count shows that status's requirements; clicking it again hides them.
+function showStatus(btn){
+  const card = btn.closest('.area-card'), on = btn.getAttribute('aria-pressed') !== 'true';
+  card.querySelectorAll('.counts button').forEach(b => b.setAttribute('aria-pressed', String(on && b === btn)));
+  if (on) card.dataset.show = btn.dataset.show; else delete card.dataset.show;
+}
 function areaCard(a){
   const n = a.counts, pct = k => (n[k] / a.total * 100).toFixed(1);
-  const left = a.total - n.done; // a finished area says nothing here; its star check says it
-  const u = a.units ? `<small>${num(a.units.done)} units done${a.units.progress ? `, ${num(a.units.progress)} in progress` : ''}</small>` : '';
-  return `<article class="area-card" id="${areaId(a.name)}">
-    <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3>${left ? `<div class="tally">${left} left${u}</div>` : ''}</header>
-    <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} still needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-    ${counts(n)}
-    <div class="reqs">${a.blocks.map(reqRow).join('')}</div></article>`;
+  const id = areaId(a.name);
+  const u = a.units ? `<div class="tally">${num(a.units.done)} units${a.units.progress ? `, ${num(a.units.progress)} in progress` : ''}</div>` : '';
+  return `<article class="area-card" id="${id}">
+    <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3>${u}</header>
+    <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
+    ${counts(n, id)}
+    <div class="reqs" id="${id}-reqs">${a.blocks.map(reqRow).join('')}</div></article>`;
 }
 
 /* ---------- double-check notice ---------- */
@@ -189,13 +198,15 @@ function trackSections(){
 }
 
 /* ---------- render ---------- */
+// Degree names as students say them; anything not listed shows in full.
+const DEGREE_ABBR = { 'Bachelor of Science': 'BS', 'Bachelor of Arts': 'BA', 'Bachelor of Fine Arts': 'BFA', 'Bachelor of Music': 'BM', 'Bachelor of Architecture': 'BArch' };
 function blockSummary(b){
   const e = b.earned && num(b.earned);
   const unitsLine = () => {
     const bits = [];
     if (b.earned) bits.push(`<b>${e}</b> earned`);
     if (b.inProcess) bits.push(`<b>${num(b.inProcess)}</b> in progress`);
-    if (b.needs && b.status !== 'done') bits.push(`<b>${num(b.needs)}</b> still needed`);
+    if (b.needs && b.status !== 'done') bits.push(`<b>${num(b.needs)}</b> needed`);
     return bits.join(', ');
   };
   switch (b.kind){
@@ -203,7 +214,7 @@ function blockSummary(b){
       return (b.kind === 'upper' && b.status === 'progress') ? `${unitsLine()}. Met once this term's courses are graded.` : unitsLine();
     case 'cap': return `A cap, not a requirement. ${b.status === 'needs' ? 'You are over it; talk to your department.' : 'You are under it.'}`;
     case 'gpa-overall': case 'gpa-major':
-      if (b.gpaHidden) return '<span class="muted">GPA not shown in this copy of the report</span>';
+      if (b.gpaHidden) return '<span class="muted">Hidden in this copy of the report</span>';
       if (!b.earned) return '<span class="muted">No USC grades yet</span>';
       return `Your GPA: <b>${b.earned}</b>${b.status === 'progress' ? '. Final once this term is graded.' : ''}`;
     default: {
@@ -237,33 +248,28 @@ function render(r, reportText){
   let h = `<div class="wrap layout">${sideNav(r, areas)}<div class="content">
   <header class="hero" id="summary">
     <div class="top"><div>
-      <h1><span class="label">Major:</span> ${m.major ? esc(m.major) : `<span class="label">${NF.toLowerCase()}</span>`}</h1>
-      <div class="sub">${esc(m.degree || '')}${m.catalogYear ? `, catalog ${esc(StarsParser.termName(m.catalogYear))}` : ''}${m.classLevel ? `. ${esc(m.classLevel)}` : ''}${gradTerm ? `, expected to graduate ${esc(gradTerm)}` : ''}.</div>
+      <h1><span class="label">Major:</span> ${m.major ? `${DEGREE_ABBR[m.degree] ? `${DEGREE_ABBR[m.degree]}, ` : ''}${esc(m.major)}` : `<span class="label">${NF.toLowerCase()}</span>`}</h1>
+      <div class="sub">${[DEGREE_ABBR[m.degree] && m.major ? '' : esc(m.degree || ''), m.classLevel ? `${esc(m.classLevel)} by units` : '', gradTerm ? `Expected graduation ${esc(gradTerm)}` : ''].filter(Boolean).join(' · ')}</div>
     </div>
     ${m.prepared ? `<div class="prepared">STARS report prepared<br>${esc(m.prepared)}</div>` : ''}</div>
     <div class="tiles">
       <div class="tile gpa"><div class="eyebrow">USC GPA</div>
         <div class="v${S.gpa ? '' : ' missing'}">${S.gpa ? copyBtn(S.gpa, 'GPA') : NF}</div>
-        <div class="s">${S.gpa ? 'Overall, USC courses only. ' : ''}Major GPA: ${S.majorGpa ? copyBtn(S.majorGpa, 'major GPA') : NF.toLowerCase()}</div></div>
-      <div class="tile"><div class="eyebrow">Units completed</div>
+        <div class="s">Major ${S.majorGpa ? copyBtn(S.majorGpa, 'major GPA') : NF.toLowerCase()}</div></div>
+      <div class="tile"><div class="eyebrow">Units</div>
         <div class="v${known(S.unitsCompleted) ? '' : ' missing'}">${known(S.unitsCompleted) ? `${num(S.unitsCompleted)}${known(S.unitsRequired) ? ` <small>of ${num(S.unitsRequired)}</small>` : ''}` : NF}</div>
         ${known(S.unitsCompleted) && known(S.unitsRequired) ? `<div class="meter" role="img" aria-label="${num(S.unitsCompleted)} completed, ${num(S.unitsInProgress)} in progress, of ${num(S.unitsRequired)}"><i class="d" style="width:${pctU(S.unitsCompleted)}%"></i><i class="p" style="width:${pctU(S.unitsInProgress)}%"></i></div>` : ''}
-        <div class="s">${known(S.unitsInProgress) ? `<i class="sw p" aria-hidden="true"></i>${num(S.unitsInProgress)} in progress` : ''}${known(S.unitsRequired) ? '' : `${known(S.unitsInProgress) ? '. ' : ''}Units required: ${NF.toLowerCase()}`}</div></div>
-      <div class="tile"><div class="eyebrow">Units remaining</div>
-        <div class="v${known(S.unitsRemaining) ? '' : ' missing'}">${known(S.unitsRemaining) ? num(S.unitsRemaining) : NF}</div>
-        <div class="s">${known(S.unitsRemaining) && S.unitsInProgress ? 'Assumes your current courses pass' : known(S.unitsRemaining) ? 'To graduate' : ''}</div></div>
-      <div class="tile"><div class="eyebrow">Transfer &amp; AP units</div>
-        <div class="v${known(T.units) ? '' : ' missing'}">${known(T.units) ? num(T.units) : T.courses ? NF : 'None'}</div>
-        <div class="s">${T.courses ? `${T.courses} AP or transfer ${T.courses === 1 ? 'course' : 'courses'} listed` : 'None on this report'}</div></div>
-      <div class="tile${left ? ' alert' : ''}"><div class="eyebrow">Requirements left</div><div class="v">${left} <small>${left === 1 ? 'item' : 'items'}</small></div>
-        <div class="s">${left ? (m.semestersLeft ? `About ${esc(m.semestersLeft)} semesters out` : 'Open below, under each area') : 'All requirements satisfied'}</div></div>
+        <div class="s">${[S.unitsInProgress ? `<i class="sw p" aria-hidden="true"></i>${num(S.unitsInProgress)} in progress` : '', known(S.unitsRemaining) && S.unitsRemaining ? `${num(S.unitsRemaining)} needed` : '', known(S.unitsRequired) ? '' : `Units required: ${NF.toLowerCase()}`].filter(Boolean).join(' · ')}</div>
+        ${known(T.units) ? `<div class="s">${num(T.units)} from AP and transfer</div>` : T.courses ? `<div class="s">AP and transfer units: ${NF.toLowerCase()}</div>` : ''}</div>
+      <div class="tile${left ? ' alert' : ''}"><div class="eyebrow">Requirements left</div><div class="v">${left}</div>
+        <div class="s">${left ? (m.semestersLeft ? `About ${esc(m.semestersLeft)} semesters to go` : '') : 'All requirements met'}</div></div>
     </div>
   </header><main>`;
 
   h += unreadNotice(r);
 
   // progress by area, with what's left inside each requirement
-  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Every requirement on your report, grouped by area. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
+  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Click a count to list those requirements. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
 
   // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
   const key = r.key || {};
@@ -317,6 +323,8 @@ function render(r, reportText){
     const d = document.querySelector(`${a.getAttribute('href')} > details`); if (d) d.open = true;
   }));
   res.onclick = e => {
+    const show = e.target.closest('.counts button');
+    if (show) { showStatus(show); return; }
     const btn = e.target.closest('button[data-copy], button[data-copy-all]');
     if (btn) {
       if (btn.dataset.copyAll) doCopy(btn, btn.dataset.copyAll === 'tsv' ? StarsFormat.formatCourseworkTsv(r.courseList, key) : StarsFormat.formatCourseworkText(r.courseList, key), btn.dataset.copyAll === 'tsv' ? 'all courses for a spreadsheet' : 'all courses as text');

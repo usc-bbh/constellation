@@ -1,6 +1,6 @@
 # Constellation: status and next steps
 
-_Last updated 3 Nov 2026 by Natalie (with Claude). Start here when picking the project back up._
+_Last updated 3 Nov 2026 by Natalie (with Claude), after the mentor review. Start here when picking the project back up._
 
 Live page: https://usc-bbh.github.io/constellation/ (GitHub Pages from `main`, turned on 20 Oct).
 
@@ -29,6 +29,25 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 | — | README pointed at the old parser location and submodule | **Done on this branch (13 Oct), not on `main` yet.** Tanzil flagged it again in bbh-course-reg-project#7 (18 Oct). Merging this branch closes it. |
 | — | Name on the summary / stop redacting | **Open, for the team (Natalie to raise).** The original report text now shows the report as uploaded. Still to decide: (b) show the student's name at the top of the summary (useful on advisor printouts, but it's on every shared screenshot) and (c) stop redacting everywhere, page and extension (simpler, but the ID and address spread beyond the collapsed text and the "Private by design" wording must change). Suggested: keep as is, and revisit (b) as a print-only header if advisors ask. Meant to be a GitHub issue; open one if wanted. |
 | — | Pathwise decisions before Tanzil's M4 | **Open, time-sensitive.** See "Waiting on Natalie (Pathwise)" below. M4 (next-sem-validator#9) is already open. |
+
+## What changed on 3 Nov (mentor review: less ink)
+
+From the mentor's review of the live page. The main note was that the results page shows too much at once, so the rule now is to show the headline and hide the rest until asked.
+
+- **Area cards stop at the headline.** Each card shows its name, its bar and one row of counts: "2 complete", "1 in progress", "2 needed" (zeros left out). Every requirement starts hidden. Clicking a count shows only the requirements with that status, and only their parts with that status, still folded. Clicking it again hides them. The "N left" corner is gone; it said the same thing as the counts. The corner now shows just the area's units ("24 units, 4 in progress"). Printing still shows and opens everything.
+- **No row tint.** The gray background on unfinished rows confused the reviewer. Now the count you clicked does that job.
+- **Three tiles instead of five:** USC GPA (major GPA under it), Units ("72 of 128", with "16 in progress · 40 needed" and "12 from AP and transfer" under the bar) and Requirements left. "Units completed" and "Units remaining" repeated each other.
+- **Header:** "Major: BS, Business of Fighting On", then "Junior by units · Expected graduation May 2028". The degree is abbreviated (BS, BA, BFA, BM, BArch; others stay in full) and the catalog year is gone. "By units" is there because STARS sets class level by units, so a first-year with AP credit can show as a sophomore.
+- **Fewer words:** "still needed" is now "needed" everywhere, and a hidden GPA reads "Hidden in this copy of the report".
+- **Footer credit matches RegCheck:** "Constellation is a BUAI Builder Hub ↗ tool · Tools by Students, for Students", linking to https://usc-bbh.github.io/bbh-website/. The disclaimer already matched RegCheck. `check-privacy` now allows that one link. It also strips allowed links in double quotes, not just single.
+- **Kept on purpose:** the University card still lists "Total units", even though the Units tile shows the same numbers. Without it, a report with every other University requirement met would show that area as complete while units are still needed. It now only appears when you click "needed".
+
+**Waiting on Natalie** (from the same meeting, not code):
+1. **Feedback form:** add a required first question, a dropdown with "I'd like to give feedback", "I'd like to report an issue" and "I'd like to request a feature", so the response Sheet can be filtered (feature requests become GitHub issues for new contributors).
+2. **Usage counts:** get the tracker login the mentor shared in Slack. If it's GoatCounter, put the site code in `package.json` (`"goatcounter"`). That also turns on the star rating and "N reports summarized".
+3. **Link Constellation from the BBH website** with an "in progress" badge (in the BBH website repo).
+4. **Timeline:** Slack the mentor once this is live. Advisor Steve's feedback is on Tue 10 Nov. Then the mentor emails Maureen.
+5. Look at real reports for other rows that repeat the tiles or appear on every report, and trim them the same way.
 
 ## What changed on 3 Nov (team review fixes)
 

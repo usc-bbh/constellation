@@ -6,7 +6,7 @@
 //        - src/telemetry.js may reach GoatCounter only, store only the "rated" flag, and must not
 //          touch the report or the parsed result.
 //        - links students click (<a href>) may point to usc.edu pages, the live feedback page,
-//          or mailto:. The page itself never loads them.
+//          the BBH website, or mailto:. The page itself never loads them.
 //   3. Built pages: index.html's Content-Security-Policy blocks every request except the
 //      GoatCounter host set in package.json (none while it's empty); feedback.html connects to
 //      nothing, and may frame only the Google Form set in package.json ("feedbackForm"). Neither
@@ -42,7 +42,7 @@ const NETWORK = [
 ];
 const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
 const TELEMETRY = 'telemetry.js';
-const USC_LINK = /^https:\/\/(?:[a-z0-9-]+\.)*usc\.edu\/|^https:\/\/usc-bbh\.github\.io\/constellation\/feedback\.html$/;
+const OK_LINK = /^https:\/\/(?:[a-z0-9-]+\.)*usc\.edu\/|^https:\/\/usc-bbh\.github\.io\/(?:constellation\/feedback\.html|bbh-website\/)$/;
 for (const full of walk(path.join(root, 'src'))) {
   const f = path.relative(path.join(root, 'src'), full);
   let text = fs.readFileSync(full, 'utf8');
@@ -56,8 +56,8 @@ for (const full of walk(path.join(root, 'src'))) {
     if (/StarsParser|StarsFormat|Constellation\.|#result|courseList|getElementById\('result'\)|\.meta\b|redact/.test(text)) problems.push(`src/${f} touches the report. Telemetry must only send fixed names.`);
     continue;
   }
-  // Links a student clicks are allowed to usc.edu; strip them before the checks below.
-  text = text.replace(/'https:\/\/[^'\s]+'/g, u => USC_LINK.test(u.slice(1, -1)) ? "''" : u);
+  // Links a student clicks are allowed to the hosts above; strip them before the checks below.
+  text = text.replace(/(['"])https:\/\/[^'"\s]+\1/g, u => OK_LINK.test(u.slice(1, -1)) ? "''" : u);
   for (const [re, what] of NETWORK) if (re.test(text)) problems.push(`src/${f} contains ${what} (${text.match(re)[0]}). The page must make no requests and store nothing.`);
 }
 const GOATCOUNTER = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).goatcounter || '';

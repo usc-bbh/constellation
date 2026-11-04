@@ -16,7 +16,7 @@
   --line:rgba(0,0,0,.08); --line-strong:rgba(0,0,0,.15); --sunk:#F2F2F4;
   --cardinal:#990000; --cardinal-deep:#7d0000; --cardinal-tint:rgba(153,0,0,.08); --gold:#B8952E; --gold-line:rgba(212,175,55,.4);
   /* Status colors, one palette for the bars, the dots and the counts: red fills in as
-     requirements are met. Complete is solid cardinal, in progress a lighter red, still needed gray. */
+     requirements are met. Complete is solid cardinal, in progress a lighter red, needed gray. */
   --done:#990000; --done-ink:#990000; --done-bg:rgba(153,0,0,.08);
   --prog:#D27979; --prog-ink:#A64444; --prog-bg:#FBF0F0;
   --needs:#71717A; --needs-ink:#3F3F46; --needs-bg:#F2F2F4;
@@ -99,7 +99,7 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .hero .prepared{color:var(--muted);font-size:13.5px;text-align:right}
 
 /* stat tiles */
-.tiles{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.tiles{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px}
 .tile .v{font:700 26px/1.1 var(--display);margin-top:10px;letter-spacing:-.3px}
 /* The GPA is the number students come for most, so it is the one large thing on the page. */
@@ -112,7 +112,7 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .meter i{display:block;height:100%}
 .meter .d{background:var(--done)}
 .meter .p{background:var(--prog)}
-.meter,.mk,.need,.tag,.term-h td,.req.needs>summary,.req.progress>summary,.subs>li.needs,.subs>li.progress{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.meter,.mk,.need,.tag,.term-h td{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sw{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:0}
 .sw.p{background:var(--prog)}
 
@@ -149,14 +149,15 @@ tr.crs.gone td{color:var(--muted)}
 .area-card{--area:var(--cardinal);flex:1 1 340px;min-width:0;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--area);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px 10px;scroll-margin-top:16px}
 .area-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .area-card h3{font:700 17px/1.25 var(--display);margin:0;display:flex;align-items:center;gap:8px;color:var(--ink)}
-.area-card .tally{font:600 13px/1.3 var(--display);color:var(--area);white-space:nowrap;text-align:right}
-.area-card .tally small{display:block;font:500 12.5px var(--body-font);color:var(--muted)}
+.area-card .tally{font:500 12.5px/1.3 var(--body-font);color:var(--muted);white-space:nowrap;text-align:right}
 .area-card .meter .d{background:var(--area)}
 .area-card .meter .p{background:var(--area);opacity:.35}
 .star-check{flex:none;width:22px;height:22px;color:var(--area)}
 /* Each count carries the dot it stands for, so the line under the bar doubles as its key. */
-.counts{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted);margin-top:8px}
-.counts span{display:inline-flex;align-items:center;gap:6px}
+.counts{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--muted);margin-top:10px}
+.counts button{display:inline-flex;align-items:center;gap:6px;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer}
+.counts button:hover{border-color:var(--line-strong);color:var(--ink)}
+.counts button[aria-pressed="true"]{border-color:var(--cardinal);background:var(--cardinal-tint);color:var(--ink)}
 .counts .mk{width:9px;height:9px}
 /* A finished requirement carries no dot; the space stays so names line up. */
 .req>summary>.mk.done,.subs>li>.mk.done{visibility:hidden}
@@ -164,24 +165,29 @@ tr.crs.gone td{color:var(--muted)}
 .counts .progress b{color:var(--prog-ink)}
 .counts .needs b{color:var(--needs-ink)}
 .counts .none b{color:var(--muted)}
+.counts .done b{color:var(--cardinal)}
+/* On screen an area shows only its headline until a count is clicked; then only the requirements,
+   and the parts inside them, with that status. Print shows everything. */
+@media screen{
+  .area-card:not([data-show]) .reqs{display:none}
+  .area-card[data-show="done"] .req:not([data-has~="done"]),.area-card[data-show="done"] .subs>li:not(.done),
+  .area-card[data-show="progress"] .req:not([data-has~="progress"]),.area-card[data-show="progress"] .subs>li:not(.progress),
+  .area-card[data-show="needs"] .req:not([data-has~="needs"]),.area-card[data-show="needs"] .subs>li:not(.needs),
+  .area-card[data-show="none"] .req:not([data-has~="none"]),.area-card[data-show="none"] .subs>li:not(.none){display:none}
+}
 .reqs{margin:12px -18px 0;border-top:1px solid var(--line)}
 .req{margin:0;border-bottom:1px solid var(--line)}
 .req:last-child{border-bottom:0}
 .req>summary{font:500 14.5px/1.35 var(--body-font);padding:11px 18px;gap:10px;align-items:center}
 .req>summary .name{flex:1;min-width:0}
 .req.done>summary .name{color:var(--body)}
-/* Unfinished requirements (still needed or in progress) stand out; finished ones stay plain. */
-.req.needs>summary,.req.progress>summary{background:var(--needs-bg)}
-.req.needs>summary .name,.req.progress>summary .name{font-weight:600;color:var(--ink)}
 .req-body{padding:0 18px 14px 37px;font-size:14px;display:grid;gap:10px}
 .req-body .where{color:var(--body)}
 .subs{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .subs>li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 9px;align-items:baseline}
 .subs>li>.mk{transform:translateY(1px)}
 .subs .sub-name{font-weight:600;color:var(--ink)}
-.subs>li.done .sub-name{font-weight:500;color:var(--body)}
 .subs .sub-more{grid-column:2;display:grid;gap:6px}
-.subs>li.needs,.subs>li.progress{background:var(--needs-bg);border-radius:8px;padding:6px 8px;margin:0 -8px}
 .need{background:var(--needs-bg);border-radius:8px;padding:8px 10px;display:grid;gap:6px}
 .need.progress{background:var(--prog-bg)}
 .need .count{font:700 15px var(--display);color:var(--needs-ink)}
@@ -259,10 +265,6 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 .gform iframe{display:block;width:100%;height:660px;border:0}
 @media (max-width:640px){.gform iframe{height:760px}}
 
-@media (max-width:1000px){
-  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .tile.gpa{grid-column:span 3}
-}
 /* Under 900px the left menu becomes a strip that stays at the top. */
 @media (max-width:900px){
   .layout{grid-template-columns:minmax(0,1fr);gap:0}
@@ -306,8 +308,8 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
   .more>div{display:flex !important}
   .layout{display:block}
   .wrap{padding:0}
-  /* A printed page is about 720px wide: five tiles fit only with smaller type. */
-  .tiles{grid-template-columns:1.2fr repeat(4,minmax(0,1fr));gap:8px}
+  /* A printed page is about 720px wide: the tiles fit with smaller type. */
+  .tiles{grid-template-columns:1.2fr repeat(2,minmax(0,1fr));gap:8px}
   .tile.gpa{grid-column:auto}
   .tile{padding:10px 12px;border-color:var(--line-strong)}
   .tile .eyebrow{letter-spacing:.6px}
@@ -357,7 +359,7 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 <footer class="site-foot">
   <div class="wrap">
     <p class="official">Not an official USC system. Always confirm in STARS and with your advisor.</p>
-    <p class="credit">Constellation is an unofficial reading aid built by BUAI Builder Hub. Tools by Students, for Students.</p>
+    <p class="credit">Constellation is a <a href="https://usc-bbh.github.io/bbh-website/" target="_blank" rel="noopener noreferrer">BUAI Builder Hub ↗<span class="sr"> (opens in a new tab)</span></a> tool · Tools by Students, for Students</p>
   </div>
 </footer>
 </body>
