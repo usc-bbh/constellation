@@ -37,6 +37,8 @@ Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/cons
 | `src/page.html` | The page template: layout, styles, rendering. |
 | `src/sample-report.txt` | The report behind the "Try a sample report" button: Tommy Trojan (ID 12345678), a junior in the invented "Business of Fighting On" BS. It uses real STARS formatting and typical USC courses, with AP credit, a transfer course, a retake, a term in progress and several requirements still needed. The student, major, program code and grades are invented; it is not based on any real or anonymized report. |
 | `src/feedback.html` | The feedback page. build.js adds the embedded Google Form. |
+| `src/privacy.html` | The privacy policy for the website and the extension, built to `privacy.html`. The Chrome Web Store listing links to it. |
+| `store/` | The Chrome Web Store listing: `LISTING.md` (the text to paste and the steps to publish), screenshots, promo tile and icon. |
 | `test/fixture-report.txt` | The earlier synthetic sample ("Data and Society"), kept for the unit tests because it covers most formats the parser handles. |
 | `build.js` | Builds `index.html`: inlines everything, bundles pdf.js from `node_modules`, writes the CSP. |
 | `scripts/check-privacy.mjs` | The privacy check described above. |
@@ -50,6 +52,7 @@ Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/cons
 npm install
 npm run build          # after editing anything in src/; builds index.html and dist/extension/
 npm test               # builds, runs the privacy check and unit tests, then tests every report in test/samples/
+npm run package:extension  # npm test, then zips dist/extension/ for the Chrome Web Store (dist/constellation-extension-<version>.zip)
 ```
 
 pdf.js is pinned to one exact version (`pdfjs-dist` 4.10.38) in `package.json`. The page and the test both use it. Upgrade it on purpose and re-run every report.
@@ -63,6 +66,8 @@ The extension reads the STARS report already open in your browser, so there's no
 2. In Chrome, go to `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and choose the `dist/extension` folder.
 3. Pin Constellation from the puzzle-piece menu.
 4. Open your STARS report and click the Constellation button. The summary opens in a new tab.
+
+**Publishing it:** see [store/LISTING.md](store/LISTING.md) for the Chrome Web Store listing text, assets and steps.
 
    To try it without a real report, open `dist/sample-stars-page.html` first. Chrome only lets extensions read local files if you turn on "Allow access to file URLs" in the extension's details.
 

@@ -4,7 +4,8 @@
 // report never leaves the page. The one exception to "no requests" is src/telemetry.js: anonymous
 // GoatCounter counts (visits, summaries, star ratings) once a site code is set in package.json.
 // The Content-Security-Policy allows that one host and nothing else. Also builds feedback.html,
-// which embeds the team's Google Form (set in package.json) in a frame and makes no requests itself.
+// which embeds the team's Google Form (set in package.json) in a frame and makes no requests itself,
+// and privacy.html, the privacy policy (also the one the Chrome Web Store listing links to).
 //
 // With --extension it also builds the Chrome extension in dist/extension/: the same page as
 // summary.html, but with every script as its own file, because Chrome extensions (Manifest V3)
@@ -98,6 +99,11 @@ if (FORM_URL) feedbackPage = feedbackPage.replace("child-src blob:", "child-src 
 fs.writeFileSync('feedback.html', feedbackPage);
 console.log(`Built feedback.html (${FORM_URL ? 'embeds the Google Form ' + FF_ID : 'no Google Form set: email link only'})`);
 
+// ---------- privacy policy: plain text, no scripts, no requests ----------
+const privacyPage = withCsp(read('src/privacy.html').replace(STYLE_MARK, () => style), '');
+fs.writeFileSync('privacy.html', privacyPage);
+console.log('Built privacy.html');
+
 // ---------- Chrome extension: every script as its own file ----------
 if (process.argv.includes('--extension')) {
   const out = 'dist/extension';
@@ -105,7 +111,9 @@ if (process.argv.includes('--extension')) {
   fs.mkdirSync(path.join(out, 'icons'), { recursive: true });
 
   // The manifest's policy covers extension pages. No telemetry: the extension stays offline.
-  let summary = template.replace('<!--CSP-->', '').replace(STYLE_MARK, () => style).replace(TELEMETRY_MARK, '');
+  // The extension has no copy of the privacy page, so its footer link opens the website's.
+  let summary = template.replace('<!--CSP-->', '').replace(STYLE_MARK, () => style).replace(TELEMETRY_MARK, '')
+    .replace('<a href="privacy.html">Privacy</a>', '<a href="https://usc-bbh.github.io/constellation/privacy.html" target="_blank" rel="noopener noreferrer">Privacy<span class="sr"> (opens in a new tab)</span></a>');
   for (const [mark, file, code] of scripts) {
     fs.writeFileSync(path.join(out, file), code === null
       ? "const PDF_WORKER_SRC = null, PDF_WORKER_URL = 'pdf.worker.js';\n" : code);

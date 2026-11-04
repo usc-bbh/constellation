@@ -42,6 +42,8 @@ From the mentor's review of the live page. The main note was that the results pa
 - **Footer credit matches RegCheck:** "Constellation is a BUAI Builder Hub ↗ tool · Tools by Students, for Students", linking to https://usc-bbh.github.io/bbh-website/. The disclaimer already matched RegCheck. `check-privacy` now allows that one link. It also strips allowed links in double quotes, not just single.
 - **Kept on purpose:** the University card still lists "Total units", even though the Units tile shows the same numbers. Without it, a report with every other University requirement met would show that area as complete while units are still needed. It now only appears when you click "needed".
 
+**Chrome Web Store (4 Nov):** ready to submit. Version 0.3.0. `npm run package:extension` builds the zip; [store/LISTING.md](store/LISTING.md) has the listing text, privacy answers, screenshots and steps. The privacy policy is `privacy.html` on the site, linked from every footer (the extension links to the website's copy). **Waiting on Natalie:** a Chrome Web Store developer account under bbh@usc.edu ($5), then the upload. Once it's approved, put the store link on the "Add to Chrome" button in `src/page.html`.
+
 **Waiting on Natalie** (from the same meeting, not code):
 1. **Feedback form:** add a required first question, a dropdown with "I'd like to give feedback", "I'd like to report an issue" and "I'd like to request a feature", so the response Sheet can be filtered (feature requests become GitHub issues for new contributors).
 2. **Usage counts:** get the tracker login the mentor shared in Slack. If it's GoatCounter, put the site code in `package.json` (`"goatcounter"`). That also turns on the star rating and "N reports summarized".

@@ -5,3 +5,5 @@ test/samples/*
 !test/samples/.keep
 test/expected/*
 !test/expected/.keep
+# The Chrome Web Store upload zip (npm run package:extension). Built from dist/extension/, so not tracked.
+dist/*.zip

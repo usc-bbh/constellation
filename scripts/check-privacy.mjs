@@ -9,8 +9,8 @@
 //          the BBH website, or mailto:. The page itself never loads them.
 //   3. Built pages: index.html's Content-Security-Policy blocks every request except the
 //      GoatCounter host set in package.json (none while it's empty); feedback.html connects to
-//      nothing, and may frame only the Google Form set in package.json ("feedbackForm"). Neither
-//      loads anything else from outside itself.
+//      nothing, and may frame only the Google Form set in package.json ("feedbackForm");
+//      privacy.html connects to nothing. None loads anything else from outside itself.
 //   4. Built extension (dist/extension/, if built): asks only for activeTab and scripting, no
 //      host permissions or storage, blocks connections, and loads only its own files.
 // Usage: npm run check:privacy
@@ -67,7 +67,7 @@ const FORM_SET = Boolean(String(JSON.parse(fs.readFileSync(path.join(root, 'pack
 const FORM_FRAME = /<iframe src="https:\/\/docs\.google\.com\/forms\/d\/e\/[\w-]{20,}\/viewform\?embedded=true"/g;
 
 // 3. Built pages
-for (const [name, host, imgHost] of [['index.html', GC_HOST, GC_HOST], ['feedback.html', '', '']]) {
+for (const [name, host, imgHost] of [['index.html', GC_HOST, GC_HOST], ['feedback.html', '', ''], ['privacy.html', '', '']]) {
   const file = path.join(root, name);
   if (!fs.existsSync(file)) { problems.push(`${name} is missing. Run npm run build.`); continue; }
   let page = fs.readFileSync(file, 'utf8');

@@ -1,6 +1,6 @@
 {
   "name": "constellation",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Make sense of your STARS. Turns a USC STARS report PDF into a clear, readable summary.",
   "goatcounter": "",
@@ -8,6 +8,7 @@
   "scripts": {
     "build": "node build.js --extension",
     "check:privacy": "node scripts/check-privacy.mjs",
+    "package:extension": "npm test && rm -f dist/constellation-extension-*.zip && cd dist/extension && zip -qrX ../constellation-extension-$npm_package_version.zip . -x '.*'",
     "test": "npm run build && npm run check:privacy && node test/unit.mjs && node test/extension.mjs && node test/run.mjs"
   },
   "devDependencies": {
