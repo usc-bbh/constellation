@@ -277,7 +277,7 @@ function render(r, reportText){
   h += unreadNotice(r);
 
   // progress by area, with what's left inside each requirement
-  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Click a count to list those requirements. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
+  h += `<section id="areas"><h2>Progress by area</h2><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
 
   // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
   const key = r.key || {};

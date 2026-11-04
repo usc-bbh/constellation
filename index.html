@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-qPxB4BAUw5YPyEqaS9G8EcQT8C275HDQ6rmonAciUpA=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-py7g0huK4tN64QPLLz+4XFSJm4ad5ZqZL4R9tuz7hCQ=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation: make sense of your STARS</title>
 <style>
@@ -208,6 +208,7 @@ tr.crs.gone td{color:var(--muted)}
 /* sections */
 main section{padding:30px 0 6px;scroll-margin-top:8px}
 h2{font:700 24px/1.15 var(--display);letter-spacing:-.3px;margin:0 0 4px}
+#areas h2{margin-bottom:16px}
 .section-note{color:var(--muted);margin:0 0 16px;font-size:14.5px}
 .scroll{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
 table{border-collapse:collapse;width:100%;font-size:14.5px}
@@ -1277,7 +1278,7 @@ function render(r, reportText){
   h += unreadNotice(r);
 
   // progress by area, with what's left inside each requirement
-  h += `<section id="areas"><h2>Progress by area</h2><p class="section-note">Click a count to list those requirements. Open a requirement to see what's left and the courses that count, assuming your current courses pass.</p><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
+  h += `<section id="areas"><h2>Progress by area</h2><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
 
   // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
   const key = r.key || {};
