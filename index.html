@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-AkbcTIcyhQ34y+lt77g50zPPWDqPKEq44EUuRLa5bLs=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BnYo6LXYDRxfujf9i/+/zhKdtriPrIhimwYq97X24/w=' 'sha256-cNWCBbT2YApwIkPK01MXC9ZmQj95SD9tviejojom5cE=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-0UN7AE5tSHF81X1s/4RL0AosoYePTTYpGvq1LSK2wDQ=' 'sha256-qPxB4BAUw5YPyEqaS9G8EcQT8C275HDQ6rmonAciUpA=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation: make sense of your STARS</title>
 <style>
@@ -146,7 +146,7 @@ tr.crs.gone td{color:var(--muted)}
 .mk.needs,.mk.none{background:var(--card)}
 .mk.none{border:1.5px dashed var(--muted)}
 .areas{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
-.area-card{--area:var(--cardinal);flex:1 1 340px;min-width:0;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--area);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px 10px;scroll-margin-top:16px}
+.area-card{--area:var(--cardinal);flex:1 1 340px;min-width:0;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--area);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px 10px;scroll-margin-top:16px;overflow:hidden}
 .area-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .area-card h3{font:700 17px/1.25 var(--display);margin:0;display:flex;align-items:center;gap:8px;color:var(--ink)}
 .area-card .tally{font:500 12.5px/1.3 var(--body-font);color:var(--muted);white-space:nowrap;text-align:right}
@@ -154,11 +154,17 @@ tr.crs.gone td{color:var(--muted)}
 .area-card .meter .p{background:var(--area);opacity:.35}
 .star-check{flex:none;width:22px;height:22px;color:var(--area)}
 /* Each count carries the dot it stands for, so the line under the bar doubles as its key. */
-.counts{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--muted);margin-top:10px}
-.counts button{display:inline-flex;align-items:center;gap:6px;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer}
-.counts button:hover{border-color:var(--line-strong);color:var(--ink)}
-.counts button[aria-pressed="true"]{border-color:var(--cardinal);background:var(--cardinal-tint);color:var(--ink)}
-.counts .mk{width:9px;height:9px}
+/* Counts stack one per row, flush with the card's edges, each with a caret on the right that
+   turns down when open, like the folded sections. */
+.counts{display:flex;flex-direction:column;margin:12px -18px -10px;border-top:1px solid var(--line)}
+.counts>button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:500 14.5px/1.35 var(--body-font);color:var(--body);background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:11px 18px;cursor:pointer}
+.counts>button::after{content:"";flex:none;margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s}
+.counts>button:hover{background:var(--page);color:var(--ink)}
+.counts>button:hover::after{border-color:var(--ink)}
+.counts>button[aria-expanded="true"]{background:var(--cardinal-tint);color:var(--ink)}
+.counts>button[aria-expanded="true"]::after{transform:rotate(45deg);border-color:var(--cardinal)}
+.counts>:last-child{border-bottom:0}
+.counts .mk{width:10px;height:10px}
 .counts .ck{flex:none;width:12px;height:12px;color:var(--done);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 /* A finished requirement carries no dot; the space stays so names line up. */
 .req>summary>.mk.done,.subs>li>.mk.done{visibility:hidden}
@@ -176,7 +182,10 @@ tr.crs.gone td{color:var(--muted)}
   .area-card[data-show="needs"] .req:not([data-has~="needs"]),.area-card[data-show="needs"] .subs>li:not(.needs),
   .area-card[data-show="none"] .req:not([data-has~="none"]),.area-card[data-show="none"] .subs>li:not(.none){display:none}
 }
-.reqs{margin:12px -18px 0;border-top:1px solid var(--line)}
+/* The requirement list sits under the open count, indented one step. */
+.reqs{border-bottom:1px solid var(--line)}
+.reqs .req>summary{padding-left:34px}
+.reqs .req-body{padding-left:53px}
 .req{margin:0;border-bottom:1px solid var(--line)}
 .req:last-child{border-bottom:0}
 .req>summary{font:500 14.5px/1.35 var(--body-font);padding:11px 18px;gap:10px;align-items:center}
@@ -289,6 +298,7 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
   .tile .v{font-size:22px}
   .hero .prepared{text-align:left}
   .req-body{padding-left:18px}
+  .reqs .req-body{padding-left:34px}
   .stack thead{display:none}
   .stack, .stack tbody{display:block}
   .stack tr{display:block;padding:12px 14px;border-bottom:1px solid var(--line)}
@@ -335,7 +345,7 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
   .hist .detail{font-size:11px}
   .hist .tag{white-space:normal}
   /* Carets mean "click to open"; on paper everything is open. */
-  summary::before{display:none}
+  summary::before,.counts>button::after{display:none}
   a{color:inherit;text-decoration:none}
 }
 </style>
@@ -1130,20 +1140,27 @@ function reqRow({ block: b, left, subs }){
   return `<details class="req ${b.status}" data-has="${has}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
 }
-// The headline of an area: how many parts are needed, in progress and complete, zeros left out.
-// Each count is a button that shows the requirements with that status (see showStatus).
+// The headline of an area: how many parts are needed, in progress and complete, zeros left out,
+// stacked one per row. Each row opens like a folded section to show the requirements with that
+// status (see showStatus); the list of requirements sits inside this block, under the open row.
 // Each carries its dot, so the line also explains the dots on the requirements. Complete gets a
 // check instead, since finished requirements carry no dot.
 const CHECK = '<svg class="ck" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5 5 9l4.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const counts = (n, id) => {
-  const bits = ['needs', 'progress', 'done', 'none'].filter(k => n[k]).map(k => `<button type="button" class="${k}" data-show="${k}" aria-pressed="false" aria-controls="${id}-reqs">${k === 'done' ? CHECK : `<i class="mk ${k}" aria-hidden="true"></i>`}<b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</button>`);
-  return bits.length ? `<div class="counts" role="group" aria-label="Show requirements">${bits.join('')}</div>` : '';
+const counts = (n, id, list) => {
+  const bits = ['needs', 'progress', 'done', 'none'].filter(k => n[k]).map(k => `<button type="button" class="${k}" data-show="${k}" aria-expanded="false" aria-controls="${id}-reqs">${k === 'done' ? CHECK : `<i class="mk ${k}" aria-hidden="true"></i>`}<span><b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</span></button>`);
+  return `<div class="counts">${bits.join('')}${list}</div>`;
 };
-// Clicking a count shows that status's requirements; clicking it again hides them.
+// Clicking a count opens it and moves the requirement list under it; clicking it again closes it.
 function showStatus(btn){
-  const card = btn.closest('.area-card'), on = btn.getAttribute('aria-pressed') !== 'true';
-  card.querySelectorAll('.counts button').forEach(b => b.setAttribute('aria-pressed', String(on && b === btn)));
+  const card = btn.closest('.area-card'), on = btn.getAttribute('aria-expanded') !== 'true';
+  card.querySelectorAll('.counts button').forEach(b => b.setAttribute('aria-expanded', String(on && b === btn)));
   if (on) card.dataset.show = btn.dataset.show; else delete card.dataset.show;
+  placeList(card);
+}
+// The list goes under the open count, or at the end of the counts when none is open (and in print).
+function placeList(card, end){
+  const list = card.querySelector('.reqs'), open = card.querySelector('.counts button[aria-expanded="true"]');
+  if (open && !end) open.after(list); else card.querySelector('.counts').append(list);
 }
 function areaCard(a){
   const n = a.counts, pct = k => (n[k] / a.total * 100).toFixed(1);
@@ -1152,8 +1169,7 @@ function areaCard(a){
   return `<article class="area-card" id="${id}">
     <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3>${u}</header>
     <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-    ${counts(n, id)}
-    <div class="reqs" id="${id}-reqs">${a.blocks.map(reqRow).join('')}</div></article>`;
+    ${counts(n, id, `<div class="reqs" id="${id}-reqs">${a.blocks.map(reqRow).join('')}</div>`)}</article>`;
 }
 
 /* ---------- double-check notice ---------- */
@@ -1338,11 +1354,16 @@ function uploadAnother(e){ reset(e); window.scrollTo(0, 0); $('#file').click(); 
 
 // The printout shows everything: open every folded section, then put them back as they were.
 let closedForPrint = [];
+// Each area's requirement list also moves below its counts, then back under the open count.
 window.addEventListener('beforeprint', () => {
   closedForPrint = [...document.querySelectorAll('#result details:not([open])')];
   closedForPrint.forEach(d => { d.open = true; });
+  document.querySelectorAll('#result .area-card').forEach(c => placeList(c, true));
 });
-window.addEventListener('afterprint', () => { closedForPrint.forEach(d => { d.open = false; }); closedForPrint = []; });
+window.addEventListener('afterprint', () => {
+  closedForPrint.forEach(d => { d.open = false; }); closedForPrint = [];
+  document.querySelectorAll('#result .area-card').forEach(c => placeList(c));
+});
 $('#sample').onclick = () => run(SAMPLE);
 document.querySelectorAll('[data-feedback]').forEach(p => { p.innerHTML = feedbackLink(); });
 // The extension promo is for the website; in the extension it would advertise itself.

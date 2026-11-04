@@ -140,20 +140,27 @@ function reqRow({ block: b, left, subs }){
   return `<details class="req ${b.status}" data-has="${has}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
 }
-// The headline of an area: how many parts are needed, in progress and complete, zeros left out.
-// Each count is a button that shows the requirements with that status (see showStatus).
+// The headline of an area: how many parts are needed, in progress and complete, zeros left out,
+// stacked one per row. Each row opens like a folded section to show the requirements with that
+// status (see showStatus); the list of requirements sits inside this block, under the open row.
 // Each carries its dot, so the line also explains the dots on the requirements. Complete gets a
 // check instead, since finished requirements carry no dot.
 const CHECK = '<svg class="ck" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5 5 9l4.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const counts = (n, id) => {
-  const bits = ['needs', 'progress', 'done', 'none'].filter(k => n[k]).map(k => `<button type="button" class="${k}" data-show="${k}" aria-pressed="false" aria-controls="${id}-reqs">${k === 'done' ? CHECK : `<i class="mk ${k}" aria-hidden="true"></i>`}<b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</button>`);
-  return bits.length ? `<div class="counts" role="group" aria-label="Show requirements">${bits.join('')}</div>` : '';
+const counts = (n, id, list) => {
+  const bits = ['needs', 'progress', 'done', 'none'].filter(k => n[k]).map(k => `<button type="button" class="${k}" data-show="${k}" aria-expanded="false" aria-controls="${id}-reqs">${k === 'done' ? CHECK : `<i class="mk ${k}" aria-hidden="true"></i>`}<span><b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</span></button>`);
+  return `<div class="counts">${bits.join('')}${list}</div>`;
 };
-// Clicking a count shows that status's requirements; clicking it again hides them.
+// Clicking a count opens it and moves the requirement list under it; clicking it again closes it.
 function showStatus(btn){
-  const card = btn.closest('.area-card'), on = btn.getAttribute('aria-pressed') !== 'true';
-  card.querySelectorAll('.counts button').forEach(b => b.setAttribute('aria-pressed', String(on && b === btn)));
+  const card = btn.closest('.area-card'), on = btn.getAttribute('aria-expanded') !== 'true';
+  card.querySelectorAll('.counts button').forEach(b => b.setAttribute('aria-expanded', String(on && b === btn)));
   if (on) card.dataset.show = btn.dataset.show; else delete card.dataset.show;
+  placeList(card);
+}
+// The list goes under the open count, or at the end of the counts when none is open (and in print).
+function placeList(card, end){
+  const list = card.querySelector('.reqs'), open = card.querySelector('.counts button[aria-expanded="true"]');
+  if (open && !end) open.after(list); else card.querySelector('.counts').append(list);
 }
 function areaCard(a){
   const n = a.counts, pct = k => (n[k] / a.total * 100).toFixed(1);
@@ -162,8 +169,7 @@ function areaCard(a){
   return `<article class="area-card" id="${id}">
     <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3>${u}</header>
     <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-    ${counts(n, id)}
-    <div class="reqs" id="${id}-reqs">${a.blocks.map(reqRow).join('')}</div></article>`;
+    ${counts(n, id, `<div class="reqs" id="${id}-reqs">${a.blocks.map(reqRow).join('')}</div>`)}</article>`;
 }
 
 /* ---------- double-check notice ---------- */
@@ -348,11 +354,16 @@ function uploadAnother(e){ reset(e); window.scrollTo(0, 0); $('#file').click(); 
 
 // The printout shows everything: open every folded section, then put them back as they were.
 let closedForPrint = [];
+// Each area's requirement list also moves below its counts, then back under the open count.
 window.addEventListener('beforeprint', () => {
   closedForPrint = [...document.querySelectorAll('#result details:not([open])')];
   closedForPrint.forEach(d => { d.open = true; });
+  document.querySelectorAll('#result .area-card').forEach(c => placeList(c, true));
 });
-window.addEventListener('afterprint', () => { closedForPrint.forEach(d => { d.open = false; }); closedForPrint = []; });
+window.addEventListener('afterprint', () => {
+  closedForPrint.forEach(d => { d.open = false; }); closedForPrint = [];
+  document.querySelectorAll('#result .area-card').forEach(c => placeList(c));
+});
 $('#sample').onclick = () => run(SAMPLE);
 document.querySelectorAll('[data-feedback]').forEach(p => { p.innerHTML = feedbackLink(); });
 // The extension promo is for the website; in the extension it would advertise itself.

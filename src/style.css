@@ -137,7 +137,7 @@ tr.crs.gone td{color:var(--muted)}
 .mk.needs,.mk.none{background:var(--card)}
 .mk.none{border:1.5px dashed var(--muted)}
 .areas{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
-.area-card{--area:var(--cardinal);flex:1 1 340px;min-width:0;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--area);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px 10px;scroll-margin-top:16px}
+.area-card{--area:var(--cardinal);flex:1 1 340px;min-width:0;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--area);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px 10px;scroll-margin-top:16px;overflow:hidden}
 .area-card>header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .area-card h3{font:700 17px/1.25 var(--display);margin:0;display:flex;align-items:center;gap:8px;color:var(--ink)}
 .area-card .tally{font:500 12.5px/1.3 var(--body-font);color:var(--muted);white-space:nowrap;text-align:right}
@@ -145,11 +145,17 @@ tr.crs.gone td{color:var(--muted)}
 .area-card .meter .p{background:var(--area);opacity:.35}
 .star-check{flex:none;width:22px;height:22px;color:var(--area)}
 /* Each count carries the dot it stands for, so the line under the bar doubles as its key. */
-.counts{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--muted);margin-top:10px}
-.counts button{display:inline-flex;align-items:center;gap:6px;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer}
-.counts button:hover{border-color:var(--line-strong);color:var(--ink)}
-.counts button[aria-pressed="true"]{border-color:var(--cardinal);background:var(--cardinal-tint);color:var(--ink)}
-.counts .mk{width:9px;height:9px}
+/* Counts stack one per row, flush with the card's edges, each with a caret on the right that
+   turns down when open, like the folded sections. */
+.counts{display:flex;flex-direction:column;margin:12px -18px -10px;border-top:1px solid var(--line)}
+.counts>button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:500 14.5px/1.35 var(--body-font);color:var(--body);background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:11px 18px;cursor:pointer}
+.counts>button::after{content:"";flex:none;margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s}
+.counts>button:hover{background:var(--page);color:var(--ink)}
+.counts>button:hover::after{border-color:var(--ink)}
+.counts>button[aria-expanded="true"]{background:var(--cardinal-tint);color:var(--ink)}
+.counts>button[aria-expanded="true"]::after{transform:rotate(45deg);border-color:var(--cardinal)}
+.counts>:last-child{border-bottom:0}
+.counts .mk{width:10px;height:10px}
 .counts .ck{flex:none;width:12px;height:12px;color:var(--done);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 /* A finished requirement carries no dot; the space stays so names line up. */
 .req>summary>.mk.done,.subs>li>.mk.done{visibility:hidden}
@@ -167,7 +173,10 @@ tr.crs.gone td{color:var(--muted)}
   .area-card[data-show="needs"] .req:not([data-has~="needs"]),.area-card[data-show="needs"] .subs>li:not(.needs),
   .area-card[data-show="none"] .req:not([data-has~="none"]),.area-card[data-show="none"] .subs>li:not(.none){display:none}
 }
-.reqs{margin:12px -18px 0;border-top:1px solid var(--line)}
+/* The requirement list sits under the open count, indented one step. */
+.reqs{border-bottom:1px solid var(--line)}
+.reqs .req>summary{padding-left:34px}
+.reqs .req-body{padding-left:53px}
 .req{margin:0;border-bottom:1px solid var(--line)}
 .req:last-child{border-bottom:0}
 .req>summary{font:500 14.5px/1.35 var(--body-font);padding:11px 18px;gap:10px;align-items:center}
@@ -280,6 +289,7 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
   .tile .v{font-size:22px}
   .hero .prepared{text-align:left}
   .req-body{padding-left:18px}
+  .reqs .req-body{padding-left:34px}
   .stack thead{display:none}
   .stack, .stack tbody{display:block}
   .stack tr{display:block;padding:12px 14px;border-bottom:1px solid var(--line)}
@@ -326,6 +336,6 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
   .hist .detail{font-size:11px}
   .hist .tag{white-space:normal}
   /* Carets mean "click to open"; on paper everything is open. */
-  summary::before{display:none}
+  summary::before,.counts>button::after{display:none}
   a{color:inherit;text-decoration:none}
 }
