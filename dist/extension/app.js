@@ -140,11 +140,13 @@ function reqRow({ block: b, left, subs }){
   return `<details class="req ${b.status}" data-has="${has}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
 }
-// The headline of an area: how many parts are complete, in progress and needed, zeros left out.
+// The headline of an area: how many parts are needed, in progress and complete, zeros left out.
 // Each count is a button that shows the requirements with that status (see showStatus).
-// Each carries its dot, so the line also explains the dots on the requirements.
+// Each carries its dot, so the line also explains the dots on the requirements. Complete gets a
+// check instead, since finished requirements carry no dot.
+const CHECK = '<svg class="ck" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5 5 9l4.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const counts = (n, id) => {
-  const bits = ['done', 'progress', 'needs', 'none'].filter(k => n[k]).map(k => `<button type="button" class="${k}" data-show="${k}" aria-pressed="false" aria-controls="${id}-reqs"><i class="mk ${k}" aria-hidden="true"></i><b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</button>`);
+  const bits = ['needs', 'progress', 'done', 'none'].filter(k => n[k]).map(k => `<button type="button" class="${k}" data-show="${k}" aria-pressed="false" aria-controls="${id}-reqs">${k === 'done' ? CHECK : `<i class="mk ${k}" aria-hidden="true"></i>`}<b>${n[k]}</b> ${STATUS_TXT[k].toLowerCase()}</button>`);
   return bits.length ? `<div class="counts" role="group" aria-label="Show requirements">${bits.join('')}</div>` : '';
 };
 // Clicking a count shows that status's requirements; clicking it again hides them.

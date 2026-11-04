@@ -150,6 +150,7 @@ tr.crs.gone td{color:var(--muted)}
 .counts button:hover{border-color:var(--line-strong);color:var(--ink)}
 .counts button[aria-pressed="true"]{border-color:var(--cardinal);background:var(--cardinal-tint);color:var(--ink)}
 .counts .mk{width:9px;height:9px}
+.counts .ck{flex:none;width:12px;height:12px;color:var(--done);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 /* A finished requirement carries no dot; the space stays so names line up. */
 .req>summary>.mk.done,.subs>li>.mk.done{visibility:hidden}
 .counts b{font-weight:700;font-family:var(--display)}
