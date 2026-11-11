@@ -3,7 +3,7 @@ PREPARED: 10/20/26 - 09:00
 PROGRAM: 9001                                                    CATALOG YEAR: 20243
 STARS - DEGREE PROGRESS REPORT
 BACHELOR OF SCIENCE
-BUSINESS OF FIGHTING ON
+BUSINESS ADMINISTRATION
 _________________________________________________________________
 PERTINENT DATA SECTION:
 
@@ -24,7 +24,7 @@ Diploma will be mailed to: 3551 Trousdale Parkway
 =================================================================
 CURRENT POST:        DEGREE     MAJOR      UNIT   EFFECTIVE TERM
 
-    9001         BS       BFON     BUAD       20243
+    9001         BS       BUAD     BUAD       20243
 
 MINOR:   No minor declared
 
@@ -50,9 +50,9 @@ _________________________________________________________________
         TO DEGREE COMPLETION.
 _________________________________________________________________
 NO     A MINIMUM OF 128 UNITS IS REQUIRED FOR DEGREE COMPLETION:
-    EARNED: 72.00 UNITS
+    EARNED: 74.00 UNITS
 IN-PROCESS: 16.00 UNITS
---> NEEDS: 40.00 UNITS
+--> NEEDS: 38.00 UNITS
 
       20243 WRIT150        4.0 A-     Writing and Critical Reasonin
       20243 BUAD104        4.0 A      Learning About International
@@ -62,39 +62,41 @@ IN-PROCESS: 16.00 UNITS
       20251 BUAD215        4.0 B+     Foundations of Business Fina
       20251 PSYC100   G    4.0 A      Introduction to Psychology
       20253 BUAD280        4.0 B      Introduction to Financial Ac
-      20253 BUAD310        4.0 A-     Applied Business Statistics
+      20253 BAEP451        4.0 A-     The Management of New Enterpr
       20253 BISC102   G L  4.0 B+     Humans and Their Environment
       20253 PHIL141   G    4.0 B+     Ethics and Public Life
+      20253 ITP115         2.0 A      Programming in Python
       20261 BUAD281        4.0 B+     Introduction to Managerial A
       20261 BUAD302        4.0 A      Communication Strategy in Bu
       20261 BUAD304        4.0 A-     Organizational Behavior and L
       20261 ECON351   X    4.0 B      Microeconomics for Business
       20263 BUAD306        4.0 RG >IPBusiness Finance
       20263 BUAD307        4.0 RG >IPMarketing Fundamentals
-      20263 ECON352   X    4.0 RG >IPMacroeconomics for Business
-      20263 IR 210    G    4.0 RG >IPIntroduction to International
+      20263 BUAD310        4.0 RG >IPApplied Business Statistics
+      20263 IR 210    G    4.0 RG >IPInternational Relations: Intr
 
       99993 TRNSFR WORK       12.0 TR     Total Transfer Units
 _________________________________________________________________
 IP     64-UNIT RESIDENCY REQUIREMENT:
-    EARNED: 60.00 UNITS
+    EARNED: 62.00 UNITS
 IN-PROCESS: 16.00 UNITS
 _________________________________________________________________
 NO     32-UNIT UPPER DIVISION REQUIREMENT:
-    EARNED: 12.00 UNITS
+    EARNED: 16.00 UNITS
 IN-PROCESS: 12.00 UNITS
---> NEEDS: 8.00 UNITS
+--> NEEDS: 4.00 UNITS
 _________________________________________________________________
 OK     2.0 CUMULATIVE GPA REQUIRED OF ALL USC BACCALAUREATE UNITS
        ** NOTE: University honors are based on either the GPA
        for the combined transferred and resident course work or
        the GPA for resident course work, whichever is lower.
        Note that only your USC GPA is calculated on STARS.
-    EARNED:                                           3.487 GPA
+    EARNED:                                           3.503 GPA
 _________________________________________________________________
 OK     2.0 CUMULATIVE GPA REQUIRED IN ALL UPPER DIVISION COURSE
        WORK APPLIED TO YOUR MAJOR:
-    EARNED:                                           3.567 GPA
+    EARNED:                                           3.600 GPA
+       20253 BAEP451        4.0 A-     The Management of New Enterpr
        20261 BUAD302        4.0 A      Communication Strategy in Bu
        20261 BUAD304        4.0 A-     Organizational Behavior and L
        20261 ECON351   X    4.0 B      Microeconomics for Business
@@ -169,13 +171,13 @@ IP     GENERAL EDUCATION GLOBAL PERSPECTIVES REQUIREMENT -
 
 IP+   1) CATEGORY G - GLOBAL PERSPECTIVES I:
 IN-P --->                           1 COURSE TAKEN
-       20263 IR 210    G    4.0 RG >IPIntroduction to International
+       20263 IR 210    G    4.0 RG >IPInternational Relations: Intr
 
   +   2) CATEGORY H - GLOBAL PERSPECTIVES II:
                                 1 COURSE TAKEN
        20253 PHIL141   G    4.0 B+     Ethics and Public Life
 _________________________________________________________________
-NO     MAJOR REQUIREMENTS FOR BUSINESS OF FIGHTING ON:
+NO     MAJOR REQUIREMENTS FOR BUSINESS ADMINISTRATION:
 
 +R    1) LOWER DIVISION CORE:
                                 6 COURSES TAKEN
@@ -194,34 +196,33 @@ IN-P --->                           3 COURSES TAKEN
        20261 ECON351   X    4.0 B      Microeconomics for Business
        20263 BUAD306        4.0 RG >IPBusiness Finance
        20263 BUAD307        4.0 RG >IPMarketing Fundamentals
-       20263 ECON352   X    4.0 RG >IPMacroeconomics for Business
-          NEEDS:                       1 COURSE
-         SELECT FROM: BUAD311
-
-  -   3) COMPLETE TWO UPPER DIVISION BUSINESS ELECTIVES:
+       20263 BUAD310        4.0 RG >IPApplied Business Statistics
           NEEDS:                     2 COURSES
-         SELECT FROM: BUAD300 TO BUAD499
-         FBE 400     MKT 405     DSO 424
+         SELECT FROM: BUAD311      ECON352
+
+  -   3) COMPLETE THREE UPPER DIVISION MARSHALL ELECTIVES:
+                                1 COURSE TAKEN
+       20253 BAEP451        4.0 A-     The Management of New Enterpr
+          NEEDS:                     2 COURSES
+         SELECT FROM: ACCT300 TO ACCT499  BAEP300 TO BAEP499
+         DSO 300 TO DSO 499  FBE 300 TO FBE 499
+         MKT 300 TO MKT 499  MOR 300 TO MOR 499
 
   -   4) COMPLETE BUAD497 (STRATEGIC MANAGEMENT):
           NEEDS:                     1 COURSE
          SELECT FROM: BUAD497
-
-  -  OR) COMPLETE BUAD498 AND BUAD499 (HONORS THESIS):
-          NEEDS:                     2 COURSES
-         SELECT FROM: BUAD498      BUAD499
 _________________________________________________________________
        CURRENT REGISTRATION:
 
 IP
        20263 BUAD306        4.0 RG >IPBusiness Finance
        20263 BUAD307        4.0 RG >IPMarketing Fundamentals
-       20263 ECON352   X    4.0 RG >IPMacroeconomics for Business
-       20263 IR 210    G    4.0 RG >IPIntroduction to International
+       20263 BUAD310        4.0 RG >IPApplied Business Statistics
+       20263 IR 210    G    4.0 RG >IPInternational Relations: Intr
 _________________________________________________________________
 OTHER COURSES IN YOUR ACADEMIC ACCOUNT:
 
-       20242 AP66:COMP      4.0 TR     AP CALCULUS AB
+       20242 AP35:COMP      4.0 TR     AP MACROECONOMICS
        20242 AP36:COMP      4.0 TR     AP ENGL LANGUAGE
        20243 MATH118   G    4.0 D >FFFundamental Principles of Cal
 
@@ -277,7 +278,7 @@ _________________________________________________________________
  completion of all graduation requirements.
 
  This sample report is fictional. Tommy Trojan, the student ID,
- the Business of Fighting On major, its program code, and the
- grades were invented for demonstration.
+ the program code and the grades were invented for demonstration.
+ The major (Business Administration) and the courses are real.
 _________________________________________________________________
  ************************ END OF ANALYSIS

@@ -35,7 +35,7 @@ Owner: Natalie. Constellation is its own project, in its own repo (`usc-bbh/cons
 | `dist/sample-stars-page.html` | The fictional sample report as a web page, to try the extension button without a real report. |
 | `src/pdftext.js` | PDF to text: runs pdf.js and rebuilds lines. Shared by the page and the test so both run the same code. |
 | `src/page.html` | The page template: layout, styles, rendering. |
-| `src/sample-report.txt` | The report behind the "Try a sample report" button: Tommy Trojan (ID 12345678), a junior in the invented "Business of Fighting On" BS. It uses real STARS formatting and typical USC courses, with AP credit, a transfer course, a retake, a term in progress and several requirements still needed. The student, major, program code and grades are invented; it is not based on any real or anonymized report. |
+| `src/sample-report.txt` | The report behind the "Try a sample report" button: Tommy Trojan (ID 12345678), a fictional junior in the real Business Administration (BUAD) BS, taking real Marshall and USC courses. It has AP credit, a transfer course, a retake, a term in progress, a GE that double counts (Core B and Global Perspectives H), a Marshall elective, a free elective that counts as units only, and several requirements still needed. The student, ID, program code and grades are invented; it is not based on any real or anonymized report. |
 | `src/feedback.html` | The feedback page. build.js adds the embedded Google Form. |
 | `src/privacy.html` | The privacy policy for the website and the extension, built to `privacy.html`. The Chrome Web Store listing links to it. |
 | `store/` | The Chrome Web Store listing: `LISTING.md` (the text to paste and the steps to publish), screenshots, promo tile and icon. |

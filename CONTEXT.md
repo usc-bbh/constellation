@@ -45,5 +45,5 @@ Removing the name, student ID, diploma name and mailing address before the repor
 A message a student sends to the BBH team (bbh@usc.edu) from the feedback page. It never includes anything from a STARS report.
 
 **Sample report**:
-The invented Tommy Trojan report behind "Try a sample report".
+The Tommy Trojan report behind "Try a sample report": a fictional student in the real Business Administration (BUAD) major.
 _Avoid_: test report, fixture (the fixture is the older report the unit tests use)

@@ -37,6 +37,7 @@
     }).join(' ');
     out = out.replace(/\bcategory ([a-h])\b/gi, (_, l) => `Category ${l.toUpperCase()}`)
       .replace(/\(must be taken at usc\)/i, '(must be taken at USC)')
+      .replace(/\bmarshall\b/g, 'Marshall')
       .replace(/"c"/i, '"C"')
       .replace(/\s+(requirement\s+)?(has been|has not been) (met|satisfied)\.?$/i, '').replace(/\s+requirement met\.?$/i, '')
       .replace(/\.$/, '')

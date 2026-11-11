@@ -102,12 +102,41 @@
   // Progress by area: each area's requirements, its open rows from R.left placed under the
   // requirement they came from, and the units of the courses STARS applied there. Areas with
   // anything left come first; finished areas go last.
-  const AREAS = ['University', 'Writing and language', 'General education', 'School and major', 'Other'];
+  //
+  // "Major requirements" is a display area only: the parser files the major block under "School and
+  // major" (its STARS hierarchy), and this lifts it out so advisors find it next to GEs. Its parts
+  // become the area's rows (`parts`), one level down instead of three. `left` counts the parts
+  // STARS still shows a NEEDS row for, the same rows the "Requirements left" tile counts.
+  const AREAS = ['University', 'Writing and language', 'General education', 'Major requirements', 'School and major', 'Other'];
+  const MAJOR = 'Major requirements';
+  const inArea = (b, name) => name === MAJOR ? b.kind === 'major'
+    : b.group === name && !(name === 'School and major' && b.kind === 'major');
   const isGone = c => /^(D|Z|OS)$/.test(c.flag); // STARS deleted the credit
+  const courseKey = c => c.term + ' ' + c.code;
+
+  // GE double counts: courses STARS applied to both a Core Literacies part and a Global
+  // Perspectives part. Read from what STARS applied, not from a rule, so it is right whatever the
+  // policy wording ends up being. Maps each such course to the GE letters it counts toward.
+  function geDoubleCounts(blocks) {
+    const letters = new Map(), kinds = new Map();
+    blocks.filter(b => b.kind === 'ge-core' || b.kind === 'ge-global').forEach(b => b.subs.forEach(s => {
+      const l = (s.name.match(/\bCategory ([A-H])\b/) || [])[1];
+      if (!l) return;
+      s.courses.forEach(c => {
+        const k = courseKey(c);
+        if (!letters.has(k)) { letters.set(k, new Set()); kinds.set(k, new Set()); }
+        letters.get(k).add(l); kinds.get(k).add(b.kind);
+      });
+    }));
+    const out = new Map();
+    letters.forEach((ls, k) => { if (kinds.get(k).size > 1) out.set(k, [...ls].sort()); });
+    return out;
+  }
+
   function areaView(R) {
     const out = [];
     for (const name of AREAS) {
-      const blocks = R.blocks.filter(b => b.group === name);
+      const blocks = R.blocks.filter(b => inArea(b, name));
       if (!blocks.length) continue;
       const counts = { done: 0, progress: 0, needs: 0, none: 0 };
       blocks.filter(b => b.kind !== 'cap').forEach(b => { if (b.subs.length) b.subs.forEach(s => counts[s.status]++); else counts[b.status]++; });
@@ -124,7 +153,7 @@
           progress: cs.filter(isCurrent).reduce((s, c) => s + (c.units || 0), 0)
         };
       }
-      out.push({
+      const area = {
         name, counts, total, units,
         complete: total > 0 && counts.done === total,
         blocks: blocks.map(b => ({
@@ -132,7 +161,13 @@
           left: R.left.filter(l => l.block === b && !l.sub),
           subs: b.subs.map(s => ({ sub: s, left: R.left.find(l => l.sub === s) || null }))
         }))
-      });
+      };
+      if (name === MAJOR) {
+        area.parts = area.blocks.flatMap(e => e.subs.map((p, i) => ({ ...p, block: e.block, n: i + 1 })));
+        area.left = R.left.filter(l => blocks.includes(l.block)).length;
+      }
+      if (name === 'General education') area.doubleCounts = geDoubleCounts(blocks);
+      out.push(area);
     }
     return out.filter(a => !a.complete).concat(out.filter(a => a.complete));
   }
@@ -143,6 +178,6 @@
     return { units: R.transferUnits ?? null, courses: courses.length };
   }
 
-  const api = { deriveSummary, expandCode, gradeText, isCurrent, isTransfer, groupCourses, formatCourseLine, formatCourseworkText, formatCourseworkTsv, areaView, transferCredit, AREAS };
+  const api = { courseKey, deriveSummary, expandCode, gradeText, isCurrent, isTransfer, groupCourses, formatCourseLine, formatCourseworkText, formatCourseworkTsv, areaView, transferCredit, AREAS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StarsFormat = api;
 })(typeof window !== 'undefined' ? window : globalThis);

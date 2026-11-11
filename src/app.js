@@ -114,9 +114,17 @@ function needBox(l, withLabel){
   return `<div class="need ${l.status}"><div>${withLabel ? `<b>${esc(l.label)}.</b> ` : ''}${amount}${l.detail ? `. <span class="detail">${esc(l.detail)}</span>` : ''}</div>
     ${l.options.length ? chips(l.options) : ''}</div>`;
 }
-function subMore(s, row){
+// A course STARS applied to a Core Literacies part and a Global Perspectives part shows in both,
+// tagged with the other categories it counts toward.
+function dblTag(c, s, area){
+  const ls = area && area.doubleCounts && area.doubleCounts.get(StarsFormat.courseKey(c));
+  if (!ls) return '';
+  const others = ls.filter(l => l !== geLetter(s.name));
+  return `<span class="tag dbl" title="One course, two GE categories">Double-counted${others.length ? `: also GE-${others.join(', GE-')}` : ''}</span>`;
+}
+function subMore(s, row, area){
   const bits = [];
-  if (s.courses.length) bits.push(`<div class="opts">${s.courses.map(c => (c.isAP ? `<span class="chip code">${esc(c.display)}</span>` : codeBtn(c.code, c.title))).join(' ')}</div>`);
+  if (s.courses.length) bits.push(`<div class="opts">${s.courses.map(c => (c.isAP ? `<span class="chip code">${esc(c.display)}</span>` : codeBtn(c.code, c.title)) + dblTag(c, s, area)).join(' ')}</div>`);
   if (row) bits.push(needBox(row));
   else if (s.status !== 'done' && (s.needs || (s.selectFrom || []).length)) {
     const opts = (s.selectFrom || []).concat(((s.orAlt && s.orAlt.selectFrom) || []).map(o => `or ${o}`));
@@ -130,15 +138,23 @@ function subMore(s, row){
 }
 // Requirements start hidden; a count in the card shows the rows holding that status, folded.
 // data-has lists the statuses a row holds: its parts' statuses, or its own when it has no parts.
-function reqRow({ block: b, left, subs }){
+function reqRow({ block: b, left, subs }, area){
   const has = [...new Set(subs.length ? subs.map(x => x.sub.status) : [b.status])].join(' ');
   const body = [`<div class="where">${blockSummary(b)}</div>`];
   if (b.notes.length) body.push(`<div class="detail">${b.notes.map(esc).join('. ')}</div>`);
   left.forEach(l => body.push(needBox(l, true)));
   if (subs.length) body.push(`<ul class="subs">${subs.map(({ sub: s, left: row }) => `<li class="${s.status}"><i class="mk ${s.status}" aria-hidden="true"></i>
-    <span><span class="sub-name">${esc(s.name)}</span>${srStatus(s.status)}</span>${subMore(s, row)}</li>`).join('')}</ul>`);
+    <span><span class="sub-name">${esc(s.name)}</span>${srStatus(s.status)}</span>${subMore(s, row, area)}</li>`).join('')}</ul>`);
   return `<details class="req ${b.status}" data-has="${has}"><summary><i class="mk ${b.status}" aria-hidden="true"></i><span class="name">${esc(b.name)}</span>${srStatus(b.status)}</summary>
     <div class="req-body">${body.join('')}</div></details>`;
+}
+// One part of the major, as its own row in the Major requirements area. What's still needed shows
+// on the row itself; opening it shows the courses and options. The STARS label it sits under stays
+// visible inside, so advisors can find it in the report.
+function partRow({ block: b, sub: s, left: row, n }){
+  const need = row && row.count ? `<span class="part-need ${row.status}">${esc(row.count)} ${esc(row.unit)} needed</span>` : '';
+  return `<details class="req part ${s.status}" data-has="${s.status}"${row ? ' data-left' : ''}><summary><i class="mk ${s.status}" aria-hidden="true"></i><span class="name">${esc(s.name)}</span>${srStatus(s.status)}${need}</summary>
+    <div class="req-body"><div class="stars-label">In STARS: ${esc(b.raw.replace(/:$/, ''))}, part ${n}</div>${subMore(s, row) || (s.status === 'done' ? '' : '<span class="muted">See your STARS report for details.</span>')}</div></details>`;
 }
 // The headline of an area: how many parts are needed, in progress and complete, zeros left out,
 // stacked one per row. Each row opens like a folded section to show the requirements with that
@@ -154,7 +170,8 @@ const counts = (n, id, list) => {
 function showStatus(btn){
   const card = btn.closest('.area-card'), on = btn.getAttribute('aria-expanded') !== 'true';
   card.querySelectorAll('.counts button').forEach(b => b.setAttribute('aria-expanded', String(on && b === btn)));
-  if (on) card.dataset.show = btn.dataset.show; else delete card.dataset.show;
+  // Closing a count goes back to the area's resting view: what's left for the major, nothing elsewhere.
+  if (on) card.dataset.show = btn.dataset.show; else if (card.dataset.rest) card.dataset.show = card.dataset.rest; else delete card.dataset.show;
   placeList(card);
 }
 // The list goes under the open count, or at the end of the counts when none is open (and in print).
@@ -162,14 +179,28 @@ function placeList(card, end){
   const list = card.querySelector('.reqs'), open = card.querySelector('.counts button[aria-expanded="true"]');
   if (open && !end) open.after(list); else card.querySelector('.counts').append(list);
 }
+// GE double counting, worded to match STARS's own note ("A COURSE MAY APPLY TO BOTH A CORE LITERACY
+// REQUIREMENT AND A GLOBAL PERSPECTIVES REQUIREMENT") and the "GE and unit rules" list below.
+// Confirmed with Natalie, 10 Nov 2026.
+const GE_DOUBLE_NOTE = 'A course in any Core Literacy category can also count toward Global Perspectives (G or H).';
 function areaCard(a){
   const n = a.counts, pct = k => (n[k] / a.total * 100).toFixed(1);
   const id = areaId(a.name);
   const u = a.units ? `<div class="tally">${num(a.units.done)} units${a.units.progress ? `, ${num(a.units.progress)} in progress` : ''}</div>` : '';
-  return `<article class="area-card" id="${id}">
-    <header><h3>${a.complete ? STAR_CHECK : ''}${esc(a.name)}</h3>${u}</header>
-    <div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
-    ${counts(n, id, `<div class="reqs" id="${id}-reqs">${a.blocks.map(reqRow).join('')}</div>`)}</article>`;
+  const isMajor = !!a.parts;
+  // The major shows its remaining parts straight away; other areas wait for a count to be clicked.
+  const rest = isMajor && a.left ? 'left' : '';
+  const leftNote = isMajor && !a.complete ? ` <span class="left-count">·&nbsp;${a.left}&nbsp;left</span>` : '';
+  const note = a.name === 'General education' ? `<p class="area-note">${esc(GE_DOUBLE_NOTE)}</p>` : '';
+  const rows = isMajor
+    // A "pick N of these" row belongs to the whole major block, so it goes above the parts.
+    ? a.blocks.flatMap(e => e.subs.length ? e.left : []).map(l => `<div class="req part-group needs" data-has="needs" data-left>${needBox(l, true)}</div>`).join('')
+      + a.parts.map(partRow).join('') + a.blocks.filter(e => !e.subs.length).map(e => reqRow(e, a)).join('')
+    : a.blocks.map(e => reqRow(e, a)).join('');
+  return `<article class="area-card${isMajor ? ' major' : ''}" id="${id}"${rest ? ` data-show="${rest}" data-rest="${rest}"` : ''}>
+    <header><h3>${a.complete ? STAR_CHECK : ''}<span>${esc(a.name)}${leftNote}</span></h3>${u}</header>
+    ${note}<div class="meter" role="img" aria-label="${n.done} complete, ${n.progress} in progress, ${n.needs} needed${n.none ? `, ${n.none} not marked` : ''}"><i class="d" style="width:${pct('done')}%"></i><i class="p" style="width:${pct('progress')}%"></i></div>
+    ${counts(n, id, `<div class="reqs" id="${id}-reqs">${rows}</div>`)}</article>`;
 }
 
 /* ---------- double-check notice ---------- */
@@ -187,7 +218,7 @@ function sideNav(r, areas){
   const item = (id, t, sub = '') => `<li><a href="#${id}">${t}</a>${sub}</li>`;
   const areaLinks = `<ol>${areas.map(a => `<li><a href="#${areaId(a.name)}">${esc(a.name)}</a></li>`).join('')}</ol>`;
   return `<aside class="side"><nav aria-label="On this page"><ol>
-    ${item('summary', 'Summary')}${r.unread.length ? item('check', 'Double-check') : ''}${item('areas', 'Progress by area', areaLinks)}
+    ${item('summary', 'Summary')}${r.unread.length ? item('check', 'Double-check') : ''}${item('areas', 'Requirement progress by area', areaLinks)}
     ${item('history', 'Course history')}${item('rules', 'GE and unit rules')}${item('original', 'Original text')}
   </ol></nav><button type="button" class="primary" id="print"><span class="print-long">Print or save as PDF</span><span class="print-short">Print</span></button><button type="button" class="again" data-again>Upload another report</button></aside>`;
 }
@@ -277,15 +308,27 @@ function render(r, reportText){
   h += unreadNotice(r);
 
   // progress by area, with what's left inside each requirement
-  h += `<section id="areas"><h2>Progress by area</h2><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
+  h += `<section id="areas"><h2>Requirement progress by area</h2><div class="areas">${areas.map(areaCard).join('')}</div></section>`;
 
   // course history, current term first. Click a code to copy it, anywhere else on a row to copy the line.
   const key = r.key || {};
   const groups = StarsFormat.groupCourses(r.courseList);
-  h += `<section id="history"><details class="list"><summary>Course history <span class="count">${r.courseList.length} courses</span></summary>
+  h += `<section id="history"><details class="list"><summary>Course history <span class="count">${r.courseList.length} courses${r.left.length ? ` · ${r.left.length} still needed` : ''}</span></summary>
     <p class="section-note">Click a course code to copy it, or anywhere else on its row to copy the whole line. STARS cuts titles at 29 characters, marked with "…".</p>
     <div class="copy-all no-print"><button type="button" data-copy-all="text">Copy as text</button><button type="button" data-copy-all="tsv">Copy for spreadsheet</button></div>
     <div class="scroll"><table class="stack hist"><thead><tr><th>Course</th><th>Title</th><th>Units</th><th>Grade</th><th>Counts toward</th></tr></thead><tbody>`;
+  // Future: what STARS still shows as needed, the same rows as "Requirements left", above the terms.
+  if (r.left.length) {
+    h += `<tr class="term-h future"><td colspan="5">Future: still needed<span class="tu">${r.left.length} ${r.left.length === 1 ? 'requirement' : 'requirements'}</span></td></tr>`;
+    r.left.forEach(l => {
+      const amount = l.count ? `${esc(l.count)} ${esc(l.unit)}` : 'See list';
+      h += `<tr class="fut ${l.status}">
+        <td><span class="tag need-tag ${l.status}">${l.status === 'progress' ? 'In progress' : 'Needed'}</span></td>
+        <td><b>${esc(l.label)}</b>${l.detail ? `<div class="detail">${esc(l.detail)}</div>` : ''}${l.options.length ? chips(l.options) : ''}</td>
+        <td class="num" data-label="Needed">${amount}</td><td class="num" data-label="Grade"><span class="muted">Not taken</span></td>
+        <td data-label="Counts toward">${esc(l.block ? l.block.name : l.area)}</td></tr>`;
+    });
+  }
   if (!groups.length) h += `<tr><td colspan="5">No courses on this report yet.</td></tr>`;
   groups.forEach(g => {
     h += `<tr class="term-h"><td colspan="5">${esc(g.label)}${g.current ? ', in progress' : ''}<span class="tu">${num(g.units)} ${g.units === 1 ? 'unit' : 'units'}</span></td></tr>`;

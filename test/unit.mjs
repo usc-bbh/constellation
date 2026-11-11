@@ -111,7 +111,7 @@ test('transfer units come from the report\'s own TRNSFR WORK total', () => {
 test('areas: open areas first, finished areas last', () => {
   const a = F.areaView(r);
   assert.deepEqual(a.map(x => [x.name, x.complete]), [
-    ['University', false], ['General education', false], ['School and major', false], ['Writing and language', true]
+    ['University', false], ['General education', false], ['Major requirements', false], ['Writing and language', true]
   ]);
   const ge = a.find(x => x.name === 'General education');
   assert.deepEqual(ge.counts, { done: 6, progress: 1, needs: 2, none: 0 });
@@ -130,13 +130,39 @@ test('every "what\'s left" row is shown under some requirement', () => {
 test('on-page sample (Tommy Trojan) reads cleanly, with nothing to double-check', () => {
   const t = P.parse(fs.readFileSync(new URL('../src/sample-report.txt', import.meta.url), 'utf8'));
   assert.deepEqual(t.unread, []);
-  assert.equal(t.meta.major, 'Business of Fighting On');
+  assert.equal(t.meta.major, 'Business Administration');
   assert.equal(t.meta.classLevel, 'Junior');
   assert.deepEqual(F.deriveSummary(t), {
-    gpa: '3.487', majorGpa: '3.567', unitsCompleted: 72, unitsInProgress: 16,
-    unitsRequired: 128, unitsRemaining: 40, requirementsLeft: 7
+    gpa: '3.503', majorGpa: '3.600', unitsCompleted: 74, unitsInProgress: 16,
+    unitsRequired: 128, unitsRemaining: 38, requirementsLeft: 7
   });
   assert.deepEqual(F.transferCredit(t), { units: 12, courses: 3 });
+  // The sample exercises every section the advisor review asked for.
+  const toward = code => t.courseList.find(c => c.code === code).countsToward;
+  assert.deepEqual(toward('ITP 115'), [], 'a free elective (units only)');
+  assert.ok(toward('BAEP 451').some(x => /Marshall electives/.test(x)), 'a Marshall elective');
+  assert.ok(t.left.some(l => /Category E/.test(l.label)), 'a missing GE');
+  assert.ok(t.left.some(l => /BUAD497/.test(l.label)), 'a remaining major requirement');
+});
+
+test('major requirements: their own area, parts one level down, STARS hierarchy unchanged', () => {
+  const t = P.parse(fs.readFileSync(new URL('../src/sample-report.txt', import.meta.url), 'utf8'));
+  const a = F.areaView(t), m = a.find(x => x.name === 'Major requirements');
+  assert.ok(!a.some(x => x.name === 'School and major'), 'nothing else in School and major here');
+  assert.equal(t.blocks.find(b => b.kind === 'major').group, 'School and major', 'parser grouping untouched');
+  assert.deepEqual(m.parts.map(p => [p.n, p.sub.name, !!p.left]), [
+    [1, 'Lower division core', false], [2, 'Upper division core', true],
+    [3, 'Complete three upper division Marshall electives', true], [4, 'Complete BUAD497 (strategic management)', true]
+  ]);
+  assert.equal(m.left, 3);
+});
+
+test('GE double counts come from what STARS applied, Core and Global Perspectives only', () => {
+  const t = P.parse(fs.readFileSync(new URL('../src/sample-report.txt', import.meta.url), 'utf8'));
+  const ge = F.areaView(t).find(x => x.name === 'General education');
+  assert.deepEqual([...ge.doubleCounts], [['20253 PHIL 141', ['B', 'H']]]);
+  // GESM 110 is in Category A and the GE seminar part, both Core: not a double count.
+  assert.deepEqual([...F.areaView(r).find(x => x.name === 'General education').doubleCounts], []);
 });
 
 if (failed) { console.log(`\n${failed} unit test(s) failed`); process.exit(1); }
