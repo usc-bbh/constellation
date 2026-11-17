@@ -56,6 +56,7 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .intake h1{font:700 clamp(36px,6vw,60px)/1.02 var(--display);letter-spacing:-1px;margin:0 0 12px;max-width:16ch}
 .intake p.lede{font-size:18px;color:var(--body);max-width:56ch;margin:0 0 6px}
 .intake p.local{font-size:15px;color:var(--muted);margin:0 0 26px}
+.intake .lede+.drop{margin-top:26px}
 /* privacy page */
 .policy>*{max-width:780px}
 .policy h2{font-size:20px;margin:30px 0 8px}
@@ -77,7 +78,8 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .about>summary:hover{color:var(--ink)}
 .how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:14px;color:var(--body);font-size:14.5px}
 .how b{display:block;color:var(--ink);font:600 15px/1.3 var(--display);margin-bottom:4px}
-.get-report{margin-top:20px;color:var(--body);font-size:14.5px}
+.about-note{margin:20px 0 0;color:var(--body);font-size:14.5px}
+.about-note+.about-note{margin-top:8px}
 .promo{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px}
 .promo-icon{flex:none;color:var(--cardinal)}
 .promo p{flex:1 1 260px;margin:0;color:var(--body);font-size:15px}
@@ -389,7 +391,6 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 <div id="intake" class="wrap intake">
   <h1>Make sense of your STARS.</h1>
   <p class="lede">Upload your STARS report PDF. You get a clean summary of what's done, what's in progress, and what's left.</p>
-  <p class="local">Everything runs in your browser: your report is never uploaded anywhere.</p>
   <label class="drop" id="drop" for="file">
     <input type="file" id="file" accept="application/pdf,.pdf" class="visually-hidden">
     <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 27V9m0 0-7 7m7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 26v4a3 3 0 0 0 3 3h18a3 3 0 0 0 3-3v-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
@@ -414,7 +415,8 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
     <div><b>Faithful to STARS</b>Every status comes straight from your report. Nothing is guessed or rewritten by AI.</div>
     <div><b>Unofficial</b>STARS and your advisor remain the source of truth for graduation.</div>
   </div>
-  <p class="get-report">Get your STARS report at <a href="https://experience.usc.edu/" target="_blank" rel="noopener noreferrer">Experience.usc.edu<span class="sr"> (opens in a new tab)</span></a> &gt; My Academics &gt; My Stars Report &gt; Print as PDF</p>
+  <p class="about-note">Get your STARS report at <a href="https://experience.usc.edu/" target="_blank" rel="noopener noreferrer">Experience.usc.edu<span class="sr"> (opens in a new tab)</span></a> &gt; My Academics &gt; My Stars Report &gt; Print as PDF</p>
+  <p class="about-note">Everything runs in your browser: your report is never uploaded anywhere.</p>
   </details>
   <p class="usage hidden" id="usage"></p>
 </div>
