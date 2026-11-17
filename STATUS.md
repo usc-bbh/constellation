@@ -1,10 +1,17 @@
 # Constellation: status and next steps
 
-_Last updated 3 Nov 2026 by Natalie (with Claude), after the mentor review. Start here when picking the project back up._
+_Last updated 17 Nov 2026 by Natalie (with Claude). Last code change: 10 Nov (advisor feedback, P0). Start here when picking the project back up._
 
-Live page: https://usc-bbh.github.io/constellation/ (GitHub Pages from `main`, turned on 20 Oct).
+Live page: https://usc-bbh.github.io/constellation/ (GitHub Pages from `main`, turned on 20 Oct). As of 17 Nov it serves the 10 Nov changes.
 
-This is the working to-do list for Constellation V1. [README.md](README.md) explains what the project is and how it works. This file tracks what's done, what's left, and what's waiting on whom.
+This is the working to-do list for Constellation V1. [README.md](README.md) explains what the project is and how it works. This file tracks what's done, what's left, and what's waiting on whom. The advisor's UI requests, with file references, are in [stars-ui-handoff.md](stars-ui-handoff.md). The sections headed "What changed on …" are a log; the open items are in "Where things stand", "Getting the extension to people" and "Next steps".
+
+## At a glance (17 Nov)
+
+- **Done since 3 Nov:** Chrome Web Store package and listing (4 Nov, version 0.3.0); the advisor's three P0 changes plus the "Future" rows and the renamed heading (10 Nov). All tests pass and the store zip builds.
+- **Biggest blocker:** the extension has never been tried on a real STARS page (see "Getting the extension to people", step 1). Everything else in the store launch is paperwork.
+- **Expected soon:** Steve's fuller feedback, after 18 Nov. Add his UI issues to `stars-ui-handoff.md`.
+- **Not moving:** the parsing checks against real reports (walkthrough mapping, 10 reports, Tanzil's review).
 
 ## The goal for V1
 
@@ -16,19 +23,51 @@ This is the working to-do list for Constellation V1. [README.md](README.md) expl
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Synthetic sample in this repo | **Done.** `src/sample-report.txt` is now Tommy Trojan (program 9001, "Business of Fighting On", 21 Oct). The earlier invented "Data and Society" report (program 9000) moved to `test/fixture-report.txt` for the unit tests. |
+| 1 | Synthetic sample in this repo | **Done.** `src/sample-report.txt` is Tommy Trojan, now a fictional junior in the real Business Administration (BUAD) major with real Marshall/USC courses (10 Nov; it was the invented "Business of Fighting On" from 21 Oct). The earlier invented "Data and Society" report (program 9000) moved to `test/fixture-report.txt` for the unit tests. |
 | 1 | Earlier sample in `bbh-course-reg-project` history | **Open.** The pre-move sample (BS AI for Business, program 1915) is still in that repo's history at commit `2c019dd`. Confirm it was fully invented. If not, ask Vishal about removing it from history (see "Removing the old sample" below). |
 | 2 | Flag instead of guess | **Done (13 Oct).** See "What changed on 13 Oct". |
 | 2 | Walkthrough mapping | **Not started.** The walkthrough is `docs/reference/01-reading-a-stars-report.md` in `bbh-course-reg-project`. Section 12 of Tanzil's `STARS_PARSER_DESIGN.md` (in next-sem-validator, formerly PLAN.md) lists where real reports contradict it. Start there. |
 | 2 | Tanzil's review of PDF parsing | **Not asked yet.** His rebuild plan already covers line rebuilding (see "Related work"). Ask him to look at `redact()` in `src/parser.js`. |
 | 2 | 10 anonymized reports | **Not started.** `test/samples/` is empty on this machine. Only 3 reports were ever hand-checked, and that was before pdf.js 4.10. Tanzil has 11 redacted reports. |
 | 2 | Line rebuilding (optional) | **Open decision.** Tanzil's fixed-width column method (character width read from the PDF) is more robust than `src/pdftext.js`, which guesses spaces from gaps. Only switch once real reports can confirm it. |
-| 3 | Three views | **Done (13 Oct).** Dashboard, Table and Printable tabs. |
+| 3 | Three views | **Done (13 Oct), then replaced (20 Oct)** by one layout of area cards, at the team's request. |
 | 3 | V2: build that writes scripts as separate files | **Done (20 Oct).** `npm run build` also writes `dist/extension/` (load unpacked). The V1 page is unchanged. |
-| 3 | V2: STARS web page text vs PDF text | **Next.** Load the extension, open your own STARS report, click the button, and compare with the PDF summary. Don't commit anything it shows. If the report is in a frame from another site, the extension needs a narrow host permission for it. |
-| — | README pointed at the old parser location and submodule | **Done on this branch (13 Oct), not on `main` yet.** Tanzil flagged it again in bbh-course-reg-project#7 (18 Oct). Merging this branch closes it. |
+| 3 | V2: STARS web page text vs PDF text | **Next, and it blocks the store launch.** Never done. See "Getting the extension to people", step 1. |
+| 3 | V2: Chrome Web Store | **Package ready (4 Nov), not submitted.** See "Getting the extension to people". |
+| 3 | Advisor feedback P0 (sample, major area, GE double counts) | **Done (10 Nov).** See "What changed on 10 Nov". |
+| 3 | Advisor feedback P1 (completed courses per area, privacy wording) | **Not started.** Items 4 and 5 in `stars-ui-handoff.md`. |
+| 3 | Advisor feedback P2 (emphases, BUAI integrated electives) | **Blocked** on the parser reading emphases, which needs real reports. Item 6 in `stars-ui-handoff.md`. |
+| — | README pointed at the old parser location and submodule | **Done.** Merged to `main` with `v1-flags-and-views` on 20 Oct. Check that Tanzil was told on bbh-course-reg-project#7. |
 | — | Name on the summary / stop redacting | **Open, for the team (Natalie to raise).** The original report text now shows the report as uploaded. Still to decide: (b) show the student's name at the top of the summary (useful on advisor printouts, but it's on every shared screenshot) and (c) stop redacting everywhere, page and extension (simpler, but the ID and address spread beyond the collapsed text and the "Private by design" wording must change). Suggested: keep as is, and revisit (b) as a print-only header if advisors ask. Meant to be a GitHub issue; open one if wanted. |
 | — | Pathwise decisions before Tanzil's M4 | **Open, time-sensitive.** See "Waiting on Natalie (Pathwise)" below. M4 (next-sem-validator#9) is already open. |
+
+## Getting the extension to people
+
+The code and the store package are ready: `npm run package:extension` runs every test and writes `dist/constellation-extension-0.3.0.zip` (rebuilt 17 Nov from the 10 Nov code, all tests passing). The extension asks only for `activeTab` and `scripting`, and its policy blocks every network connection. What's left, in order:
+
+1. **Try it on a real STARS page (Natalie, ~15 min). This is the one real unknown.** The automated tests use a stand-in for Chrome and a fake STARS page, so nobody has yet seen it work on USC's site.
+   1. Run `npm run build`, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick `dist/extension/`.
+   2. Pin the Constellation star from the puzzle-piece menu.
+   3. Open your own STARS degree progress report the usual way, click the star, and check that a summary tab opens.
+   4. Compare it with the summary the website gives for the PDF of the same report (GPA, units, requirements left, each area's counts). Note any differences here. Don't commit or screenshot anything from the real report.
+   5. If you get "this doesn't look like a STARS report", or an empty summary: the report is probably in a frame from another USC site, which `activeTab` can't read. Note the frame's site (right-click the report → Inspect, look for an `<iframe src=…>`), and Claude can add a host permission for just that site.
+2. **Retake the two store screenshots.** `store/screenshot-1-summary.png` and `store/screenshot-2-area-open.png` still show the old "Business of Fighting On" sample. Retake them at 1280×800 from the BUAD sample (Claude can do this).
+3. **Developer account (Natalie).** Sign in as bbh@usc.edu at https://chrome.google.com/webstore/devconsole, pay the one-time $5, verify the email, and declare BBH a non-trader.
+4. **Upload (Natalie).** Rebuild the zip if anything changed, then follow [store/LISTING.md](store/LISTING.md) field by field: package, listing, privacy tab, distribution. It says **Unlisted** until the reviews are done; the mentor and Steve have both reviewed it now, so Public is an option. Google's review usually takes a few days.
+5. **After approval.** Put the store link on the **Add to Chrome** button in `src/page.html` (it links to `#` today, so it does nothing), run `npm test`, push, and fill in "Releases" in `store/LISTING.md`.
+
+**Until it's in the store,** anyone can still install it by hand: send them the zip, have them unzip it and use **Load unpacked** as in step 1. Chrome shows a "developer mode" warning on every start, so this is only for testers.
+
+## What changed on 10 Nov (advisor feedback, P0)
+
+From Steve Asipyan's review (a Marshall undergraduate advisor). Full list and file references in [stars-ui-handoff.md](stars-ui-handoff.md). He said the tool is clean and usable as it is.
+
+- **Sample report:** Tommy Trojan is now a fictional junior in the real BUAD major, with real courses: completed and missing GEs, a double-counted GE, a Marshall elective, a units-only free elective and remaining major requirements.
+- **Major requirements** have their own area next to General education, headed "· N left", with the remaining parts showing straight away. Display only: the parser still files the block under School and major.
+- **GE double counts:** an always-visible note, *"A course in any Core Literacy category can also count toward Global Perspectives (G or H)"*, and a "Double-counted" tag on courses STARS applied to both. Steve said Core A, B and C only, but STARS prints the broader rule, so the note follows STARS. Mention this to him.
+- **Course history** opens with a "Future: still needed" section.
+- **"Progress by area"** is now "Requirement progress by area".
+- The parser keeps "Marshall" capitalized. Tests cover the sample, the major area and double counts.
 
 ## What changed on 3 Nov (mentor review: less ink)
 
@@ -42,7 +81,7 @@ From the mentor's review of the live page. The main note was that the results pa
 - **Footer credit matches RegCheck:** "Constellation is a BUAI Builder Hub ↗ tool · Tools by Students, for Students", linking to https://usc-bbh.github.io/bbh-website/. The disclaimer already matched RegCheck. `check-privacy` now allows that one link. It also strips allowed links in double quotes, not just single.
 - **Kept on purpose:** the University card still lists "Total units", even though the Units tile shows the same numbers. Without it, a report with every other University requirement met would show that area as complete while units are still needed. It now only appears when you click "needed".
 
-**Chrome Web Store (4 Nov):** ready to submit. Version 0.3.0. `npm run package:extension` builds the zip; [store/LISTING.md](store/LISTING.md) has the listing text, privacy answers, screenshots and steps. The privacy policy is `privacy.html` on the site, linked from every footer (the extension links to the website's copy). **Waiting on Natalie:** a Chrome Web Store developer account under bbh@usc.edu ($5), then the upload. Once it's approved, put the store link on the "Add to Chrome" button in `src/page.html`.
+**Chrome Web Store (4 Nov):** ready to submit. _(Current steps are in "Getting the extension to people" above.)_ Version 0.3.0. `npm run package:extension` builds the zip; [store/LISTING.md](store/LISTING.md) has the listing text, privacy answers, screenshots and steps. The privacy policy is `privacy.html` on the site, linked from every footer (the extension links to the website's copy). **Waiting on Natalie:** a Chrome Web Store developer account under bbh@usc.edu ($5), then the upload. Once it's approved, put the store link on the "Add to Chrome" button in `src/page.html`.
 
 **Waiting on Natalie** (from the same meeting, not code):
 1. **Feedback form:** add a required first question, a dropdown with "I'd like to give feedback", "I'd like to report an issue" and "I'd like to request a feature", so the response Sheet can be filtered (feature requests become GitHub issues for new contributors).
@@ -135,14 +174,19 @@ Still to do by hand: paste "Copy for spreadsheet" into Google Sheets and check t
 
 ## Next steps, in order
 
-1. **Merge this branch** (`v1-flags-and-views`) into `main` via a PR, then tell Tanzil on bbh-course-reg-project#7 that the README is fixed.
-2. **Settle the three Pathwise questions** with Tanzil before his M4 lands (see below).
-3. **Ask Tanzil** for the redacted reports and a look at `redact()`.
-4. **Decide on the old sample** in `bbh-course-reg-project` history. Check with Vishal if it needs removing.
-5. **Walkthrough mapping:** a table with three columns: each open question in doc 01, how Constellation handles it, and whether it's flagged on the page. Claude can draft it.
-6. **Run the reports:** put the PDFs in `test/samples/` (git-ignored, never commit them) and run `npm test`. Hand-check each `.draft.json` against its PDF, get a second person to check it, then rename it to `.json`.
-7. **Line rebuilding:** decide based on step 6's results.
-8. **V2 prep:** separate-scripts build mode, then the web page vs PDF check.
+_Rewritten 17 Nov. Steps 1–3 are the extension launch; the rest is the V1 parsing work._
+
+1. **Try the extension on your real STARS page** ("Getting the extension to people", step 1).
+2. **Retake the store screenshots** from the BUAD sample, then **open the developer account and upload** (steps 2–4 there).
+3. **Once approved,** link the Add to Chrome button (step 5 there). Until then, consider hiding the promo card, since its button does nothing.
+4. **Advisor P1 items:** completed courses per area, and the privacy wording (items 4 and 5 in `stars-ui-handoff.md`). Do the privacy wording before the store goes Public, since advisors will load real reports. Add Steve's post-18 Nov feedback to the handoff first.
+5. **Open "Waiting on Natalie" items:** GoatCounter site code, the feedback form's first-question dropdown and a test response, the BBH website link, the Slack note to the mentor, and printing the sample with "Background graphics" off.
+6. **Settle the three Pathwise questions** with Tanzil (see below). M4 was already open on 19 Oct; check whether it has landed.
+7. **Ask Tanzil** for the redacted reports and a look at `redact()`.
+8. **Run the reports:** put the PDFs in `test/samples/` (git-ignored, never commit them) and run `npm test`. Hand-check each `.draft.json` against its PDF, get a second person to check it, then rename it to `.json`. This also unblocks advisor P2 (emphases).
+9. **Walkthrough mapping:** a table with three columns: each open question in doc 01, how Constellation handles it, and whether it's flagged on the page. Claude can draft it.
+10. **Line rebuilding:** decide based on step 8's results.
+11. **Decide on the old sample** in `bbh-course-reg-project` history. Check with Vishal if it needs removing.
 
 ## Reply to Tanzil (posted; folded into his design doc)
 
