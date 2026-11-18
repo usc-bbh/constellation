@@ -84,6 +84,10 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .promo-icon{flex:none;color:var(--cardinal)}
 .promo p{flex:1 1 260px;margin:0;color:var(--body);font-size:15px}
 .promo p b{color:var(--ink);font-family:var(--display)}
+/* The whole card opens the Add to Chrome link: the button's click area is stretched over the card. */
+.promo{position:relative;cursor:pointer;transition:border-color .15s}
+.promo:hover{border-color:var(--cardinal)}
+.promo .btn::after{content:"";position:absolute;inset:0;border-radius:14px}
 .usage{margin-top:28px;font-size:14px;color:var(--muted)}
 .usage b{color:var(--ink);font-family:var(--display)}
 
