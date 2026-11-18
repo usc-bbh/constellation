@@ -59,8 +59,6 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .drop-title{font:700 21px/1.2 var(--display);color:var(--ink)}
 .drop-sub{font-size:15px}
 .drop-hint{font-size:14px;margin-top:4px}
-.ext-alt{margin:14px 0 0;color:var(--ink);font-size:15.5px;text-align:center}
-.ext-alt a{font-weight:600}
 .drop.busy{pointer-events:none;opacity:.75}
 .drop.over{border-color:var(--cardinal);background:var(--cardinal-tint)}
 .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}

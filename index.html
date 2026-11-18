@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-cq+6tpj1nAL9FIky/hjXSKLFBUYT8+phQirAe2C5gY8=' 'sha256-SEngSgDh/IVhcRkrJZV19ZL+CDOy9VQxuum6GDaia3M=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-1AdcrfRt8bQfBcUdJYjosIsaJk0A94Q86r9SrGRa09U=' 'sha256-IL99cvaCLpOz/bgephCS5qolb9fQmlfYSFQxREe4FFE=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-cq+6tpj1nAL9FIky/hjXSKLFBUYT8+phQirAe2C5gY8=' 'sha256-SEngSgDh/IVhcRkrJZV19ZL+CDOy9VQxuum6GDaia3M=' 'sha256-EUhVkByv0QFzo1vqyWRj0aB64YCK/wf0Z2Xi8wryn9E=' 'sha256-THpz0tGVyRYwi8T08rpO6YicY22emH+wSdeDBtArAfY=' 'sha256-NGJDZzlox0O53CgHpZY+NN3g6wtn+GWzXh5iKIY/4y4=' 'sha256-1AdcrfRt8bQfBcUdJYjosIsaJk0A94Q86r9SrGRa09U=' 'sha256-mARIY55LKyFhKId8YlUEtkfqkgxKxyhds4iFF6bJdxk=' 'sha256-CIbpZL+HJe2VHikaOWmSVG9WAouSTJgf2tQeeQjRSSA='; worker-src blob:; child-src blob:; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation: make sense of your STARS</title>
 <style>
@@ -68,8 +68,6 @@ button:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible,in
 .drop-title{font:700 21px/1.2 var(--display);color:var(--ink)}
 .drop-sub{font-size:15px}
 .drop-hint{font-size:14px;margin-top:4px}
-.ext-alt{margin:14px 0 0;color:var(--ink);font-size:15.5px;text-align:center}
-.ext-alt a{font-weight:600}
 .drop.busy{pointer-events:none;opacity:.75}
 .drop.over{border-color:var(--cardinal);background:var(--cardinal-tint)}
 .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
@@ -400,14 +398,13 @@ pre.raw{background:var(--card);border:1px solid var(--line);border-radius:14px;p
     <span class="drop-sub" id="dropSub">Drag it here or click to choose a file</span>
     <span class="drop-hint">No PDF yet? Go to <a href="https://experience.usc.edu/s/star-report" target="_blank" rel="noopener noreferrer">experience.usc.edu/s/star-report<span class="sr"> (opens in a new tab)</span></a> &gt; Print as PDF</span>
   </label>
-  <p class="ext-alt" id="extAlt">Or skip the PDF: use Constellation right on your STARS report with our <a href="#promo">Chrome extension</a>.</p>
   <div class="actions">
     <button id="sample">Try a sample report</button>
   </div>
   <div id="err" class="err hidden" role="alert"></div>
   <aside class="promo" id="promo" aria-labelledby="promoT">
     <svg class="promo-icon" width="34" height="34" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 19 L11 8 L17 14 L22 5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".45"/><circle cx="4" cy="19" r="2.4" fill="currentColor"/><circle cx="11" cy="8" r="2.4" fill="currentColor"/><circle cx="17" cy="14" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="22" cy="5" r="2.4" fill="currentColor"/></svg>
-    <p id="promoT"><b>Like this?</b> Check out our extension that works directly on your STARS report tab, no need to download the PDF.</p>
+    <p id="promoT"><b>Or skip the PDF:</b> use Constellation right on your STARS report with our Chrome extension.</p>
     <!-- TODO: replace # with the Chrome Web Store link once the extension is published. -->
     <a class="btn primary" href="#">Add to Chrome</a>
   </aside>
@@ -1476,8 +1473,8 @@ window.addEventListener('afterprint', () => {
 });
 $('#sample').onclick = () => run(SAMPLE);
 document.querySelectorAll('[data-feedback]').forEach(p => { p.innerHTML = feedbackLink(); });
-// The extension promos are for the website; in the extension they would advertise itself.
-if (IN_EXTENSION) { $('#promo').remove(); $('#extAlt').remove(); }
+// The extension promo is for the website; in the extension it would advertise itself.
+if (IN_EXTENSION) $('#promo').remove();
 $('#file').onchange = e => handleFile(e.target.files[0]);
 $('#home').onclick = reset;
 const drop = $('#drop');

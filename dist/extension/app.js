@@ -409,8 +409,8 @@ window.addEventListener('afterprint', () => {
 });
 $('#sample').onclick = () => run(SAMPLE);
 document.querySelectorAll('[data-feedback]').forEach(p => { p.innerHTML = feedbackLink(); });
-// The extension promos are for the website; in the extension they would advertise itself.
-if (IN_EXTENSION) { $('#promo').remove(); $('#extAlt').remove(); }
+// The extension promo is for the website; in the extension it would advertise itself.
+if (IN_EXTENSION) $('#promo').remove();
 $('#file').onchange = e => handleFile(e.target.files[0]);
 $('#home').onclick = reset;
 const drop = $('#drop');
